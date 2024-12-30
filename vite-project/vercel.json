@@ -1,1 +1,9 @@
-{ "routes": [{ "src": "/[^.]+", "dest": "/", "status": 200 }] }
+{
+  "routes": [{ "src": "/[^.]+", "dest": "/", "status": 200 }],
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "http://27.71.227.212:8080/api/:path*"
+    }
+  ]
+}
