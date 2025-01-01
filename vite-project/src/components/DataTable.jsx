@@ -53,6 +53,7 @@ export default function DataTable({
   comboBoxItems,
   addItemsToParent,
   hasCreateButton = true,
+  role,
 }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -162,11 +163,11 @@ export default function DataTable({
                 </Button>
               )}
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="max-w-fit">
               <DialogHeader>
-                <DialogTitle>Add {entity}</DialogTitle>
+                <DialogTitle>Tạo {entity}</DialogTitle>
                 <DialogDescription>
-                  Add a new {entity} to the list.
+                  Tạo {entity} mới
                 </DialogDescription>
               </DialogHeader>
               <ItemForm
@@ -233,7 +234,7 @@ export default function DataTable({
               {table.getFilteredRowModel().rows.length} row(s) selected.
             </div>
           )}
-          {/* <div className="space-x-2">
+          <div className="space-x-2">
             <Button
               variant="outline"
               size="sm"
@@ -250,7 +251,7 @@ export default function DataTable({
             >
               Next
             </Button>
-          </div> */}
+          </div>
         </div>
       </div>
     </>

@@ -104,7 +104,7 @@ const createCLOColumns = (handleEdit, handleDelete) => [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuLabel>Hành động</DropdownMenuLabel>
             <Dialog>
               <DialogTrigger asChild>
                 <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -113,9 +113,9 @@ const createCLOColumns = (handleEdit, handleDelete) => [
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>Edit CLO</DialogTitle>
+                  <DialogTitle>Sửa CLO</DialogTitle>
                   <DialogDescription>
-                    Edit the current CLO.
+                    Sửa CLO hiện tại.
                   </DialogDescription>
                 </DialogHeader>
                 <CLOForm cLO={item} handleEdit={handleEdit} />
@@ -129,18 +129,18 @@ const createCLOColumns = (handleEdit, handleDelete) => [
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>Delete CLO</DialogTitle>
+                  <DialogTitle>Xóa CLO</DialogTitle>
                   <DialogDescription>
-                    Delete the current CLO.
+                    Xóa CLO hiện tại.
                   </DialogDescription>
                 </DialogHeader>
-                <p>Are you sure you want to delete this CLO?</p>
+                <p>Bạn có chắc muốn xóa CLO này?</p>
                 <DialogFooter>
                   <Button
                     type="submit"
                     onClick={() => handleDelete(item.id)}
                   >
-                    Delete
+                    Xóa
                   </Button>
                 </DialogFooter>
               </DialogContent>

@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import {
   getAllKhoas,
   deleteKhoa,
-  
+  addKhoa,
+  updateKhoa,
 } from "@/api/api-khoa";
 import {
   DropdownMenu,
@@ -27,11 +28,13 @@ import { KhoaForm } from "@/components/KhoaForm";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { getRole } from "@/utils/storage";
 
 export default function KhoaPage() {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
   const { toast } = useToast();
+  const role = getRole();
 
   useEffect(() => {
     fetchData();
@@ -87,6 +90,7 @@ export default function KhoaPage() {
       enableHiding: false,
       cell: ({ row }) => {
         const item = row.original;
+        if (role === "PhongDaoTao") return null;
 
         return (
           <DropdownMenu>
@@ -177,7 +181,7 @@ export default function KhoaPage() {
 
   const handleCreate = async (newKhoa) => {
     try {
-      await createKhoa(newKhoa);
+      await addKhoa(newKhoa);
       fetchData();
     } catch (error) {
       toast({
@@ -205,6 +209,7 @@ export default function KhoaPage() {
           ItemForm={(props) => (
             <KhoaForm {...props} handleCreate={handleCreate} />
           )}
+          hasCreateButton={role !== "PhongDaoTao"}
         />
       </div>
     </Layout>

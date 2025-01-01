@@ -12,7 +12,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { addTaiKhoan, updateTaiKhoan } from "@/api/api-taikhoan";
+import { addTaiKhoan, updateTaiKhoan } from "@/api/api-taiKhoan";
 import {
   Popover,
   PopoverContent,
@@ -34,8 +34,8 @@ import { ChevronsUpDown } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
 const formSchema = z.object({
-  hovaTen: z.string().min(2, {
-    message: "hovaTen must be at least 2 characters.",
+  ten: z.string().min(2, {
+    message: "ten must be at least 2 characters.",
   }),
   username: z.string()
   .min(5, { message: "Username phải có tối thiểu 2 ký tự" })
@@ -54,8 +54,9 @@ const formSchema = z.object({
     .regex(/^\S*$/, {
       message: "Mật khẩu không được chứa khoảng trắng"
     }),
-  tenChucVu: z.string().min(1, {
-    message: "Vui lòng chọn chức vụ",
+  chucVuId: z.number({
+    invalid_type_error: "Vui lòng chọn chức vụ",
+    required_error: "Vui lòng chọn chức vụ",
   }),
 });
 
@@ -63,15 +64,13 @@ export function TaiKhoanForm({ taiKhoan, handleAdd, handleEdit, setIsDialogOpen 
   const [searchParams] = useSearchParams();
   const chucVuIdParam = searchParams.get("chucVuId");
   const [comboBoxItems, setComboBoxItems] = useState([]);
-  const [chucVus, setChucVus] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       const comboBoxItems = await getAllChucVus();
-      setChucVus(comboBoxItems);
-      const mappedComboBoxItems = comboBoxItems.map((khoa) => ({
-        label: khoa.tenChucVu,
-        value: khoa.tenChucVu,
+      const mappedComboBoxItems = comboBoxItems.map((chucVu) => ({
+        label: chucVu.tenChucVu,
+        value: chucVu.id,  // Change from Id to id to match API response
       }));
       setComboBoxItems(mappedComboBoxItems);
     };
@@ -84,10 +83,8 @@ export function TaiKhoanForm({ taiKhoan, handleAdd, handleEdit, setIsDialogOpen 
     defaultValues: taiKhoan || {
       username: "",
       password: "",
-      hovaTen: "",
-      tenChucVu: chucVuIdParam ? 
-        chucVus.find(cv => cv.id === parseInt(chucVuIdParam))?.tenChucVu 
-        : "",
+      ten: "",
+      chucVuId: chucVuIdParam ? parseInt(chucVuIdParam) : null,
     },
   });
 
@@ -96,6 +93,7 @@ export function TaiKhoanForm({ taiKhoan, handleAdd, handleEdit, setIsDialogOpen 
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
     if (taiKhoan) {
+      console.log("taiKhoan, values", taiKhoan, values);
       const data = await updateTaiKhoan(taiKhoan.id, values);
       handleEdit(data);
     } else {
@@ -111,7 +109,7 @@ export function TaiKhoanForm({ taiKhoan, handleAdd, handleEdit, setIsDialogOpen 
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <FormField
           control={form.control}
-          name="hovaTen"
+          name="ten"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Tên</FormLabel>
@@ -159,7 +157,7 @@ export function TaiKhoanForm({ taiKhoan, handleAdd, handleEdit, setIsDialogOpen 
         />
         <FormField
           control={form.control}
-          name="tenChucVu"
+          name="chucVuId"
           render={({ field }) => (
             <FormItem className="flex flex-col">
               <FormLabel>Chọn Chức vụ</FormLabel>
@@ -185,16 +183,16 @@ export function TaiKhoanForm({ taiKhoan, handleAdd, handleEdit, setIsDialogOpen 
                 </PopoverTrigger>
                 <PopoverContent className="w-[200px] p-0">
                   <Command>
-                    <CommandInput placeholder="Search item..." />
+                    <CommandInput placeholder="Tìm kiếm..." />
                     <CommandList>
-                      <CommandEmpty>No item found.</CommandEmpty>
+                      <CommandEmpty>Không tìm thấy.</CommandEmpty>
                       <CommandGroup>
                         {comboBoxItems.map((item) => (
                           <CommandItem
                             value={item.label}
                             key={item.value}
                             onSelect={() => {
-                              form.setValue("tenChucVu", item.value);
+                              form.setValue("chucVuId", item.value);
                             }}
                           >
                             {item.label}

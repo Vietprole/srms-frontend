@@ -20,12 +20,19 @@ import { useLocation } from "react-router-dom";
 
 // Import PNG icons
 import KhoaIcon from "@/assets/icons/khoa-icon.png";
+import NganhIcon from "@/assets/icons/nganh-icon.png";
 import GiangVienIcon from "@/assets/icons/giang-vien-icon.png";
 import SinhVienIcon from "@/assets/icons/sinh-vien-icon.png";
 import HocPhanIcon from "@/assets/icons/hoc-phan-icon.png";
+import PLOIcon from "@/assets/icons/plo-icon.png";
+import NoiHocPhanPLOIcon from "@/assets/icons/noi-hoc-phan-plo-icon.png";
 import LopHocPhanIcon from "@/assets/icons/lop-hoc-phan-icon.png";
+import CongThucDiemIcon from "@/assets/icons/cong-thuc-diem-icon.png";
+import NhapDiemIcon from "@/assets/icons/nhap-diem-icon.png";
+import DiemDinhChinhIcon from "@/assets/icons/diem-dinh-chinh-icon.png";
 import KetQuaIcon from "@/assets/icons/ket-qua-hoc-tap-icon.png";
 import XetChuanDauRaIcon from "@/assets/icons/xet-chuan-dau-ra-icon.png";
+import QuanLyTaiKhoanIcon from "@/assets/icons/quan-ly-tai-khoan-icon.png";
 import HoSoCaNhanIcon from "@/assets/icons/ho-so-ca-nhan-icon.png";
 import CaiDatIcon from "@/assets/icons/cai-dat-icon.png";
 import DangXuatIcon from "@/assets/icons/dang-xuat-icon.png";
@@ -73,12 +80,12 @@ const giangVienItem = [
   {
     title: "Nhập điểm",
     url: "/nhapdiem",
-    icon: LopHocPhanIcon,
+    icon: NhapDiemIcon,
   },
   {
     title: "Điểm Đính Chính",
     url: "/diemdinhchinh",
-    icon: LopHocPhanIcon,
+    icon: DiemDinhChinhIcon,
   },
   // {
   //   title: "Kết quả học tập",
@@ -144,7 +151,7 @@ const adminItem = [
   {
     title: "Ngành",
     url: "/nganh",
-    icon: KhoaIcon, //TODO Change to Nganh icon
+    icon: NganhIcon,
   },
   {
     title: "Học phần",
@@ -164,12 +171,12 @@ const adminItem = [
   {
     title: "PLO",
     url: "/plo",
-    icon: HocPhanIcon,
+    icon: PLOIcon,
   },
   {
     title: "Nối Học Phần - PLO",
     url: "/maphocphanplo",
-    icon: HocPhanIcon,
+    icon: NoiHocPhanPLOIcon,
   },
   {
     title: "Giảng viên",
@@ -199,17 +206,17 @@ const adminItem = [
   {
     title: "Công thức điểm",
     url: "/congthucdiem",
-    icon: LopHocPhanIcon,
+    icon: CongThucDiemIcon,
   },
   {
     title: "Nhập điểm",
     url: "/nhapdiem",
-    icon: LopHocPhanIcon,
+    icon: NhapDiemIcon,
   },
   {
     title: "Điểm Đính Chính",
     url: "/diemdinhchinh",
-    icon: LopHocPhanIcon,
+    icon: DiemDinhChinhIcon,
   },
   // {
   //   title: "Kết quả học tập",
@@ -224,7 +231,7 @@ const adminItem = [
   {
     title: "Quản lý tài khoản",
     url: "/quanlytaikhoan",
-    icon: HoSoCaNhanIcon,
+    icon: QuanLyTaiKhoanIcon,
   },
   {
     title: "Hồ sơ cá nhân",
@@ -262,12 +269,12 @@ const phongDaoTaoItem = [
   {
     title: "PLO",
     url: "/plo",
-    icon: HocPhanIcon,
+    icon: PLOIcon,
   },
   {
     title: "Nối Học Phần - PLO",
     url: "/maphocphanplo",
-    icon: HocPhanIcon,
+    icon: NoiHocPhanPLOIcon,
   },
   {
     title: "Giảng viên",
@@ -287,17 +294,17 @@ const phongDaoTaoItem = [
   {
     title: "Công thức điểm",
     url: "/congthucdiem",
-    icon: LopHocPhanIcon,
+    icon: CongThucDiemIcon,
   },
   {
     title: "Nhập điểm",
     url: "/nhapdiem",
-    icon: LopHocPhanIcon,
+    icon: NhapDiemIcon,
   },
   {
     title: "Điểm Đính Chính",
     url: "/diemdinhchinh",
-    icon: LopHocPhanIcon,
+    icon: DiemDinhChinhIcon,
   },
   // {
   //   title: "Kết quả học tập",
@@ -309,11 +316,11 @@ const phongDaoTaoItem = [
     url: "/xetchuandaura",
     icon: XetChuanDauRaIcon,
   },
-  {
-    title: "Quản lý tài khoản",
-    url: "/quanlytaikhoan",
-    icon: HoSoCaNhanIcon,
-  },
+  // {
+  //   title: "Quản lý tài khoản",
+  //   url: "/quanlytaikhoan",
+  //   icon: HoSoCaNhanIcon,
+  // },
   {
     title: "Hồ sơ cá nhân",
     url: "/hosocanhan",

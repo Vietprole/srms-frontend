@@ -1,6 +1,6 @@
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getBaiKiemTrasByLopHocPhanId } from "@/api/api-baikiemtra";
+import { getBaiKiemTrasByLopHocPhanId } from "@/api/api-baiKiemTra";
 import {
   getCauHoisByBaiKiemTraId,
   // getAllCauHois,
@@ -55,8 +55,8 @@ export default function QuanLyCauHoi() {
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
   const [maxId, setMaxId] = useState(0);
-  const columnToBeFiltered = "ten";
-  const entity = "CauHoi";
+  const columnToBeFiltered = "tên";
+  const entity = "Câu Hỏi";
   const ItemForm = CauHoiForm;
 
   const fetchData = useCallback(async () => {
@@ -145,6 +145,7 @@ export default function QuanLyCauHoi() {
         title: "Đã xảy ra lỗi",
         description: error.message,
       });
+      await fetchData();
       return;
     }
     toast({
@@ -235,7 +236,7 @@ export default function QuanLyCauHoi() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuLabel>Hành động</DropdownMenuLabel>
               <Dialog>
                 <DialogTrigger asChild>
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -244,9 +245,9 @@ export default function QuanLyCauHoi() {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>Edit CauHoi</DialogTitle>
+                    <DialogTitle>Sửa câu hỏi</DialogTitle>
                     <DialogDescription>
-                      Edit the current item.
+                      Sửa câu hỏi hiện tại
                     </DialogDescription>
                   </DialogHeader>
                   <CauHoiForm cauHoi={item} handleEdit={handleEdit} />
@@ -260,15 +261,15 @@ export default function QuanLyCauHoi() {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>Delete CauHoi</DialogTitle>
+                    <DialogTitle>Xóa câu hỏi</DialogTitle>
                     <DialogDescription>
-                      Delete the current item.
+                      Xóa câu hỏi hiện tại
                     </DialogDescription>
                   </DialogHeader>
-                  <p>Are you sure you want to delete this CauHoi?</p>
+                  <p>Bạn có chắc muốn xóa câu hỏi này?</p>
                   <DialogFooter>
                     <Button type="submit" onClick={() => handleDelete(item.id)}>
-                      Delete
+                      Xóa
                     </Button>
                   </DialogFooter>
                 </DialogContent>
@@ -365,9 +366,9 @@ export default function QuanLyCauHoi() {
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>Add {entity}</DialogTitle>
+                  <DialogTitle>Tạo {entity}</DialogTitle>
                   <DialogDescription>
-                    Add a new {entity} to the list.
+                    Tạo {entity} mới.
                   </DialogDescription>
                 </DialogHeader>
                 <ItemForm

@@ -90,7 +90,7 @@ const styles = `
     flex-direction: column;
     justify-content: center;
     align-items: flex-end;
-    width: 200px;
+    width: 300px;
     margin-right: 10px;
   }
   .main  .user .infor .name {

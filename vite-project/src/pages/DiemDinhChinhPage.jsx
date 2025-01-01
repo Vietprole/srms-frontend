@@ -43,7 +43,7 @@ export default function DiemDinhChinhPage() {
   const [comboBoxLopHocPhanId, setComboBoxLopHocPhanId] =
     useState(lophocphanIdParam);
   const role = getRole();
-  const giangVienId = getGiangVienId();
+  const giangVienId = getGiangVienId() === 0 ? null : getGiangVienId();
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
@@ -57,9 +57,9 @@ export default function DiemDinhChinhPage() {
       value: lophocphan.id,
     }));
     setLopHocPhanItems(mappedComboBoxItems);
-    const data = await getDiemDinhChinhs(lophocphanId);
+    const data = await getDiemDinhChinhs(lophocphanId, giangVienId);
     setData(data);
-  }, [lophocphanId, giangVienId]);
+  }, [giangVienId, lophocphanId]);
 
   useEffect(() => {
     fetchData();
@@ -251,7 +251,7 @@ export default function DiemDinhChinhPage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuLabel>Hành động</DropdownMenuLabel>
                 <Dialog>
                   <DialogTrigger asChild>
                     <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -260,9 +260,9 @@ export default function DiemDinhChinhPage() {
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                      <DialogTitle>Edit DiemDinhChinh</DialogTitle>
+                      <DialogTitle>Sửa Điểm Đính Chính</DialogTitle>
                       <DialogDescription>
-                        Edit the current item.
+                        Sửa điểm đính chính hiện tại
                       </DialogDescription>
                     </DialogHeader>
                     <DiemDinhChinhForm
@@ -279,18 +279,18 @@ export default function DiemDinhChinhPage() {
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                      <DialogTitle>Delete DiemDinhChinh</DialogTitle>
+                      <DialogTitle>Hủy Điểm Đính Chính</DialogTitle>
                       <DialogDescription>
-                        Delete the current item.
+                        Hủy điểm đính chính này
                       </DialogDescription>
                     </DialogHeader>
-                    <p>Are you sure you want to delete this DiemDinhChinh?</p>
+                    <p>Bạn có chắc muốn hủy điểm đính chính này?</p>
                     <DialogFooter>
                       <Button
                         type="submit"
                         onClick={() => handleDelete(item.id)}
                       >
-                        Delete
+                        Hủy
                       </Button>
                     </DialogFooter>
                   </DialogContent>

@@ -19,7 +19,7 @@ import { useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ChevronsUpDown } from "lucide-react";
 import { useParams } from "react-router-dom";
-import { getBaiKiemTrasByLopHocPhanId } from "@/api/api-baikiemtra";
+import { getBaiKiemTrasByLopHocPhanId } from "@/api/api-baiKiemTra";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Check } from "lucide-react";
@@ -106,7 +106,7 @@ export function CauHoiForm({ cauHoi, handleAdd, handleEdit, setIsDialogOpen, max
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        {cauHoi && (
+        {/* {cauHoi && (
           <FormField
             control={form.control}
             name="id"
@@ -123,7 +123,7 @@ export function CauHoiForm({ cauHoi, handleAdd, handleEdit, setIsDialogOpen, max
               </FormItem>
             )}
           />
-        )}
+        )} */}
         <FormField
           control={form.control}
           name="ten"
@@ -134,7 +134,7 @@ export function CauHoiForm({ cauHoi, handleAdd, handleEdit, setIsDialogOpen, max
                 <Input placeholder="Câu 1a" {...field} />
               </FormControl>
               <FormDescription>
-                This is your public display name.
+                Tên của câu hỏi không được trùng nhau trong một bài kiểm tra
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -150,7 +150,7 @@ export function CauHoiForm({ cauHoi, handleAdd, handleEdit, setIsDialogOpen, max
                 <Input placeholder="1.5" {...field} />
               </FormControl>
               <FormDescription>
-                This is your public display name.
+                Là tỉ lệ điểm trên thang 10 của bài kiểm tra
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -166,7 +166,7 @@ export function CauHoiForm({ cauHoi, handleAdd, handleEdit, setIsDialogOpen, max
                 <Input placeholder="1.5" {...field} />
               </FormControl>
               <FormDescription>
-                This is your public display name.
+                Là điểm số tối đa của câu hỏi
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -203,7 +203,7 @@ export function CauHoiForm({ cauHoi, handleAdd, handleEdit, setIsDialogOpen, max
                   <Command>
                     <CommandInput placeholder="Search baiKiemTra..." />
                     <CommandList>
-                      <CommandEmpty>No baiKiemTra found.</CommandEmpty>
+                      <CommandEmpty>Không tìm thấy</CommandEmpty>
                       <CommandGroup>
                         {comboBoxItems.map((item) => (
                           <CommandItem
@@ -230,7 +230,7 @@ export function CauHoiForm({ cauHoi, handleAdd, handleEdit, setIsDialogOpen, max
                 </PopoverContent>
               </Popover>
               <FormDescription>
-                Select the BaiKiemTra this HocPhan belongs to.
+                Chọn bài kiểm tra mà câu hỏi thuộc về
               </FormDescription>
               <FormMessage />
             </FormItem>

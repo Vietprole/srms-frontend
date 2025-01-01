@@ -84,7 +84,7 @@ export function DiemDinhChinhForm({ diemDinhChinh, handleAdd, handleEdit, setIsD
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <Button type="submit">Lưu</Button>
       </form>
     </Form>
   );

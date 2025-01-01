@@ -138,31 +138,31 @@ export default function LopHocPhanPage() {
       },
       cell: ({ row }) => <div className="px-4 py-2">{row.getValue("tenGiangVien")}</div>,
     },
-    {
-      accessorKey: "hanDeXuatCongThucDiem",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Hạn Đề Xuất Công Thức Điểm
-            <ArrowUpDown />
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        const date = row.getValue("hanDeXuatCongThucDiem");
-        const formattedDate = date ? 
-          new Date(date).toLocaleDateString('vi-VN', {
-            timeZone: 'Asia/Ho_Chi_Minh',
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-          }) : '';
-        return <div className="px-4 py-2">{formattedDate}</div>;
-      },
-    },
+    // {
+    //   accessorKey: "hanDeXuatCongThucDiem",
+    //   header: ({ column }) => {
+    //     return (
+    //       <Button
+    //         variant="ghost"
+    //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+    //       >
+    //         Hạn Đề Xuất Công Thức Điểm
+    //         <ArrowUpDown />
+    //       </Button>
+    //     );
+    //   },
+    //   cell: ({ row }) => {
+    //     const date = row.getValue("hanDeXuatCongThucDiem");
+    //     const formattedDate = date ? 
+    //       new Date(date).toLocaleDateString('vi-VN', {
+    //         timeZone: 'Asia/Ho_Chi_Minh',
+    //         day: '2-digit',
+    //         month: '2-digit',
+    //         year: 'numeric'
+    //       }) : '';
+    //     return <div className="px-4 py-2">{formattedDate}</div>;
+    //   },
+    // },
     {
       id: "actions",
       enableHiding: false,
@@ -187,9 +187,9 @@ export default function LopHocPhanPage() {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>Edit Lop Hoc Phan</DialogTitle>
+                    <DialogTitle>Sửa Lớp học phần</DialogTitle>
                     <DialogDescription>
-                      Edit the current item.
+                      Sửa Lớp học phần hiện tại
                     </DialogDescription>
                   </DialogHeader>
                   <LopHocPhanForm lopHocPhan={item} handleEdit={handleEdit} />
@@ -204,18 +204,18 @@ export default function LopHocPhanPage() {
                 <DropdownMenuSeparator />
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>Delete Lop Hoc Phan</DialogTitle>
+                    <DialogTitle>Xóa Lớp học phần</DialogTitle>
                     <DialogDescription>
-                      Delete the current item.
+                      Xóa Lớp học phần hiện tại
                     </DialogDescription>
                   </DialogHeader>
-                  <p>Are you sure you want to delete this Lop Hoc Phan?</p>
+                  <p>Bạn có chắc muốn xóa Lớp học phần này?</p>
                   <DialogFooter>
                     <Button
                       type="submit"
                       onClick={() => handleDelete(item.id)}
                     >
-                      Delete
+                      Xóa
                     </Button>
                   </DialogFooter>
                 </DialogContent>
@@ -242,7 +242,7 @@ export default function LopHocPhanPage() {
     <div className="w-full">
       <Layout>
         <DataTable
-          entity="Lop Hoc Phan"
+          entity="Lớp Học Phần"
           createColumns={createLopHocPhanColumns}
           data={data}
           setData={setData}

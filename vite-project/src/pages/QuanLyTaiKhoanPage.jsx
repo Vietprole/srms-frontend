@@ -312,6 +312,7 @@ export default function QuanLyTaiKhoanPage() {
         <div>
           <p>Mật khẩu Giảng viên mặc định là: Gv@ + Mã Giảng Viên</p>
           <p>Mật khẩu Sinh viên mặc định là: Sv@ + Mã Sinh Viên</p>
+          <p>Mật khẩu Vai trò khác mặc định là: Password@123456</p>
         </div>
         <DataTable
           entity="TaiKhoan"

@@ -62,7 +62,7 @@ export function CLOForm({ cLO, handleAdd, handleEdit, setIsDialogOpen }) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        {cLO && (
+        {/* {cLO && (
           <FormField
             control={form.control}
             name="id"
@@ -79,7 +79,7 @@ export function CLOForm({ cLO, handleAdd, handleEdit, setIsDialogOpen }) {
               </FormItem>
             )}
           />
-        )}
+        )} */}
         <FormField
           control={form.control}
           name="ten"
@@ -87,10 +87,10 @@ export function CLOForm({ cLO, handleAdd, handleEdit, setIsDialogOpen }) {
             <FormItem>
               <FormLabel>Tên</FormLabel>
               <FormControl>
-                <Input placeholder="Nguyễn Văn A" {...field} />
+                <Input placeholder="CLO 1" {...field} />
               </FormControl>
               <FormDescription>
-                This is your public display name.
+                Tên hiển thị của CLO, nên tránh đặt trùng tên
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -103,10 +103,10 @@ export function CLOForm({ cLO, handleAdd, handleEdit, setIsDialogOpen }) {
             <FormItem>
               <FormLabel>Mô Tả</FormLabel>
               <FormControl>
-                <Input placeholder="Nguyễn Văn A" {...field} />
+                <Input placeholder="Hiểu được khái niệm cơ bản" {...field} />
               </FormControl>
               <FormDescription>
-                This is your public display name.
+                Thông tin mô tả chi tiết CLO
               </FormDescription>
               <FormMessage />
             </FormItem>

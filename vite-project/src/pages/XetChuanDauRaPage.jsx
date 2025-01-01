@@ -33,6 +33,8 @@ import { Check, ChevronsUpDown} from "lucide-react"
 import { getAllNganhs } from "@/api/api-nganh"
 import { cn } from "@/lib/utils"
 import { Switch } from "@/components/ui/switch"
+import { getSinhVienById } from "@/api/api-sinhvien"
+import { getSinhVienId } from "@/utils/storage"
 
 // const PLOs = [
 //   {
@@ -150,6 +152,7 @@ export default function XetChuanDauRaPage() {
   const [comboBoxItems, setComboBoxItems] = React.useState([])
   const [nganhId, setNganhId] = React.useState(null)
   const [useDiemTam, setUseDiemTam] = React.useState(false);
+  const sinhVienId = getSinhVienId();
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -157,10 +160,14 @@ export default function XetChuanDauRaPage() {
       const mappedComboBoxItems = comboBoxItems.map(nganh => ({ label: nganh.ten, value: nganh.id }));
       setComboBoxItems(mappedComboBoxItems);
 
-      const [sinhViens, PLOs] = await Promise.all([
+      let [sinhViens, PLOs] = await Promise.all([
         getSinhViens(null, nganhId, null),
         getPLOsByNganhId(nganhId),
       ]);
+
+      if (sinhVienId) {
+        sinhViens = await getSinhVienById(sinhVienId).then((sv) => [sv]);
+      }
       
       const newData = await Promise.all(sinhViens.map(async (sv) => {
         const ploScores = await Promise.all(PLOs.map(async (plo) => {

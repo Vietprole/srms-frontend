@@ -150,8 +150,12 @@ export default function DiemPk() {
       
       const newData = await Promise.all(sinhViens.map(async (sv) => {
         const ploScores = await Promise.all(PLOs.map(async (plo) => {
-          const score = await calculateDiemPk(lopHocPhanId, sv.id, plo.id, useDiemTam);
-          return { [`plo_${plo.id}`]: score }
+          try {
+            const score = await calculateDiemPk(lopHocPhanId, sv.id, plo.id, useDiemTam);
+            return { [`plo_${plo.id}`]: score}
+          } catch(error){
+            return { [`plo_${plo.id}`]: null}
+          }
         }))
         return { ...sv, ...Object.assign({}, ...ploScores) }
       }))

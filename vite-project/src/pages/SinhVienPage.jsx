@@ -32,6 +32,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { getAllLopHocPhans } from "@/api/api-lophocphan";
 import { createSearchURL } from "@/utils/string";
+import { getRole } from "@/utils/storage";
 
 const createSinhVienColumns = (handleEdit, handleDelete) => [
   {
@@ -200,6 +201,7 @@ export default function SinhVienPage() {
   const [comboBoxKhoaId, setComboBoxKhoaId] = useState(khoaIdParam);
   const [comboBoxLopHocPhanId, setComboBoxLopHocPhanId] = useState(lopHocPhanIdParam);
   const baseUrl = "/sinhvien";
+  const role = getRole();
 
   const fetchData = useCallback(async () => {
     const dataKhoa = await getAllKhoas();
@@ -276,6 +278,7 @@ export default function SinhVienPage() {
           ItemForm={SinhVienForm}
           handleAdd={handleAddSinhVien}
           handleUpdate={handleUpdateSinhVien}
+          hasCreateButton={role === "Admin" || role === "PhongDaoTao"}
         />
       </div>
     </Layout>
