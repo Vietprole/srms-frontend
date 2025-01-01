@@ -19,7 +19,7 @@ import { useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ChevronsUpDown } from "lucide-react";
 import { useParams } from "react-router-dom";
-import { getBaiKiemTrasByLopHocPhanId } from "@/api/api-baiKiemTra";
+import { getBaiKiemTrasByLopHocPhanId } from "@/api/api-baikiemtra";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Check } from "lucide-react";

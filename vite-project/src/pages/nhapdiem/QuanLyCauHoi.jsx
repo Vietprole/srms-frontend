@@ -1,6 +1,6 @@
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getBaiKiemTrasByLopHocPhanId } from "@/api/api-baiKiemTra";
+import { getBaiKiemTrasByLopHocPhanId } from "@/api/api-baikiemtra";
 import {
   getCauHoisByBaiKiemTraId,
   // getAllCauHois,
