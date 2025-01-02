@@ -233,9 +233,9 @@ export default function XetChuanDauRaPage() {
           </PopoverTrigger>
           <PopoverContent className="w-[200px] p-0">
             <Command>
-              <CommandInput placeholder="Search comboBoxItem..." className="h-9" />
+              <CommandInput placeholder="Tìm Ngành..." className="h-9" />
               <CommandList>
-                <CommandEmpty>No comboBoxItem found.</CommandEmpty>
+                <CommandEmpty>Không tìm thấy Ngành.</CommandEmpty>
                 <CommandGroup>
                   {comboBoxItems.map((comboBoxItem) => (
                     <CommandItem
@@ -265,7 +265,7 @@ export default function XetChuanDauRaPage() {
       <div>
         <div className="flex items-center py-4">
           <Input
-            placeholder="Filter names..."
+            placeholder="Tìm kiếm theo"
             value={(table.getColumn("ten")?.getFilterValue()) ?? ""}
             onChange={(event) =>
               table.getColumn("ten")?.setFilterValue(event.target.value)

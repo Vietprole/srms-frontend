@@ -99,12 +99,21 @@ export default function NhapDiemPage() {
       <div className="flex space-x-4">
         <div>
           <h2>Chọn lớp học phần: </h2>
-          <ComboBox items={lopHocPhans} setItemId={setLopHocPhanId} initialItemId={lopHocPhanId}/>
+          <ComboBox 
+            items={lopHocPhans} 
+            setItemId={setLopHocPhanId} 
+            initialItemId={lopHocPhanId} 
+            placeholder="Tên lớp học phần"
+          />
         </div>
         <div>
           <h2>Chọn hành động: </h2>
-          {console.log("items, itemId", items, itemId)}
-          <ComboBox items={items} setItemId={setItemId} initialItemId={itemId}/>
+          <ComboBox 
+            items={items} 
+            setItemId={setItemId} 
+            initialItemId={itemId} 
+            placeholder="Tên hành động"
+          />
         </div>
 
         <div className="flex items-end">

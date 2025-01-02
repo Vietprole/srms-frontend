@@ -407,7 +407,7 @@ export default function BaiKiemTraPage() {
           <div className="w-full">
             <div className="flex items-center py-4">
               <Input
-                placeholder={`Filter ${columnToBeFiltered}s...`}
+                placeholder={`Tìm theo ${columnToBeFiltered}`}
                 value={
                   table.getColumn(`${columnToBeFiltered}`)?.getFilterValue() ??
                   ""

@@ -440,6 +440,7 @@ export default function DiemDinhChinhPage() {
             items={lophocphanItems}
             setItemId={setComboBoxLopHocPhanId}
             initialItemId={comboBoxLopHocPhanId}
+            placeholder="Chọn lớp học phần"
           />
           <Button onClick={handleGoClick}>Go</Button>
         </div>

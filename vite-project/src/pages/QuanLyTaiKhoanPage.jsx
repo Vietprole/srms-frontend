@@ -306,6 +306,7 @@ export default function QuanLyTaiKhoanPage() {
             items={chucVuItems}
             setItemId={setComboBoxChucVuId}
             initialItemId={comboBoxChucVuId}
+            placeholder="Chọn chức vụ"
           />
           <Button onClick={handleGoClick}>Go</Button>
         </div>

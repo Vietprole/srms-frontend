@@ -17,7 +17,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 
-export function ComboBox({ placeholder = "Select an option", items, setItemId, initialItemId }) {
+export function ComboBox({ placeholder = "", items, setItemId, initialItemId }) {
   const [open, setOpen] = React.useState(false)
   const [value, setValue] = React.useState(initialItemId)
   console.log("comboBox items: ", items);
