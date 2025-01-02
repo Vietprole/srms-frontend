@@ -30,19 +30,19 @@ import { useState, useEffect } from "react";
 
 const createCLOColumns = (handleEdit, handleDelete) => [
   {
-    accessorKey: "id",
+    accessorKey: "tt",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Id
+          TT
           <ArrowUpDown />
         </Button>
       );
     },
-    cell: ({ row }) => <div className="px-4 py-2">{row.getValue("id")}</div>,
+    cell: ({ row }) => <div className="px-4 py-2">{row.index + 1}</div>,
   },
   {
     accessorKey: "ten",

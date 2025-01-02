@@ -116,7 +116,7 @@ export function SinhVienForm({ sinhVien, handleAdd, handleEdit, setIsDialogOpen 
                 <Input placeholder="Nguyễn Văn A" {...field} />
               </FormControl>
               <FormDescription>
-                This is your public display name.
+                Tên hiển thị của sinh viên
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -142,7 +142,7 @@ export function SinhVienForm({ sinhVien, handleAdd, handleEdit, setIsDialogOpen 
           control={form.control}
           name="khoaId"
           render={({ field }) => (
-            <FormItem className="flex flex-col" disabled={sinhVien}>
+            <FormItem className="flex flex-col">
               <FormLabel>Chọn Khoa Id</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
@@ -150,6 +150,7 @@ export function SinhVienForm({ sinhVien, handleAdd, handleEdit, setIsDialogOpen 
                     <Button
                       variant="outline"
                       role="combobox"
+                      disabled={sinhVien}
                       className={cn(
                         "w-[200px] justify-between",
                         !field.value && "text-muted-foreground"
@@ -195,7 +196,7 @@ export function SinhVienForm({ sinhVien, handleAdd, handleEdit, setIsDialogOpen 
                 </PopoverContent>
               </Popover>
               <FormDescription>
-                This is the item that will be used in the dashboard.
+                Khoa của sinh viên
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -213,6 +214,7 @@ export function SinhVienForm({ sinhVien, handleAdd, handleEdit, setIsDialogOpen 
                     <Button
                       variant="outline"
                       role="combobox"
+                      disabled={sinhVien}
                       className={cn(
                         "w-[200px] justify-between",
                         !field.value && "text-muted-foreground"
@@ -258,7 +260,7 @@ export function SinhVienForm({ sinhVien, handleAdd, handleEdit, setIsDialogOpen 
                 </PopoverContent>
               </Popover>
               <FormDescription>
-                This is the item that will be used in the dashboard.
+                Ngành sinh viên nhập học
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -271,10 +273,10 @@ export function SinhVienForm({ sinhVien, handleAdd, handleEdit, setIsDialogOpen 
             <FormItem>
               <FormLabel>Năm Nhập Học</FormLabel>
               <FormControl>
-                <Input placeholder="2024" {...field} />
+                <Input placeholder="2024" {...field} disabled={sinhVien}/>
               </FormControl>
               <FormDescription>
-                This is your public display name.
+                Năm sinh viên nhập học
               </FormDescription>
               <FormMessage />
             </FormItem>
