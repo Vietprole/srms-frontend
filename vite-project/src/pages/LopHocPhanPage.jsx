@@ -2,7 +2,7 @@ import DataTable from "@/components/DataTable";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  getAllLopHocPhans,
+  getLopHocPhans,
   deleteLopHocPhan,
 } from "@/api/api-lophocphan";
 import {
@@ -25,42 +25,62 @@ import { LopHocPhanForm } from "@/components/LopHocPhanForm";
 import Layout from "@/pages/Layout";
 import { useCallback, useEffect, useState } from "react";
 import EditSinhVienLopHocPhan from "@/components/EditSinhVienLopHocPhanForm";
-// import { format, parseISO } from 'date-fns';
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { ComboBox } from "@/components/ComboBox";
+import { createSearchURL } from "@/utils/string";
+import { getAllHocPhans } from "@/api/api-hocphan";
+import { getAllHocKys } from "@/api/api-hocky";
 
 export default function LopHocPhanPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedNganhId, setSelectedNganhId] = useState(null);
 
-    // const navigate = useNavigate();
-    // const [searchParams] = useSearchParams();
-    // const khoaIdParam = searchParams.get("khoaId");
-    const [data, setData] = useState([]);
-    // const [khoaItems, setKhoaItems] = useState([]);
-    // const [khoaId, setKhoaId] = useState(khoaIdParam);
-    // const [comboBoxKhoaId, setComboBoxKhoaId] = useState(khoaIdParam);
-  
-    const fetchData = useCallback(async () => {
-      // const dataKhoa = await getAllKhoas();
-      // // Map khoa items to be used in ComboBox
-      // const mappedComboBoxItems = dataKhoa.map(khoa => ({ label: khoa.ten, value: khoa.id }));
-      // setKhoaItems(mappedComboBoxItems);
-      // const data = await getNganhs(khoaId);
-      const data = await getAllLopHocPhans();
-      setData(data);
-    }, []);
-  
-    useEffect(() => {
-      fetchData();
-    }, [fetchData]);
-  
-    // const handleGoClick = () => {
-    //   setKhoaId(comboBoxKhoaId);
-    //   if (comboBoxKhoaId === null) {
-    //     navigate(`/nganh`);
-    //     return;
-    //   }
-    //   navigate(`/nganh?khoaId=${comboBoxKhoaId}`);
-    // };
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const hocphanIdParam = searchParams.get("hocphanId");
+  const hockyIdParam = searchParams.get("hockyId");
+
+  const [data, setData] = useState([]);
+  const [hocPhanItems, setHocPhanItems] = useState([]);
+  const [hocKyItems, setHocKyItems] = useState([]);
+  const [hocphanId, setHocPhanId] = useState(hocphanIdParam);
+  const [hockyId, setHocKyId] = useState(hockyIdParam);
+  const [comboBoxHocPhanId, setComboBoxHocPhanId] = useState(hocphanIdParam);
+  const [comboBoxHocKyId, setComboBoxHocKyId] = useState(hockyIdParam);
+  const baseUrl = "/lophocphan";
+
+  const fetchData = useCallback(async () => {
+    const dataHocPhan = await getAllHocPhans();
+    const mappedHocPhanItems = dataHocPhan.map(hp => ({ 
+      label: hp.ten, 
+      value: hp.id 
+    }));
+    setHocPhanItems(mappedHocPhanItems);
+
+    const dataHocKy = await getAllHocKys();
+    const mappedHocKyItems = dataHocKy.map(hk => ({ 
+      label: hk.ten, 
+      value: hk.id 
+    }));
+    setHocKyItems(mappedHocKyItems);
+
+    const data = await getLopHocPhans(hocphanId, hockyId, null, null);
+    setData(data);
+  }, [hocphanId, hockyId]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const handleGoClick = () => {
+    setHocPhanId(comboBoxHocPhanId);
+    setHocKyId(comboBoxHocKyId);
+    const url = createSearchURL(baseUrl, { 
+      hocphanId: comboBoxHocPhanId, 
+      hockyId: comboBoxHocKyId 
+    });
+    navigate(url);
+  };
 
   const createLopHocPhanColumns = (handleEdit, handleDelete, ) => [
     {
@@ -138,31 +158,6 @@ export default function LopHocPhanPage() {
       },
       cell: ({ row }) => <div className="px-4 py-2">{row.getValue("tenGiangVien")}</div>,
     },
-    // {
-    //   accessorKey: "hanDeXuatCongThucDiem",
-    //   header: ({ column }) => {
-    //     return (
-    //       <Button
-    //         variant="ghost"
-    //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-    //       >
-    //         Hạn Đề Xuất Công Thức Điểm
-    //         <ArrowUpDown />
-    //       </Button>
-    //     );
-    //   },
-    //   cell: ({ row }) => {
-    //     const date = row.getValue("hanDeXuatCongThucDiem");
-    //     const formattedDate = date ? 
-    //       new Date(date).toLocaleDateString('vi-VN', {
-    //         timeZone: 'Asia/Ho_Chi_Minh',
-    //         day: '2-digit',
-    //         month: '2-digit',
-    //         year: 'numeric'
-    //       }) : '';
-    //     return <div className="px-4 py-2">{formattedDate}</div>;
-    //   },
-    // },
     {
       id: "actions",
       enableHiding: false,
@@ -178,7 +173,7 @@ export default function LopHocPhanPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuLabel>Hành động</DropdownMenuLabel>
               <Dialog>
                 <DialogTrigger asChild>
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -220,9 +215,6 @@ export default function LopHocPhanPage() {
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
-              {/* <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                Quản lý Sinh Viên
-              </DropdownMenuItem> */}
               <DropdownMenuItem
                 onSelect={(e) => {
                   setSelectedNganhId(item.id);
@@ -241,6 +233,21 @@ export default function LopHocPhanPage() {
   return (
     <div className="w-full">
       <Layout>
+        <div className="flex mb-4">
+          <ComboBox 
+            items={hocPhanItems} 
+            setItemId={setComboBoxHocPhanId} 
+            initialItemId={hocphanId} 
+            placeholder="Chọn Học Phần"
+          />
+          <ComboBox 
+            items={hocKyItems} 
+            setItemId={setComboBoxHocKyId} 
+            initialItemId={hockyId} 
+            placeholder="Chọn Học Kỳ"
+          />
+          <Button onClick={handleGoClick}>Go</Button>
+        </div>
         <DataTable
           entity="Lớp Học Phần"
           createColumns={createLopHocPhanColumns}

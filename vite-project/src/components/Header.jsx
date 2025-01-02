@@ -119,19 +119,19 @@ export default function Header() {
     <div className="main">
       <div className="topLeft">
         <SidebarTrigger />
-        <div className="search">
+        {/* <div className="search">
           <img src={SearchIcon} alt="Search" />
           <input type="text" placeholder="Tìm kiếm..." />
-        </div>
+        </div> */}
       </div>
       <div className="topRight">
         <div className="user">
-          <div className="icon">
+          {/* <div className="icon">
             <img src={EmailIcon} alt="Email" />
           </div>
           <div className="icon">
             <img src={BellIcon} alt="Notification" />
-          </div>
+          </div> */}
           <div className="infor">
             <h4 className="name">{fullname}</h4>
             <h5 className="role">{role}</h5>

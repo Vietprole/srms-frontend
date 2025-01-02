@@ -40,14 +40,14 @@ const routes = [
     label: "Điểm Pk",
     value: "diem-pk",
   },
-  {
-    label: "Tổng Kết CLO",
-    value: "tong-ket-clo",
-  },
-  {
-    label: "Báo Cáo CLO",
-    value: "bao-cao-clo",
-  },
+  // {
+  //   label: "Tổng Kết CLO",
+  //   value: "tong-ket-clo",
+  // },
+  // {
+  //   label: "Báo Cáo CLO",
+  //   value: "bao-cao-clo",
+  // },
 ];
 
 export default function NhapDiemPage() {

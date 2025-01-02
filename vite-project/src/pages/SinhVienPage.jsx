@@ -30,9 +30,13 @@ import { getAllKhoas } from "@/api/api-khoa";
 import { ComboBox } from "@/components/ComboBox";
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { getAllLopHocPhans } from "@/api/api-lophocphan";
+import { getAllLopHocPhans, getLopHocPhans } from "@/api/api-lophocphan";
+import { getAllNganhs } from "@/api/api-nganh";
 import { createSearchURL } from "@/utils/string";
-import { getRole } from "@/utils/storage";
+import { getGiangVienId, getRole } from "@/utils/storage";
+
+const role = getRole();
+const giangVienId = getGiangVienId();
 
 const createSinhVienColumns = (handleEdit, handleDelete) => [
   {
@@ -130,6 +134,9 @@ const createSinhVienColumns = (handleEdit, handleDelete) => [
     enableHiding: false,
     cell: ({ row }) => {
       const student = row.original;
+      if (role === "GiangVien") {
+        return null;
+      }
 
       return (
         <DropdownMenu>
@@ -140,7 +147,7 @@ const createSinhVienColumns = (handleEdit, handleDelete) => [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuLabel>Hành động</DropdownMenuLabel>
             <Dialog>
               <DialogTrigger asChild>
                 <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -193,28 +200,44 @@ export default function SinhVienPage() {
   const [searchParams] = useSearchParams();
   const lopHocPhanIdParam = searchParams.get("lopHocPhanId");
   const khoaIdParam = searchParams.get("khoaId");
+  const nganhIdParam = searchParams.get("nganhId");
   const [data, setData] = useState([]);
   const [khoaItems, setKhoaItems] = useState([]);
   const [lopHocPhanItems, setLopHocPhanItems] = useState([]);
+  const [nganhItems, setNganhItems] = useState([]);
   const [khoaId, setKhoaId] = useState(khoaIdParam);
   const [lopHocPhanId, setLopHocPhanId] = useState(lopHocPhanIdParam);
+  const [nganhId, setNganhId] = useState(nganhIdParam);
   const [comboBoxKhoaId, setComboBoxKhoaId] = useState(khoaIdParam);
   const [comboBoxLopHocPhanId, setComboBoxLopHocPhanId] = useState(lopHocPhanIdParam);
+  const [comboBoxNganhId, setComboBoxNganhId] = useState(nganhIdParam);
   const baseUrl = "/sinhvien";
-  const role = getRole();
 
   const fetchData = useCallback(async () => {
     const dataKhoa = await getAllKhoas();
     const mappedKhoaItems = dataKhoa.map(khoa => ({ label: khoa.ten, value: khoa.id }));
     setKhoaItems(mappedKhoaItems);
 
-    const dataLopHocPhan = await getAllLopHocPhans();
-    const mappedLopHocPhanItems = dataLopHocPhan.map(lhp => ({ label: lhp.ten, value: lhp.id }));
-    setLopHocPhanItems(mappedLopHocPhanItems);
+    const dataNganh = await getAllNganhs();
+    const mappedNganhItems = dataNganh.map(nganh => ({ label: nganh.ten, value: nganh.id }));
+    setNganhItems(mappedNganhItems);
 
-    const data = await getSinhViens(khoaId, null, lopHocPhanId);
-    setData(data);
-  }, [khoaId, lopHocPhanId]);
+    if (role === "GiangVien" && giangVienId != 0) {
+      const data = await getLopHocPhans(null, null, giangVienId, null);
+      const mappedComboBoxItems = data.map(lopHocPhan => ({ label: lopHocPhan.ten, value: lopHocPhan.id }));
+      setLopHocPhanItems(mappedComboBoxItems);
+
+      const dataSinhVien = await getSinhViens(khoaId, nganhId, lopHocPhanId);
+      setData(dataSinhVien);
+      return;
+    }
+    const data = await getAllLopHocPhans();
+    const mappedComboBoxItems = data.map(lopHocPhan => ({ label: lopHocPhan.ten, value: lopHocPhan.id }));
+    setLopHocPhanItems(mappedComboBoxItems);
+
+    const dataSinhVien = await getSinhViens(khoaId, nganhId, lopHocPhanId);
+    setData(dataSinhVien);
+  }, [khoaId, nganhId, lopHocPhanId]);
 
   useEffect(() => {
     fetchData();
@@ -222,9 +245,11 @@ export default function SinhVienPage() {
 
   const handleGoClick = () => {
     setKhoaId(comboBoxKhoaId);
+    setNganhId(comboBoxNganhId);
     setLopHocPhanId(comboBoxLopHocPhanId);
     const url = createSearchURL(baseUrl, { 
       khoaId: comboBoxKhoaId, 
+      nganhId: comboBoxNganhId,
       lopHocPhanId: comboBoxLopHocPhanId 
     });
     navigate(url);
@@ -263,8 +288,9 @@ export default function SinhVienPage() {
   return (
     <Layout>
       <div className="w-full">
-        <div className="flex">
+        <div className="flex gap-1">
           <ComboBox items={khoaItems} setItemId={setComboBoxKhoaId} initialItemId={khoaId} placeholder="Chọn Khoa"/>
+          <ComboBox items={nganhItems} setItemId={setComboBoxNganhId} initialItemId={nganhId} placeholder="Chọn Ngành"/>
           <ComboBox items={lopHocPhanItems} setItemId={setComboBoxLopHocPhanId} initialItemId={lopHocPhanId} placeholder="Chọn lớp học phần"/>
           <Button onClick={handleGoClick}>Go</Button>
         </div>

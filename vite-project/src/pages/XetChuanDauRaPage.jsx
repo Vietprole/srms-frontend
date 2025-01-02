@@ -34,7 +34,7 @@ import { getAllNganhs } from "@/api/api-nganh"
 import { cn } from "@/lib/utils"
 import { Switch } from "@/components/ui/switch"
 import { getSinhVienById } from "@/api/api-sinhvien"
-import { getSinhVienId } from "@/utils/storage"
+import { getRole, getSinhVienId } from "@/utils/storage"
 
 // const PLOs = [
 //   {
@@ -151,23 +151,22 @@ export default function XetChuanDauRaPage() {
   const [value, setValue] = React.useState(null) // Use for combobox
   const [comboBoxItems, setComboBoxItems] = React.useState([])
   const [nganhId, setNganhId] = React.useState(null)
-  const [useDiemTam, setUseDiemTam] = React.useState(false);
+  const [useDiemTam, setUseDiemTam] = React.useState(true);
   const sinhVienId = getSinhVienId();
+  const role = getRole();
 
   React.useEffect(() => {
     const fetchData = async () => {
       const comboBoxItems = await getAllNganhs();
       const mappedComboBoxItems = comboBoxItems.map(nganh => ({ label: nganh.ten, value: nganh.id }));
       setComboBoxItems(mappedComboBoxItems);
-
-      let [sinhViens, PLOs] = await Promise.all([
-        getSinhViens(null, nganhId, null),
-        getPLOsByNganhId(nganhId),
-      ]);
-
+      let sinhViens = await getSinhViens(null, nganhId, null);
       if (sinhVienId) {
         sinhViens = await getSinhVienById(sinhVienId).then((sv) => [sv]);
+        setNganhId(sinhViens[0].nganhId);
+        setValue(sinhViens[0].nganhId);
       }
+      let PLOs = await getPLOsByNganhId(nganhId);
       
       const newData = await Promise.all(sinhViens.map(async (sv) => {
         const ploScores = await Promise.all(PLOs.map(async (plo) => {
@@ -194,7 +193,7 @@ export default function XetChuanDauRaPage() {
       // setListDiemPLOMax(listDiemPkMax)
     }
     fetchData()
-  }, [nganhId, useDiemTam])
+  }, [nganhId, useDiemTam, sinhVienId])
 
   // const columns = createColumns(PLOs, listDiemPLOMax, isBase10, diemDat);
   const columns = createColumns(PLOs, diemDat);
@@ -215,15 +214,16 @@ export default function XetChuanDauRaPage() {
 
   return (
     <Layout>
-      <h1>Tính điểm đạt chuẩn đầu ra của Nganh của Sinh Viên</h1>
-      <div className="flex">
+      <h1>Tính điểm đạt chuẩn đầu ra của Ngành của Sinh Viên</h1>
+      <div className="flex gap-1">
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
               role="combobox"
               aria-expanded={open}
-              className="w-[200px] justify-between"
+              className="w-fit min-w-[200px] justify-between"
+              disabled={role === "SinhVien"}
             >
               {value !== null
                 ? comboBoxItems.find((comboBoxItem) => comboBoxItem.value === value)?.label
@@ -330,7 +330,7 @@ export default function XetChuanDauRaPage() {
               ) : (
                 <TableRow>
                   <TableCell colSpan={columns.length} className="h-24 text-center">
-                    No results.
+                    Không tìm thấy kết quả
                   </TableCell>
                 </TableRow>
               )}

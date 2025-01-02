@@ -51,7 +51,10 @@ export default function NganhPage() {
     if (khoaId) {
       const data = await getNganhs(khoaId);
       setData(data);
+      return;
     }
+    const data = await getNganhs(null);
+    setData(data);
   }, [khoaId]);
   useEffect(() => {
     fetchData();
@@ -158,7 +161,7 @@ export default function NganhPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuLabel>Hành động</DropdownMenuLabel>
               <Dialog>
                 <DialogTrigger asChild>
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -167,9 +170,9 @@ export default function NganhPage() {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>Edit Nganh</DialogTitle>
+                    <DialogTitle>Sửa Ngành</DialogTitle>
                     <DialogDescription>
-                      Edit the current item.
+                      Sửa ngành hiện tại
                     </DialogDescription>
                   </DialogHeader>
                   <NganhForm nganh={item} handleEdit={handleEdit} />
@@ -183,18 +186,18 @@ export default function NganhPage() {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>Delete Nganh</DialogTitle>
+                    <DialogTitle>Xóa Ngành</DialogTitle>
                     <DialogDescription>
-                      Delete the current item.
+                      Xóa ngành hiện tại
                     </DialogDescription>
                   </DialogHeader>
-                  <p>Are you sure you want to delete this Nganh?</p>
+                  <p>Bạn có chắc muốn xóa ngành này?</p>
                   <DialogFooter>
                     <Button
                       type="submit"
                       onClick={() => handleDelete(item.id)}
                     >
-                      Delete
+                      Xóa
                     </Button>
                   </DialogFooter>
                 </DialogContent>
@@ -224,7 +227,7 @@ export default function NganhPage() {
           <Button onClick={handleGoClick}>Go</Button>
         </div>
         <DataTable
-          entity="Nganh"
+          entity="Ngành"
           createColumns={() => createNganhColumns(handleEdit, handleDelete)}
           data={data}
           setData={setData}

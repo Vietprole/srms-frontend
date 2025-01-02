@@ -115,7 +115,7 @@ export default function MappingTable({listRowItem, listColumnItem, extraHeaders,
         }}
         className="mb-4 px-4 py-2 bg-blue-500 text-white rounded"
       >
-        {isEditable ? "Save Changes" : "Enable Edit"}
+        {isEditable ? "Lưu" : "Sửa"}
       </button>
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">

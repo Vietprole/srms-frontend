@@ -238,11 +238,11 @@ const adminItem = [
     url: "/hosocanhan",
     icon: HoSoCaNhanIcon,
   },
-  {
-    title: "Cài đặt",
-    url: "/caidat",
-    icon: CaiDatIcon,
-  },
+  // {
+  //   title: "Cài đặt",
+  //   url: "/caidat",
+  //   icon: CaiDatIcon,
+  // },
   {
     title: "Đăng xuất",
     url: "/",
@@ -259,7 +259,7 @@ const phongDaoTaoItem = [
   {
     title: "Ngành",
     url: "/nganh",
-    icon: KhoaIcon, //TODO Change to Nganh icon
+    icon: NganhIcon,
   },
   {
     title: "Học phần",

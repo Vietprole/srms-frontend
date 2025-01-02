@@ -115,7 +115,7 @@ export default function CustomDataTable({
               ) : (
                 <TableRow>
                   <TableCell colSpan={columns.length} className="h-15 text-center">
-                    No results.
+                    Không tìm thấy kết quả
                   </TableCell>
                 </TableRow>
               )}
