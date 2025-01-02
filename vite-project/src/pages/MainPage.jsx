@@ -139,7 +139,7 @@ const columns = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuLabel>Hành động</DropdownMenuLabel>
             <DropdownMenuItem
               onClick={() => navigator.clipboard.writeText(payment.id)}
             >
@@ -265,7 +265,7 @@ export default function SinhVienPage() {
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    No results.
+                    Không tìm thấy kết quả
                   </TableCell>
                 </TableRow>
               )}

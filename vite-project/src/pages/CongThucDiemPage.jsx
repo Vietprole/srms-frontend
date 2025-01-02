@@ -141,23 +141,23 @@ export default function BaiKiemTraPage() {
         <div className="px-4 py-2">{row.getValue("trongSo")}</div>
       ),
     },
-    {
-      accessorKey: "trongSoDeXuat",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Trọng Số Đề Xuất
-            <ArrowUpDown />
-          </Button>
-        );
-      },
-      cell: ({ row }) => (
-        <div className="px-4 py-2">{row.getValue("trongSoDeXuat")}</div>
-      ),
-    },
+    // {
+    //   accessorKey: "trongSoDeXuat",
+    //   header: ({ column }) => {
+    //     return (
+    //       <Button
+    //         variant="ghost"
+    //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+    //       >
+    //         Trọng Số Đề Xuất
+    //         <ArrowUpDown />
+    //       </Button>
+    //     );
+    //   },
+    //   cell: ({ row }) => (
+    //     <div className="px-4 py-2">{row.getValue("trongSoDeXuat")}</div>
+    //   ),
+    // },
     {
       accessorKey: "ngayMoNhapDiem",
       header: ({ column }) => {
@@ -273,7 +273,7 @@ export default function BaiKiemTraPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuLabel>Hành động</DropdownMenuLabel>
               <Dialog>
                 <DialogTrigger asChild>
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -407,7 +407,7 @@ export default function BaiKiemTraPage() {
           <div className="w-full">
             <div className="flex items-center py-4">
               <Input
-                placeholder={`Filter ${columnToBeFiltered}s...`}
+                placeholder={`Tìm kiếm theo loại...`}
                 value={
                   table.getColumn(`${columnToBeFiltered}`)?.getFilterValue() ??
                   ""
@@ -510,7 +510,7 @@ export default function BaiKiemTraPage() {
                         colSpan={columns.length}
                         className="h-24 text-center"
                       >
-                        No results.
+                        Không tìm thấy kết quả
                       </TableCell>
                     </TableRow>
                   )}

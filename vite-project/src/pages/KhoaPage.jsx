@@ -101,7 +101,7 @@ export default function KhoaPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuLabel>Hành động</DropdownMenuLabel>
               <Dialog>
                 <DialogTrigger asChild>
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -110,8 +110,8 @@ export default function KhoaPage() {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>Edit Khoa</DialogTitle>
-                    <DialogDescription>Edit the current item.</DialogDescription>
+                    <DialogTitle>Sửa Khoa</DialogTitle>
+                    <DialogDescription>Sửa khoa hiện tại</DialogDescription>
                   </DialogHeader>
                   <KhoaForm khoa={item} handleEdit={handleEdit} />
                 </DialogContent>
@@ -124,15 +124,15 @@ export default function KhoaPage() {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>Delete Khoa</DialogTitle>
+                    <DialogTitle>Xóa Khoa</DialogTitle>
                     <DialogDescription>
-                      Delete the current item.
+                      Xóa khoa hiện tại
                     </DialogDescription>
                   </DialogHeader>
-                  <p>Are you sure you want to delete this Khoa?</p>
+                  <p>Bạn có chắc muốn xóa khoa này?</p>
                   <DialogFooter>
                     <Button type="submit" onClick={() => handleDelete(item.id)}>
-                      Delete Khoa
+                      Xóa
                     </Button>
                   </DialogFooter>
                 </DialogContent>
@@ -153,6 +153,10 @@ export default function KhoaPage() {
     try {
       await deleteKhoa(id);
       fetchData();
+      toast({
+        title: "Xóa khoa thành công",
+        variant: "success",
+      });
     } catch (error) {
       toast({
         title: "Lỗi",
@@ -168,6 +172,10 @@ export default function KhoaPage() {
     try {
       await updateKhoa(khoa);
       fetchData();
+      toast({
+        title: "Sửa khoa thành công",
+        variant: "success",
+      });
     } catch (error) {
       toast({
         title: "Lỗi",
@@ -183,6 +191,10 @@ export default function KhoaPage() {
     try {
       await addKhoa(newKhoa);
       fetchData();
+      toast({
+        title: "Thêm khoa thành công",
+        variant: "success",
+      });
     } catch (error) {
       toast({
         title: "Lỗi",

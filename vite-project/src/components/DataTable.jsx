@@ -109,7 +109,7 @@ export default function DataTable({
       <div className="w-full">
         <div className="flex items-center py-4">
           <Input
-            placeholder={`Tìm kiếm theo ${name}...`}
+            placeholder={`Tìm kiếm theo ${columnToBeFiltered}...`}
             value={
               table.getColumn(`${columnToBeFiltered}`)?.getFilterValue() ?? ""
             }
@@ -163,7 +163,7 @@ export default function DataTable({
                 </Button>
               )}
             </DialogTrigger>
-            <DialogContent className="max-w-fit">
+            <DialogContent className="max-w-fit min-w-[425px]">
               <DialogHeader>
                 <DialogTitle>Tạo {entity}</DialogTitle>
                 <DialogDescription>
@@ -220,7 +220,7 @@ export default function DataTable({
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    No results.
+                    Không có kết quả
                   </TableCell>
                 </TableRow>
               )}
@@ -241,7 +241,7 @@ export default function DataTable({
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
-              Previous
+              Trang trước
             </Button>
             <Button
               variant="outline"
@@ -249,7 +249,7 @@ export default function DataTable({
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >
-              Next
+              Trang sau
             </Button>
           </div>
         </div>

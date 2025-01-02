@@ -52,7 +52,6 @@ export function GradeTable({
   console.log("isConfirmed", isConfirmed);
   React.useEffect(() => {
     setTableData(data);
-
     const hasNullChinhThucGrades = tableData.some(
       (record) =>
         Object.values(record.diemChinhThucs) // Get all grade objects
@@ -366,12 +365,14 @@ export function GradeTable({
   return (
     <div className="space-y-4">
       <div className="flex justify-end gap-1">
-        <Button
-          disabled={confirmationStatus || !canEditDiem}
-          onClick={() => (isEditing ? handleSaveChanges() : setIsEditing(true))}
-        >
-          {isEditing ? "Lưu" : "Sửa Điểm"}
-        </Button>
+        {role!=="PhongDaoTao" && (
+            <Button
+            disabled={confirmationStatus || !canEditDiem}
+            onClick={() => (isEditing ? handleSaveChanges() : setIsEditing(true))}
+          >
+            {isEditing ? "Lưu" : "Sửa Điểm"}
+          </Button>
+        )}
         {doAcceptAllowed && (
           <Button
             disabled={isEditing || isAccepted || !confirmationStatus}
@@ -452,8 +453,8 @@ export function GradeTable({
                       className="text-center px-1 border"
                     >
                       <div>{question.ten}</div>
-                      <div>{question.trongSo}</div>
-                      <div>{question.thangDiem}</div>
+                      <div>TS: {question.trongSo}</div>
+                      <div>TĐ: {question.thangDiem}</div>
                     </TableHead>
                   )
                 ),
