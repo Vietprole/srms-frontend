@@ -295,7 +295,7 @@ export default function SinhVienPage() {
           <Button onClick={handleGoClick}>Go</Button>
         </div>
         <DataTable
-          entity="Sinh Vien"
+          entity="Sinh Viên"
           createColumns={createSinhVienColumns}
           data={data}
           fetchData={fetchData}
