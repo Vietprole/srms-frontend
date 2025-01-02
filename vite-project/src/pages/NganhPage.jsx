@@ -68,9 +68,9 @@ export default function NganhPage() {
     navigate(`/nganh?khoaId=${comboBoxKhoaId}`);
   };
 
-  const handleEdit = async (nganh) => {
+  const handleEdit = async (id, nganh) => {
     try {
-      await updateNganh(nganh);
+      await updateNganh(id, nganh);
       fetchData();
     } catch (error) {
       toast({
@@ -228,15 +228,13 @@ export default function NganhPage() {
         </div>
         <DataTable
           entity="Ngành"
-          createColumns={() => createNganhColumns(handleEdit, handleDelete)}
+          createColumns={createNganhColumns}
           data={data}
           setData={setData}
           fetchData={fetchData}
           deleteItem={handleDelete}
           columnToBeFiltered={"ten"}
-          ItemForm={(props) => (
-            <NganhForm {...props} handleEdit={handleEdit} />
-          )}
+          ItemForm={NganhForm}
         />
         {modalOpen && <EditNganhModal setOpenModal={setModalOpen} nganhId={selectedNganhId} />}
       </div>
