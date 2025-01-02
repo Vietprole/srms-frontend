@@ -90,7 +90,24 @@ export default function KhoaPage() {
       enableHiding: false,
       cell: ({ row }) => {
         const item = row.original;
-        if (role === "PhongDaoTao") return null;
+        if (role === "PhongDaoTao") return (
+          <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Hành động</DropdownMenuLabel>
+            <DropdownMenuItem
+              onSelect={() => navigate(`/nganh?khoaId=${item.id}`)}
+            >
+              Xem Ngành
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        );
 
         return (
           <DropdownMenu>
@@ -181,7 +198,7 @@ export default function KhoaPage() {
         title: "Lỗi",
         description: error.message.includes("Mã khoa đã tồn tại")
           ? "Mã khoa đã tồn tại"
-          : "Khoa chứa các đối tượng con, không thể thay đổi mã khoa",
+          : "Không thể sửa khoa",
         variant: "destructive",
       });
     }

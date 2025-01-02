@@ -34,7 +34,7 @@ const LoginPage = () => {
                 
                 // console.log('User Role:', userRole);
                 // navigate('/main'); // Use navigate here
-                navigate('/khoa'); // Use navigate here
+                navigate('/main'); // Use navigate here
               } else {
                 toast({
                     variant: "destructive",

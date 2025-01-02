@@ -144,29 +144,21 @@ const createGiangVienColumns = (handleEdit, handleDelete) => [
 export default function GiangVienPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const lopHocPhanIdParam = searchParams.get("lopHocPhanId");
   const khoaIdParam = searchParams.get("khoaId");
   const [data, setData] = useState([]);
   const [khoaItems, setKhoaItems] = useState([]);
-  const [lopHocPhanItems, setLopHocPhanItems] = useState([]);
   const [khoaId, setKhoaId] = useState(khoaIdParam);
-  const [lopHocPhanId, setLopHocPhanId] = useState(lopHocPhanIdParam);
   const [comboBoxKhoaId, setComboBoxKhoaId] = useState(khoaIdParam);
-  const [comboBoxLopHocPhanId, setComboBoxLopHocPhanId] = useState(lopHocPhanIdParam);
   const baseUrl = "/giangvien";
   
   const fetchData = useCallback(async () => {
     const dataKhoa = await getAllKhoas();
     const mappedKhoaItems = dataKhoa.map(khoa => ({ label: khoa.ten, value: khoa.id }));
     setKhoaItems(mappedKhoaItems);
-
-    const dataLopHocPhan = await getAllLopHocPhans();
-    const mappedLopHocPhanItems = dataLopHocPhan.map(lhp => ({ label: lhp.ten, value: lhp.id }));
-    setLopHocPhanItems(mappedLopHocPhanItems);
-
-    const data = await getGiangViens(khoaId, lopHocPhanId);
+    console.log("khoaId", khoaId);
+    const data = await getGiangViens(khoaId);
     setData(data);
-  }, [khoaId, lopHocPhanId]);
+  }, [khoaId]);
 
   useEffect(() => {
     fetchData();
@@ -174,10 +166,8 @@ export default function GiangVienPage() {
 
   const handleGoClick = () => {
     setKhoaId(comboBoxKhoaId);
-    setLopHocPhanId(comboBoxLopHocPhanId);
     const url = createSearchURL(baseUrl, { 
-      khoaId: comboBoxKhoaId, 
-      lopHocPhanId: comboBoxLopHocPhanId 
+      khoaId: comboBoxKhoaId,
     });
     navigate(url);
   };
@@ -222,16 +212,10 @@ export default function GiangVienPage() {
             initialItemId={khoaId} 
             placeholder="Chọn Khoa" 
           />
-          <ComboBox 
-            items={lopHocPhanItems} 
-            setItemId={setComboBoxLopHocPhanId} 
-            initialItemId={lopHocPhanId} 
-            placeholder="Chọn Lớp Học Phần" 
-          />
           <Button onClick={handleGoClick}>Go</Button>
         </div>
         <DataTable
-          entity="Giang Vien"
+          entity="Giảng Viên"
           createColumns={createGiangVienColumns}
           data={data}
           fetchData={fetchData}

@@ -60,7 +60,11 @@ export default function MapHocPhanPLOPage() {
   }, [fetchData]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <Layout>
+        <div>Loading...</div>
+      </Layout>
+    );
   }
 
   const handleGoClick = () => {

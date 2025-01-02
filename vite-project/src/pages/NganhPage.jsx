@@ -51,7 +51,10 @@ export default function NganhPage() {
     if (khoaId) {
       const data = await getNganhs(khoaId);
       setData(data);
+      return;
     }
+    const data = await getNganhs(null);
+    setData(data);
   }, [khoaId]);
   useEffect(() => {
     fetchData();
