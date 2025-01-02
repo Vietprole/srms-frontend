@@ -33,14 +33,22 @@ export const getRole = () => {
 
 export const getGiangVienId = () => {
   const result = sessionStorage.getItem('accessToken')
-  const decodedToken = jwtDecode(result);
-  const giangVienId = decodedToken.giangVienId;
-  return parseInt(giangVienId);
+  try {
+    const decodedToken = jwtDecode(result);
+    const giangVienId = decodedToken.giangVienId;
+    return parseInt(giangVienId);
+  } catch (error) {
+    return null;
+  }
 }
 
 export const getSinhVienId = () => {
   const result = sessionStorage.getItem('accessToken')
-  const decodedToken = jwtDecode(result);
-  const sinhVienId = decodedToken.sinhVienId;
-  return parseInt(sinhVienId);
+  try {
+    const decodedToken = jwtDecode(result);
+    const sinhVienId = decodedToken.sinhVienId;
+    return parseInt(sinhVienId);
+  } catch (error) {
+    return null;
+  }
 }
