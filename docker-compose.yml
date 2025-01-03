@@ -1,0 +1,6 @@
+services: 
+  frontend:
+    image: vietprole/srms-frontend:latest
+    container_name: srms-frontend
+    ports:
+      - 5173:80
