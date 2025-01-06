@@ -53,7 +53,7 @@ export default function BaiKiemTraPage() {
   const [rowSelection, setRowSelection] = useState({});
   const [comboBoxItemId, setComboBoxItemId] = useState(null);
   const columnToBeFiltered = "loai";
-  const entity = "BaiKiemTra";
+  const entity = "Bài kiểm tra";
   const ItemForm = BaiKiemTraForm;
   const [maxId, setMaxId] = useState(0);
 
@@ -453,9 +453,9 @@ export default function BaiKiemTraPage() {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>Add {entity}</DialogTitle>
+                    <DialogTitle>Tạo {entity}</DialogTitle>
                     <DialogDescription>
-                      Add a new {entity} to the list.
+                      Tạo {entity} mới
                     </DialogDescription>
                   </DialogHeader>
                   <ItemForm

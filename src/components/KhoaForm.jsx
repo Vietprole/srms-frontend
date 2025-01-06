@@ -82,7 +82,7 @@ export function KhoaForm({ khoa, handleAdd, handleEdit, setIsDialogOpen }) {
                 <Input placeholder="101" {...field} readOnly={!!khoa}/>
               </FormControl>
               <FormDescription>
-                This is your public display name.
+                Mã Khoa là số có 3 chữ số
               </FormDescription>
               <FormMessage />
             </FormItem>

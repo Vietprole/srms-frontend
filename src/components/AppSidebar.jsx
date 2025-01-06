@@ -390,7 +390,7 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader>
-        <a href="/khoa">
+        <a href="/main">
           <div className="flex items-center">
             <img src={LogoDUT} alt="Logo DUT" className="w-20 h-20 mr-2" />
             <span className="font-extrabold text-3xl text-blue-500">SRMS</span>

@@ -112,7 +112,7 @@ const createColumns = (CLOs, listDiemCLOMax, isBase10, diemDat) => [
       )
     },
     cell: ({ row }) => {
-      const base10Score = (row.original[`clo_${clo.id}`] === 0 ? 0 : row.original[`clo_${clo.id}`] / listDiemCLOMax[index] * 10);
+      const base10Score = parseFloat((row.original[`clo_${clo.id}`] === 0 ? 0 : row.original[`clo_${clo.id}`] / listDiemCLOMax[index] * 10)).toFixed(2);
       const score = isBase10 ? base10Score : row.original[`clo_${clo.id}`];
       const cellClass = base10Score >= diemDat ? "bg-green-500 text-white" : "bg-red-500 text-white";
       return (
@@ -134,7 +134,7 @@ export default function DiemCLO() {
   const [isBase10, setIsBase10] = React.useState(false)
   const [diemDat, setDiemDat] = React.useState(5.0)
   const [inputValue, setInputValue] = React.useState(diemDat);
-  const [useDiemTam, setUseDiemTam] = React.useState(false);
+  const [useDiemTam, setUseDiemTam] = React.useState(true);
 
   React.useEffect(() => {
     const fetchData = async () => {
