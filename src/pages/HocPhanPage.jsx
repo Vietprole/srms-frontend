@@ -20,10 +20,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose,
 } from "@/components/ui/dialog";
 import { HocPhanForm } from "@/components/HocPhanForm";
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getAllNganhs, removeHocPhanFromNganh } from "@/api/api-nganh";
 import { getHocPhans } from "@/api/api-hocphan";
 import { ComboBox } from "@/components/ComboBox";
@@ -37,8 +36,6 @@ export default function HocPhanPage() {
   const [searchParams] = useSearchParams();
   const nganhIdParam = searchParams.get("nganhId");
   const khoaIdParam = searchParams.get("khoaId");
-  const addPLOFormRef = useRef(null);
-  const managePLOFormRef = useRef(null);
   const [data, setData] = useState([]);
   const [nganhItems, setNganhItems] = useState([]);
   const [khoaItems, setKhoaItems] = useState([]);

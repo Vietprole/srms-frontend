@@ -37,7 +37,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ComboBox } from "@/components/ComboBox";
-import { addHocPhan } from "@/api/api-hocphan";
+import { useToast } from "@/hooks/use-toast";
 
 export default function DataTable({
   entity,
@@ -56,23 +56,63 @@ export default function DataTable({
   role,
 }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
   const [comboBoxItemId, setComboBoxItemId] = useState(null);
+  const { toast } = useToast();
 
   const handleAdd = () => {
-    fetchData();
+    try {
+      fetchData();
+      toast({
+        title: "Tạo thành công",
+        description: `Đã tạo ${entity} thành công`,
+        variant: "success",
+      });
+    }catch (error) {
+      toast({
+        title: "Tạo thất bại",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleEdit = () => {
-    fetchData();
+    try {
+      fetchData();
+      toast({
+        title: "Sửa thành công",
+        description: `Đã sửa ${entity} thành công`,
+        variant: "success",
+      });
+    }catch (error) {
+      toast({
+        title: "Sửa thất bại",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   async function handleDelete(itemId) {
-    await deleteItem(itemId);
+    try {
+      await deleteItem(itemId);
+      toast({
+        title: "Xóa thành công",
+        description: `Đã xóa ${entity} thành công`,
+        variant: "success",
+      })
+    }
+    catch (error) {
+      toast({
+        title: "Xóa thất bại",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
     fetchData();
   }
 

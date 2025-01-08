@@ -68,32 +68,6 @@ export default function NganhPage() {
     navigate(`/nganh?khoaId=${comboBoxKhoaId}`);
   };
 
-  const handleEdit = async (id, nganh) => {
-    try {
-      await updateNganh(id, nganh);
-      fetchData();
-    } catch (error) {
-      toast({
-        title: "Lỗi",
-        description: error.message.includes("Không tìm thấy Ngành") ? "Không tìm thấy Ngành" : "Mã ngành đã tồn tại",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      await deleteNganh(id);
-      fetchData();
-    } catch (error) {
-      toast({
-        title: "Lỗi",
-        description: error.message.includes("Không tìm thấy Ngành") ? "Không tìm thấy Ngành" : "Ngành chứa các đối tượng con, không thể xóa",
-        variant: "destructive",
-      });
-    }
-  };
-
   const createNganhColumns = (handleEdit, handleDelete) => [
     {
       accessorKey: "tt",
@@ -232,7 +206,7 @@ export default function NganhPage() {
           data={data}
           setData={setData}
           fetchData={fetchData}
-          deleteItem={handleDelete}
+          deleteItem={deleteNganh}
           columnToBeFiltered={"ten"}
           ItemForm={NganhForm}
         />

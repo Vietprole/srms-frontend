@@ -27,13 +27,11 @@ import {
 import { KhoaForm } from "@/components/KhoaForm";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
 import { getRole } from "@/utils/storage";
 
 export default function KhoaPage() {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
-  const { toast } = useToast();
   const role = getRole();
 
   useEffect(() => {
@@ -166,78 +164,17 @@ export default function KhoaPage() {
     },
   ];
 
-  const handleDelete = async (id) => {
-    try {
-      await deleteKhoa(id);
-      fetchData();
-      toast({
-        title: "Xóa khoa thành công",
-        variant: "success",
-      });
-    } catch (error) {
-      toast({
-        title: "Lỗi",
-        description: error.message.includes("Không tìm thấy Khoa")
-          ? "Không tìm thấy Khoa"
-          : "Khoa chứa các đối tượng con, không thể xóa",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleEdit = async (khoa) => {
-    try {
-      await updateKhoa(khoa);
-      fetchData();
-      toast({
-        title: "Sửa khoa thành công",
-        variant: "success",
-      });
-    } catch (error) {
-      toast({
-        title: "Lỗi",
-        description: error.message.includes("Mã khoa đã tồn tại")
-          ? "Mã khoa đã tồn tại"
-          : "Không thể sửa khoa",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleCreate = async (newKhoa) => {
-    try {
-      await addKhoa(newKhoa);
-      fetchData();
-      toast({
-        title: "Thêm khoa thành công",
-        variant: "success",
-      });
-    } catch (error) {
-      toast({
-        title: "Lỗi",
-        description: error.message.includes("Tên khoa đã tồn tại")
-          ? "Tên khoa đã tồn tại"
-          : "Mã khoa đã tồn tại",
-        variant: "destructive",
-      });
-    }
-  };
-
   return (
     <Layout>
       <div className="w-full">
         <DataTable
           entity="Khoa"
-          createColumns={(handleEdit, handleDelete) =>
-            createKhoaColumns(handleEdit, handleDelete)
-          }
+          createColumns={createKhoaColumns}
           data={data}
           fetchData={fetchData}
-          deleteItem={handleDelete}
+          deleteItem={deleteKhoa}
           columnToBeFiltered={"ten"}
-          ItemForm={(props) => (
-            <KhoaForm {...props} handleCreate={handleCreate} />
-          )}
+          ItemForm={KhoaForm}
           hasCreateButton={role !== "PhongDaoTao"}
         />
       </div>
