@@ -36,10 +36,11 @@ export const addKhoa = async (studentData) => {
       headers: { Authorization: getAccessToken() }
     });
     console.log("response khoa: ", response);
-    return response.data;
+    return response;
   } catch (error) {
     console.log("error message: ", error.message);
-    throw new Error(error.response?.data || "Lỗi bất định");
+    // throw new Error(error.response?.data || "Lỗi bất định");
+    return "Không thể kết nối server";
   }
 };
 
