@@ -102,9 +102,9 @@ const createGiangVienColumns = (handleEdit, handleDelete) => [
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>Edit GiangVien</DialogTitle>
+                  <DialogTitle>Sửa Giảng Viên</DialogTitle>
                   <DialogDescription>
-                    Edit the current GiangVien.
+                    Sửa giảng viên hiện tại
                   </DialogDescription>
                 </DialogHeader>
                 <GiangVienForm giangVien={item} handleEdit={handleEdit} />
@@ -118,18 +118,18 @@ const createGiangVienColumns = (handleEdit, handleDelete) => [
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>Delete GiangVien</DialogTitle>
+                  <DialogTitle>Xóa Giảng Viên</DialogTitle>
                   <DialogDescription>
-                    Delete the current GiangVien.
+                    Xóa Giảng Viên hiện tại
                   </DialogDescription>
                 </DialogHeader>
-                <p>Are you sure you want to delete this GiangVien?</p>
+                <p>Bạn có chắc là muốn xóa giảng viên này?</p>
                 <DialogFooter>
                   <Button
                     type="submit"
                     onClick={() => handleDelete(item.id)}
                   >
-                    Delete
+                    Xóa
                   </Button>
                 </DialogFooter>
               </DialogContent>

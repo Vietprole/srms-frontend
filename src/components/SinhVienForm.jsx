@@ -40,8 +40,8 @@ const formSchema = z.object({
   ).min(4, {
     message: "Nam bat dau must be at least 4 characters.",
   })
-  .refine((val) => val >= 2000 && val <= 9999, {
-    message: "Trong so must be between 2000 and 9999",
+  .refine((val) => val >= 2000 && val <= 2099, {
+    message: "Năm Bắt Đầu must be between 2000 and 2099",
   }),
 });
 
@@ -143,7 +143,7 @@ export function SinhVienForm({ sinhVien, handleAdd, handleEdit, setIsDialogOpen 
           name="khoaId"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>Chọn Khoa Id</FormLabel>
+              <FormLabel>Chọn Khoa</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
@@ -160,7 +160,7 @@ export function SinhVienForm({ sinhVien, handleAdd, handleEdit, setIsDialogOpen 
                         ? comboBoxKhoaItems.find(
                             (item) => item.value === field.value
                           )?.label
-                        : "Select Khoa..."}
+                        : "Chọn Khoa..."}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </FormControl>
@@ -207,7 +207,7 @@ export function SinhVienForm({ sinhVien, handleAdd, handleEdit, setIsDialogOpen 
           name="nganhId"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>Chọn Ngành Id</FormLabel>
+              <FormLabel>Chọn Ngành</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>

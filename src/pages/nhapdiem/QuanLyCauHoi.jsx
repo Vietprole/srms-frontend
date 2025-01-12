@@ -55,7 +55,7 @@ export default function QuanLyCauHoi() {
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
   const [maxId, setMaxId] = useState(0);
-  const columnToBeFiltered = "tên";
+  const columnToBeFiltered = "ten";
   const entity = "Câu Hỏi";
   const ItemForm = CauHoiForm;
 
@@ -158,19 +158,19 @@ export default function QuanLyCauHoi() {
 
   const createCauHoiColumns = (handleEdit, handleDelete) => [
     {
-      accessorKey: "id",
+      accessorKey: "tt",
       header: ({ column }) => {
         return (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Id
+            TT
             <ArrowUpDown />
           </Button>
         );
       },
-      cell: ({ row }) => <div className="px-4 py-2">{row.getValue("id")}</div>,
+      cell: ({ row }) => <div className="px-4 py-2">{row.index + 1}</div>,
     },
     {
       accessorKey: "ten",
@@ -306,6 +306,7 @@ export default function QuanLyCauHoi() {
     <div className="w-full">
       <div className="flex">
         <ComboBox
+          placeholder="Chọn bài kiểm tra..."
           items={baiKiemTraItems}
           setItemId={setComboBoxBaiKiemTraId}
           initialItemId={comboBoxBaiKiemTraId}
@@ -440,7 +441,7 @@ export default function QuanLyCauHoi() {
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
               >
-                Previous
+                Trang trước
               </Button>
               <Button
                 variant="outline"
@@ -448,7 +449,7 @@ export default function QuanLyCauHoi() {
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
               >
-                Next
+                Trang sau
               </Button>
             </div>
           </div>

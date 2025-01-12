@@ -68,24 +68,6 @@ export function GiangVienForm({ giangVien, handleAdd, handleEdit, setIsDialogOpe
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        {giangVien && (
-          <FormField
-            control={form.control}
-            name="id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Id</FormLabel>
-                <FormControl>
-                  <Input {...field} readOnly />
-                </FormControl>
-                <FormDescription>
-                  This is your unique identifier.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
         <FormField
           control={form.control}
           name="ten"
@@ -93,10 +75,10 @@ export function GiangVienForm({ giangVien, handleAdd, handleEdit, setIsDialogOpe
             <FormItem>
               <FormLabel>Tên</FormLabel>
               <FormControl>
-                <Input placeholder="CNTT" {...field} />
+                <Input placeholder="Đặng Thiên Bình" {...field} />
               </FormControl>
               <FormDescription>
-                This is your public display name.
+                Đây là mục nhập tên của giảng viên
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -107,7 +89,7 @@ export function GiangVienForm({ giangVien, handleAdd, handleEdit, setIsDialogOpe
           name="khoaId"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>Chọn Khoa Id</FormLabel>
+              <FormLabel>Chọn Khoa</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
@@ -123,7 +105,7 @@ export function GiangVienForm({ giangVien, handleAdd, handleEdit, setIsDialogOpe
                         ? comboBoxItems.find(
                             (item) => item.value === field.value
                           )?.label
-                        : "Select Khoa..."}
+                        : "Chọn Khoa..."}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </FormControl>
@@ -159,7 +141,7 @@ export function GiangVienForm({ giangVien, handleAdd, handleEdit, setIsDialogOpe
                 </PopoverContent>
               </Popover>
               <FormDescription>
-                This is the item that will be used in the dashboard.
+                Chọn khoa mà giảng viên đó thuộc về
               </FormDescription>
               <FormMessage />
             </FormItem>

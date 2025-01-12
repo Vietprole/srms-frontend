@@ -47,6 +47,21 @@ const createSinhVienColumns = (handleEdit, handleDelete) => [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
+          TT
+          <ArrowUpDown />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div className="px-4 py-2">{row.index + 1}</div>,
+  },
+  {
+    accessorKey: "maSinhVien",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
           Mã Sinh Viên
           <ArrowUpDown />
         </Button>
@@ -156,9 +171,9 @@ const createSinhVienColumns = (handleEdit, handleDelete) => [
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>Edit Sinh Vien</DialogTitle>
+                  <DialogTitle>Sửa Sinh Viên</DialogTitle>
                   <DialogDescription>
-                    Edit the current student.
+                    Sửa Sinh viên hiện tại
                   </DialogDescription>
                 </DialogHeader>
                 <SinhVienForm sinhVien={student} handleEdit={handleEdit} />
@@ -172,18 +187,18 @@ const createSinhVienColumns = (handleEdit, handleDelete) => [
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>Delete Sinh Vien</DialogTitle>
+                  <DialogTitle>Xóa Sinh Viên</DialogTitle>
                   <DialogDescription>
-                    Delete the current student.
+                    Xóa sinh viên hiện tại
                   </DialogDescription>
                 </DialogHeader>
-                <p>Are you sure you want to delete this Sinh Vien?</p>
+                <p>Bạn có chắc muốn xóa sinh viên này?</p>
                 <DialogFooter>
                   <Button
                     type="submit"
                     onClick={() => handleDelete(student.id)}
                   >
-                    Delete
+                    Xóa
                   </Button>
                 </DialogFooter>
               </DialogContent>

@@ -160,23 +160,23 @@ export default function HocPhanPage() {
       <div className="px-4 py-2">{row.getValue("soTinChi")}</div>
     ),
   },
-  {
-    accessorKey: "laCotLoi",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Là Cốt Lõi
-          <ArrowUpDown />
-        </Button>
-      );
-    },
-    cell: ({ row }) => (
-      <div className="px-4 py-2">{row.getValue("laCotLoi").toString()}</div>
-    ),
-  },
+  // {
+  //   accessorKey: "laCotLoi",
+  //   header: ({ column }) => {
+  //     return (
+  //       <Button
+  //         variant="ghost"
+  //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+  //       >
+  //         Là Cốt Lõi
+  //         <ArrowUpDown />
+  //       </Button>
+  //     );
+  //   },
+  //   cell: ({ row }) => (
+  //     <div className="px-4 py-2">{row.getValue("laCotLoi").toString()}</div>
+  //   ),
+  // },
   {
     accessorKey: "tenKhoa",
     header: ({ column }) => {
@@ -218,8 +218,8 @@ export default function HocPhanPage() {
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>Edit HocPhan</DialogTitle>
-                  <DialogDescription>Edit the current item.</DialogDescription>
+                  <DialogTitle>Sửa Học Phần</DialogTitle>
+                  <DialogDescription>Sửa Học phần hiện tại</DialogDescription>
                 </DialogHeader>
                 <HocPhanForm hocphan={item} handleEdit={handleEdit} />
               </DialogContent>
@@ -235,18 +235,17 @@ export default function HocPhanPage() {
                   Xóa Học Phần
                 </DropdownMenuItem>
               </DialogTrigger>
-              <DropdownMenuSeparator />
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                   <DialogTitle>Xóa học phần</DialogTitle>
                   <DialogDescription>
-                    Xóa học phần hiện tại.
+                    Xóa học phần hiện tại
                   </DialogDescription>
                 </DialogHeader>
                 <p>Bạn có muốn xóa học phần này không?</p>
                 <DialogFooter>
                   <Button type="submit" onClick={() => handleDelete(item.id)}>
-                    Delete
+                    Xóa
                   </Button>
                 </DialogFooter>
               </DialogContent>

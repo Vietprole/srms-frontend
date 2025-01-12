@@ -93,19 +93,19 @@ export default function BaiKiemTraPage() {
 
   const createBaiKiemTraColumns = (handleEdit, handleDelete) => [
     {
-      accessorKey: "id",
+      accessorKey: "tt",
       header: ({ column }) => {
         return (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Id
+            TT
             <ArrowUpDown />
           </Button>
         );
       },
-      cell: ({ row }) => <div className="px-4 py-2">{row.getValue("id")}</div>,
+      cell: ({ row }) => <div className="px-4 py-2">{row.index + 1}</div>,
     },
     {
       accessorKey: "loai",
@@ -282,9 +282,9 @@ export default function BaiKiemTraPage() {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>Edit BaiKiemTra</DialogTitle>
+                    <DialogTitle>Sửa Bài Kiểm Tra</DialogTitle>
                     <DialogDescription>
-                      Edit the current item.
+                      Sửa Bài kiểm tra hiện tại
                     </DialogDescription>
                   </DialogHeader>
                   <BaiKiemTraForm baiKiemTra={item} handleEdit={handleEdit}/>
@@ -298,15 +298,15 @@ export default function BaiKiemTraPage() {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>Delete BaiKiemTra</DialogTitle>
+                    <DialogTitle>Xóa Bài Kiểm Tra</DialogTitle>
                     <DialogDescription>
-                      Delete the current item.
+                      Xóa Bài kiểm tra hiện tại
                     </DialogDescription>
                   </DialogHeader>
-                  <p>Are you sure you want to delete this BaiKiemTra?</p>
+                  <p>Bạn có chắc muốn xóa bài kiểm tra hiện tại?</p>
                   <DialogFooter>
                     <Button type="submit" onClick={() => handleDelete(item.id)}>
-                      Delete
+                      Xóa
                     </Button>
                   </DialogFooter>
                 </DialogContent>
