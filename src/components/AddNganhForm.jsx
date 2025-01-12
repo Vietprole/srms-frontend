@@ -88,13 +88,13 @@ function EditNganhModal({ setOpenModal,nganhId}) {
       enableSorting: false,
     },
     {
-      accessorKey: "id",
+      accessorKey: "tt",
       header: ({ column }) => (
         <Button variant="ghost" onClick={() => column.toggleSorting()}>
-          Id
+          TT
         </Button>
       ),
-      cell: ({ row }) => <div className="px-1 py-1">{row.getValue("id")}</div>,
+      cell: ({ row }) => <div className="px-1 py-1">{row.index + 1}</div>,
     },
     {
       accessorKey: "maHocPhan",

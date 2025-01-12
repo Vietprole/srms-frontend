@@ -117,9 +117,9 @@ const createPLOColumns = (handleEdit, handleDelete) => [
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>Edit PLO</DialogTitle>
+                  <DialogTitle>Sửa PLO</DialogTitle>
                   <DialogDescription>
-                    Edit the current PLO.
+                    Sửa PLO hiện tại.
                   </DialogDescription>
                 </DialogHeader>
                 <PLOForm pLO={item} handleEdit={handleEdit} />
@@ -133,18 +133,18 @@ const createPLOColumns = (handleEdit, handleDelete) => [
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>Delete PLO</DialogTitle>
+                  <DialogTitle>Xóa PLO</DialogTitle>
                   <DialogDescription>
-                    Delete the current PLO.
+                    Xóa PLO hiện tại.
                   </DialogDescription>
                 </DialogHeader>
-                <p>Are you sure you want to delete this PLO?</p>
+                <p>Bạn có chắc là muốn xóa PLO này?</p>
                 <DialogFooter>
                   <Button
                     type="submit"
                     onClick={() => handleDelete(item.id)}
                   >
-                    Delete
+                    Xóa
                   </Button>
                 </DialogFooter>
               </DialogContent>

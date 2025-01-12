@@ -74,21 +74,21 @@ const createCLOColumns = (handleEdit, handleDelete) => [
     },
     cell: ({ row }) => <div className="px-4 py-2">{row.getValue("moTa")}</div>,
   },
-  {
-    accessorKey: "lopHocPhanId",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Lớp học phần Id
-          <ArrowUpDown />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div className="px-4 py-2">{row.getValue("lopHocPhanId")}</div>,
-  },
+  // {
+  //   accessorKey: "lopHocPhanId",
+  //   header: ({ column }) => {
+  //     return (
+  //       <Button
+  //         variant="ghost"
+  //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+  //       >
+  //         Lớp học phần Id
+  //         <ArrowUpDown />
+  //       </Button>
+  //     );
+  //   },
+  //   cell: ({ row }) => <div className="px-4 py-2">{row.getValue("lopHocPhanId")}</div>,
+  // },
   {
     id: "actions",
     enableHiding: false,
