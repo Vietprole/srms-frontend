@@ -59,7 +59,7 @@ export default function LopHocPhanPage() {
 
     const dataHocKy = await getAllHocKys();
     const mappedHocKyItems = dataHocKy.map(hk => ({ 
-      label: hk.ten, 
+      label: hk.tenHienThi, 
       value: hk.id 
     }));
     setHocKyItems(mappedHocKyItems);
