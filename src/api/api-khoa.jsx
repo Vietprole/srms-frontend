@@ -50,7 +50,7 @@ export const updateKhoa = async (studentId, updatedData) => {
     const response = await axios.put(`${API_KHOA}/${studentId}`, updatedData, {
       headers: { Authorization: getAccessToken() }
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.log("error message: ", error.message);
     throw new Error(error.response?.data || "Lỗi bất định");

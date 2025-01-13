@@ -3,6 +3,7 @@ import EmailIcon from "@/assets/icons/email-icon.png";  // Đảm bảo đúng �
 import AvatarIcon from "@/assets/icons/avatar-icon.png";  // Đảm bảo đúng đường dẫn
 import SearchIcon from "@/assets/icons/search-icon.png";  // Đảm bảo đúng đường dẫn
 import BellIcon from "@/assets/icons/bell-icon.png";  // Đảm bảo đúng đường dẫn
+import { useEffect, useState } from "react";
 // import "@/utils/storage"
 // import { getFullname } from "@/utils/storage";
 import { jwtDecode } from "jwt-decode";
@@ -105,33 +106,25 @@ const styles = `
   }
 `;
 export default function Header() {
-  let fullname = "";
-  let role = "";
-  const token= sessionStorage.getItem('accessToken');
-  if (token) {
-    // throw new Error('Token not found');
-    const decodedToken = jwtDecode(token);  
-    fullname = decodedToken.fullname;
-    role = decodedToken.role;
-  }
+  const [fullname, setFullname] = useState("");
+  const [role, setRole] = useState("");
+  
+  useEffect(() => {
+    const token = sessionStorage.getItem('accessToken');
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      setFullname(decodedToken.fullname);
+      setRole(decodedToken.role);
+    }
+  }, []); // Sử dụng useEffect chỉ khi component render lần đầu
 
   return (
     <div className="main">
       <div className="topLeft">
         <SidebarTrigger />
-        {/* <div className="search">
-          <img src={SearchIcon} alt="Search" />
-          <input type="text" placeholder="Tìm kiếm..." />
-        </div> */}
       </div>
       <div className="topRight">
         <div className="user">
-          {/* <div className="icon">
-            <img src={EmailIcon} alt="Email" />
-          </div>
-          <div className="icon">
-            <img src={BellIcon} alt="Notification" />
-          </div> */}
           <div className="infor">
             <h4 className="name">{fullname}</h4>
             <h5 className="role">{role}</h5>

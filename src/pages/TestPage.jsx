@@ -14,53 +14,23 @@ import TextField from '@mui/material/TextField';
 import SearchIcon from '@mui/icons-material/Search';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import Box from '@mui/material/Box';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import Snackbar from '@mui/material/Snackbar';
-import MuiAlert from '@mui/material/Alert';
-import Layout from "./Layout";
 import { useState, useEffect } from "react";
 import {
-  getAllKhoas,
-  addKhoa,
-} from "@/api/api-khoa";
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
+  getNganhs,
+} from "@/api/api-nganh";
 import EditIcon from '@mui/icons-material/Edit';
 function TestPage() 
 {
-  const [open, setOpen] = React.useState(false);
-  const [disabled, setDisabled] = React.useState(true);
-  const [tenKhoa, setTenKhoa] = useState(""); // Lưu giá trị Tên khoa
-  const [maKhoa, setMaKhoa] = useState(""); // Lưu giá trị Mã khoa
-  const [errorTenKhoa, setErrorTenKhoa] = useState(false); // Lưu trạng thái lỗi của Tên khoa
-  const [errorMaKhoa, setErrorMaKhoa] = useState(false); // Lưu trạng thái lỗi của Mã khoa
-  const isAlphabetWithSpaces = (text) => /^[a-zA-Z\s\u00C0-\u1EF9]+$/.test(text); // Kiểm tra tên khoa chỉ có chữ và khoảng trắng
-  const isNumericCode = (text) => /^\d{3}$/.test(text); // Kiểm tra mã khoa là 3 ký tự số
-  const [openSnackbar, setOpenSnackbar] = useState(false); // Quản lý việc hiển thị Snackbar
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");  // Dùng để điều chỉnh mức độ của Snackbar
   const [data, setData] = useState([]);
   const [searchQuery, setSearchQuery] = useState(""); // Lưu giá trị tìm kiếm
   const [filteredData, setFilteredData] = useState(data); // Lưu dữ liệu đã lọc
-  const handleClickOpen = () => {
-    console.log("Dialog is opening...");
-    setOpen(true);
-  };
 
-  const handleClose = () => {
-    setDisabled(false);
-    setOpen(false);
-  };
   useEffect(() => {
     fetchData();
   }, []);
   
   const fetchData = async () => {
-    const khoas = await getAllKhoas();
+    const khoas = await getNganhs();
     setData(khoas);
   };
   
@@ -109,121 +79,10 @@ function TestPage()
     cursor: 'pointer', // Tùy chọn: Thêm hiệu ứng con trỏ
   },
   }));
-  const handleInputChange = (field, value) => {
-    let isValid = true;
-
-    // Kiểm tra tên khoa
-    if (field === "tenKhoa") {
-      setTenKhoa(value);
-      if (!value.trim()) { // Kiểm tra nếu tên khoa trống
-        setErrorTenKhoa(true);
-        isValid = false;
-      } else if (!isAlphabetWithSpaces(value)) { // Kiểm tra tên khoa không hợp lệ
-        setErrorTenKhoa(true);
-        isValid = false;
-      } else {
-        setErrorTenKhoa(false);
-      }
-    }
-
-    // Kiểm tra mã khoa
-    if (field === "maKhoa") {
-      setMaKhoa(value);
-      if (!value.trim()) {  // Kiểm tra nếu mã khoa trống
-        setErrorMaKhoa(true);
-        isValid = false;
-      } else if (!isNumericCode(value)) {  // Kiểm tra mã khoa chỉ có 3 ký tự số
-        setErrorMaKhoa(true);
-        isValid = false;
-      } else {
-        setErrorMaKhoa(false);
-      }
-    }
-
-    // Cập nhật trạng thái của nút "Lưu"
-    // Nếu có lỗi ở bất kỳ trường nào hoặc nếu một trong hai trường trống, nút "Lưu" sẽ bị vô hiệu hóa
-    setDisabled(!(isValid && tenKhoa.trim() && maKhoa.trim() && !errorTenKhoa && !errorMaKhoa));
-  };
-  const handleBlur = (field, value) => {
-    let isValid = true;
-
-    // Kiểm tra tên khoa
-    if (field === "tenKhoa") {
-      setTenKhoa(value);
-      if (!value.trim()) { // Kiểm tra nếu tên khoa trống
-        setErrorTenKhoa(true);
-        isValid = false;
-      } else if (!isAlphabetWithSpaces(value)) { // Kiểm tra tên khoa không hợp lệ
-        setErrorTenKhoa(true);
-        isValid = false;
-      } else {
-        setErrorTenKhoa(false);
-      }
-    }
-
-    // Kiểm tra mã khoa
-    if (field === "maKhoa") {
-      setMaKhoa(value);
-      if (!value.trim()) {  // Kiểm tra nếu mã khoa trống
-        setErrorMaKhoa(true);
-        isValid = false;
-      } else if (!isNumericCode(value)) {  // Kiểm tra mã khoa chỉ có 3 ký tự số
-        setErrorMaKhoa(true);
-        isValid = false;
-      } else {
-        setErrorMaKhoa(false);
-      }
-    }
-
-    // Cập nhật trạng thái của nút "Lưu"
-    // Nếu có lỗi ở bất kỳ trường nào hoặc nếu một trong hai trường trống, nút "Lưu" sẽ bị vô hiệu hóa
-    setDisabled(!(isValid && tenKhoa.trim() && maKhoa.trim() && !errorTenKhoa && !errorMaKhoa));
-  };
-  const handleSnackbarClose = () => {
-    setOpenSnackbar(false);
-  };
-  
-  const handleSubmit = async () => {
-    const khoaData = {
-      ten: tenKhoa,
-      maKhoa: maKhoa
-    };
-  
-    try {
-      const response = await addKhoa(khoaData);  // Gọi hàm addKhoa
-      if (response.status === 201) {  
-        setSnackbarMessage("Khoa đã được thêm thành công!");
-        setSnackbarSeverity("success");
-        setOpenSnackbar(true);
-        fetchData();
-        handleClose();
-      } else {
-        setSnackbarMessage("Lỗi: Không thể thêm khoa");
-        setSnackbarSeverity("error");
-        setOpenSnackbar(true);
-      }
-    } catch (error) {
-      // Xử lý lỗi khi gọi API
-      setSnackbarMessage("Lỗi: Không thể thêm khoa");
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
-    }
-  };
-  
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const menuopen = Boolean(anchorEl);
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
   return (
-    <Layout>
       <div style={styles.main}>
       <div style={styles.title}>
-        <span>Danh sách khoa</span>
+        <span>Danh sách ngành học</span>
         <div style={styles.btnMore}>
           <IconButton aria-label="more actions"><MoreVertIcon/></IconButton>
         </div>
@@ -242,14 +101,15 @@ function TestPage()
               "&:focus-within": {
                 border: "2px solid #337AB7", // Đổi màu viền khi focus
               },
-              height: "100%"
+              height: "100%",
             }}
           >
             <TextField
               fullWidth
               fontSize="10px"
-              placeholder="Tìm kiếm theo tên khoa..."
+              placeholder="Tìm kiếm theo tên ngành..."
               variant="standard"
+              autoComplete='off'
               InputProps={{
                 disableUnderline: true,
                 startAdornment: (
@@ -266,111 +126,33 @@ function TestPage()
           </Box>
         </div>
         <div style={styles.btnCreate}>
-          <Button sx={{width:"100%"}} variant="contained" onClick={handleClickOpen}>Tạo khoa</Button>
-          <Dialog id='addKhoa' open={open} onClose={handleClose} fullWidth>
-                      <DialogTitle>Tạo khoa mới:</DialogTitle>
-                      <DialogContent>
-                        <DialogContentText>
-                          Thêm khoa mới vào hệ thống
-                        </DialogContentText>
-                        <TextField
-                          autoFocus
-                          required
-                          id='tenKhoa'
-                          margin="dense"
-                          label="Tên khoa"
-                          fullWidth
-                          variant="standard"
-                          onInput={(e) => handleInputChange("tenKhoa", e.target.value)} // Sử dụng onInput để kiểm tra tính hợp lệ ngay khi nhập liệu
-                          onBlur={(e) => handleBlur("tenKhoa", e.target.value)} // Sử dụng onBlur để kiểm tra tính hợp lệ
-                          helperText="Tên khoa không được để trống và không được chứa các kí tự đặc biệt"
-                          error={errorTenKhoa}
-                        />
-                        <TextField
-                          autoFocus
-                          id='maKhoa'
-                          required
-                          margin="dense"
-                  
-                          label="Mã khoa"
-                          fullWidth
-                          variant="standard"
-                          onInput={(e) => handleInputChange("maKhoa", e.target.value)} // Sử dụng onInput để kiểm tra tính hợp lệ ngay khi nhập liệu
-                          onBlur={(e) => handleBlur("maKhoa", e.target.value)} // Sử dụng onBlur để kiểm tra tính hợp lệ
-                          helperText="Mã khoa chỉ gồm 3 kí tự số và không được chứa các kí tự chữ và các kí tự đặc biệt"
-                          error={errorMaKhoa}
-                        />
-
-                      </DialogContent>
-                      <DialogActions>
-                        <Button onClick={handleClose}>Hủy</Button>
-                        <Button
-                          disabled={disabled}
-                          onClick={(event) => {
-                            event.preventDefault();
-                            handleSubmit();
-                          }}
-                        >
-                          Lưu
-                        </Button>
-                      </DialogActions>
-                    </Dialog>
+          <Button sx={{width:"100%"}} variant="contained" >Tạo ngành</Button>
+          
         </div>
       </div>
       <div style={styles.table}>
-      <Menu
-        id="demo-positioned-menu"
-        aria-labelledby="demo-positioned-button"
-        anchorEl={anchorEl}
-        open={menuopen}
-        onClose={handleMenuClose}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'left',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'left',
-        }}
-      >
-        <MenuItem onClick={handleClose}>Profile</MenuItem>
-        <MenuItem onClick={handleClose}>My account</MenuItem>
-        <MenuItem onClick={handleClose}>Logout</MenuItem>
-      </Menu>
+      
        <TableContainer component={Paper}>
        <Table sx={{ minWidth: 700 }} aria-label="customized table">
          <TableHead sx={{position: 'sticky',top: 0,  zIndex: 1,backgroundColor: "#0071A6",}}>
            <TableRow>
             <StyledTableCell align="center" >STT</StyledTableCell>
+             <StyledTableCell align="center" >Mã Ngành</StyledTableCell>
+             <StyledTableCell align="center" >Tên Ngành</StyledTableCell>
              <StyledTableCell align="center" >Tên Khoa</StyledTableCell>
-             <StyledTableCell align="center" >Mã Khoa</StyledTableCell>
              <StyledTableCell align="center"></StyledTableCell>
-
            </TableRow>
          </TableHead>
-         <TableBody sx={{overflowY:"auto"}}> 
+         <TableBody sx={{ overflowY: "auto" }}>
           {filteredData.map((row, index) => (
-            <StyledTableRow key={row.ten}>
-              <StyledTableCell component="th" scope="row" align="center" width={50}>
-                {index + 1} {/* Số thứ tự */}
-              </StyledTableCell>
-              <StyledTableCell component="th" scope="row">
-                {row.ten}
-              </StyledTableCell>
-              <StyledTableCell align="center">{row.maKhoa}</StyledTableCell>
-              <StyledTableCell align="center" width={150}>
-                <IconButton><EditIcon></EditIcon></IconButton>   
-                <IconButton
-                
-                id="demo-positioned-button"
-                aria-controls={menuopen ? 'demo-positioned-menu' : undefined}
-                aria-haspopup="true"
-                aria-expanded={menuopen ? 'true' : undefined}
-                onClick={handleClick}
-                >
-                  <MoreHorizIcon />
-                </IconButton>       
-                     
+            <StyledTableRow key={row.maNganh + row.ten}>  {/* Kết hợp maNganh và ten để tạo key duy nhất */}
+              <StyledTableCell align="center">{index + 1}</StyledTableCell>
+              <StyledTableCell align="center">{row.maNganh}</StyledTableCell>
+              <StyledTableCell align="left">{row.ten}</StyledTableCell>
+              <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
+              <StyledTableCell align="center">
+                <IconButton><EditIcon /></IconButton>
+                <IconButton><MoreHorizIcon /></IconButton>
               </StyledTableCell>
             </StyledTableRow>
           ))}
@@ -378,21 +160,8 @@ function TestPage()
 
        </Table>
      </TableContainer>
-     <Snackbar 
-        open={openSnackbar} 
-        autoHideDuration={3000} 
-        onClose={handleSnackbarClose} 
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} 
-      >
-        <MuiAlert variant='filled' onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
-          {snackbarMessage}
-        </MuiAlert>
-      </Snackbar>
       </div>
     </div>
-    </Layout>
-    
-
   );
 };
 const styles = {
@@ -421,7 +190,7 @@ const styles = {
   {
     display: 'flex',
     justifyContent: 'flex-end',
-    marginLeft: 'auto', // Đẩy phần tử sang phải
+    marginLeft: 'auto',
   },
   tbActions:
   {
