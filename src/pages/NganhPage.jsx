@@ -96,7 +96,7 @@ export default function NganhPage() {
 
   const createNganhColumns = (handleEdit, handleDelete) => [
     {
-      accessorKey: "tt",
+      accessorKey: "id",
       header: ({ column }) => (
         <Button
           variant="ghost"

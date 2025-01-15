@@ -99,7 +99,7 @@ export default function HocPhanPage() {
     enableHiding: false,
   },
   {
-    accessorKey: "tt",
+    accessorKey: "id",
     header: ({ column }) => {
       return (
         <Button

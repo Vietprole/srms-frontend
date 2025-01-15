@@ -30,7 +30,7 @@ import { useState, useEffect } from "react";
 
 const createCLOColumns = (handleEdit, handleDelete) => [
   {
-    accessorKey: "tt",
+    accessorKey: "id",
     header: ({ column }) => {
       return (
         <Button

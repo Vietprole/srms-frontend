@@ -47,7 +47,7 @@ export default function KhoaPage() {
 
   const createKhoaColumns = (handleEdit, handleDelete) => [
     {
-      accessorKey: "tt",
+      accessorKey: "id",
       header: ({ column }) => (
         <Button
           variant="ghost"

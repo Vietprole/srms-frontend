@@ -34,7 +34,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const createPLOColumns = (handleEdit, handleDelete) => [
   {
-    accessorKey: "tt",
+    accessorKey: "id",
     header: ({ column }) => {
       return (
         <Button

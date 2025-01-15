@@ -34,7 +34,7 @@ import { toast } from "react-toastify";
 
 const createGiangVienColumns = (handleEdit, handleDelete) => [
   {
-    accessorKey: "tt",
+    accessorKey: "id",
     header: ({ column }) => {
       return (
         <Button
