@@ -5,7 +5,6 @@ export const getAccessToken = () => {
   return token ? `Bearer ${token}` : ''
 }
 export const saveAccessToken = (token) => {
-  console.log(">>Save token:", token);
   sessionStorage.setItem('accessToken', token)
 }
 export const tokenBear = (token) => {
@@ -27,7 +26,6 @@ export const getRole = () => {
     return null;
   }
   const role = decodedToken.role;
-  console.log(">>Role:", role);
   return role;
 }
 

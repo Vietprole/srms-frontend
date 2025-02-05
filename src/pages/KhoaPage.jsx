@@ -21,6 +21,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
+import Tooltip  from '@mui/material/Tooltip';
 import Layout from "./Layout";
 import { useState, useEffect,useCallback } from "react";
 import {
@@ -56,7 +57,6 @@ function KhoaPage()
   const [searchQuery, setSearchQuery] = useState(""); // Lưu giá trị tìm kiếm
   const [filteredData, setFilteredData] = useState(data); // Lưu dữ liệu đã lọc
   const handleClickOpen = () => {
-    console.log("Dialog is opening...");
     setOpen(true);
   };
   const handleClickOpenEdit = async (id) => {
@@ -64,7 +64,6 @@ function KhoaPage()
     setTenKhoaEdit(khoaData.ten);
     setMaKhoaEdit(khoaData.maKhoa);
     setKhoaEditId(id);
-    console.log("Dialog is opening...");
     setOpenEdit(true);
   }
 
@@ -285,7 +284,7 @@ function KhoaPage()
   
   const handleSubmitEdit = async () => {
     const khoaData = {
-      ten: tenKhoaEdit,
+      ten: tenKhoaEdit.trim(),
       maKhoa: maKhoaEdit
     };
   
@@ -313,7 +312,7 @@ function KhoaPage()
 
   const handleSubmit = async () => {
     const khoaData = {
-      ten: tenKhoa,
+      ten: tenKhoa.trim(),
       maKhoa: maKhoa
     };
   
@@ -473,9 +472,11 @@ function KhoaPage()
               </StyledTableCell>
               <StyledTableCell align="center">{row.maKhoa}</StyledTableCell>
               <StyledTableCell align="center" width={150}>
-              <IconButton onClick={() => handleClickOpenEdit(row.id)}>
-                <EditIcon />
-              </IconButton>
+                <Tooltip title="Sửa khoa">
+                <IconButton onClick={() => handleClickOpenEdit(row.id)}>
+                  <EditIcon />
+                </IconButton>
+              </Tooltip>
 
                 <IconButton
                 

@@ -9,29 +9,145 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import TextField from '@mui/material/TextField';
 import SearchIcon from '@mui/icons-material/Search';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import { Fade, Grow, Slide, Tooltip, Zoom } from '@mui/material';
 import Box from '@mui/material/Box';
-import { useState, useEffect } from "react";
+import { useState, useEffect,useRef } from "react";
+import Autocomplete from '@mui/material/Autocomplete';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
+
+import {
+  getAllKhoas
+} from "@/api/api-khoa";
 import {
   getNganhs,
+  addNganh,
+  getNganhById,
+  updateNganh
 } from "@/api/api-nganh";
 import EditIcon from '@mui/icons-material/Edit';
+import { set } from 'date-fns';
+
 function TestPage() 
 {
+
+  const [openSnackbar, setOpenSnackbar] = React.useState(false);
+  const [snackbarMessage, setSnackbarMessage] = React.useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = React.useState("success");
+  const [openAddNganh, setOpenAddNganh] = React.useState(false);
+  const [openEditNganh, setOpenEditNganh] = React.useState(false);
+  const [khoas, setKhoas] = useState([]);
   const [data, setData] = useState([]);
   const [searchQuery, setSearchQuery] = useState(""); // Lưu giá trị tìm kiếm
   const [filteredData, setFilteredData] = useState(data); // Lưu dữ liệu đã lọc
+  const [errorTenNganh, setErrorTenNganh] = useState(false);
+  const [selectedKhoa, setSelectedKhoa] = useState(null);
+  const [tenNganh, setTenNganh] = useState("");
+  const [maNganh, setMaNganh] = useState("");
+  const [nganhId, setNganhId] = useState("");
+  const inputRef = useRef("");
+  const handleClickOpenEdit = async (id) => {
+    const nganh = await getNganhById(id);
+    setTenNganh(nganh.ten);
+    setMaNganh(nganh.maNganh);
+    setSelectedKhoa(nganh.tenKhoa);
+    inputRef.current = nganh.ten;
+    setOpenEditNganh(true);
+    setNganhId(id);
+  }
+
+  const handleAddNganhs = async() => {
+    const khoas = await getAllKhoas(); // Đợi API trả về dữ liệu
+    setKhoas(khoas);
+    setOpenAddNganh(true);
+  };
+
+  const handleCloseEditNganh = () => {
+    setOpenEditNganh(false);
+    setErrorTenNganh(false);
+    setSelectedKhoa(null);
+    setTenNganh("");
+    setMaNganh("");
+    setNganhId("");
+  }
+
+
+
+  const handleCloseNganhs = () => {
+    setOpenAddNganh(false);
+    setKhoas([]);
+    setErrorTenNganh(false);
+    setSelectedKhoa(null);
+  };
+  const handleSubmit =async  () => {
+    if (tenNganh.trim() === "") {
+      setSnackbarMessage("Tên ngành không được để trống");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+      setErrorTenNganh(true);
+      return;
+    }
+    if(selectedKhoa === null)
+    {
+      setSnackbarMessage("Vui lòng chọn khoa");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+      return;
+    }
+    const nganhData = {
+      ten: tenNganh.trim(),
+      khoaId: selectedKhoa.id
+    };
+    
+    try {
+      const response =  await addNganh(nganhData);  
+      if (response.status === 201) {  
+        setSnackbarMessage("Thêm ngành thành công");
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
+        fetchData();
+        handleCloseNganhs();
+
+      }
+      else if(response.status === 409)
+      {
+        setSnackbarMessage("Ngành đã tồn tại");
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
+      }
+       else {
+        setSnackbarMessage("Lỗi: Không thể thêm ngành");
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
+        
+      }
+    } catch (error) {
+      // Xử lý lỗi khi gọi API
+      console.log("error: ", error);
+      setSnackbarMessage("Lỗi: Không thể thêm ngành");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+    }
+  };
+  
 
   useEffect(() => {
     fetchData();
   }, []);
   
   const fetchData = async () => {
-    const khoas = await getNganhs();
-    setData(khoas);
+    
+    const nganhs = await getNganhs();
+    setData(nganhs);
   };
   
   useEffect(() => {
@@ -49,6 +165,50 @@ function TestPage()
       setFilteredData(filtered);
     }
   };
+
+  const handleSnackbarClose = () => {
+    setOpenSnackbar(false);
+  };
+
+  const handleEditSubmit = async (nganhId) => {
+    if (inputRef.current.trim() === "") {
+      setSnackbarMessage("Tên ngành không được để trống");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+      setErrorTenNganh(true);
+      return;
+    }
+    const nganhData = {
+      ten: inputRef.current.trim(),
+    };
+    try {
+      const response = await updateNganh(nganhId,nganhData);
+      if (response.status === 200) {
+        setSnackbarMessage("Sửa tên ngành thành công");
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
+        fetchData();
+        handleCloseEditNganh();
+      }
+      else if (response.status === 404) {
+        setSnackbarMessage("Ngành không tồn tại");
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
+      }
+      else {
+        setSnackbarMessage("Lỗi: Sửa tên ngành không thành công");
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
+      }
+    } catch (error) {
+      // Xử lý lỗi khi gọi API
+      console.log("error: ", error);
+      setSnackbarMessage("Lỗi: Không thể sửa ngành");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+    }
+  }
+
   
   const handleSearchChange = (event) => {
     const value = event.target.value;
@@ -79,6 +239,7 @@ function TestPage()
     cursor: 'pointer', // Tùy chọn: Thêm hiệu ứng con trỏ
   },
   }));
+
   return (
       <div style={styles.main}>
       <div style={styles.title}>
@@ -126,7 +287,49 @@ function TestPage()
           </Box>
         </div>
         <div style={styles.btnCreate}>
-          <Button sx={{width:"100%"}} variant="contained" >Tạo ngành</Button>
+          <Button sx={{width:"100%"}} variant="contained" onClick={handleAddNganhs}>Tạo ngành</Button>
+                    <Dialog id='addNganh' fullWidth open={openAddNganh} onClose={handleCloseNganhs}>
+                      <DialogTitle>Tạo ngành mới:</DialogTitle>
+                      <DialogContent >
+                        <DialogContentText>
+                          Thêm ngành mới vào hệ thống
+                        </DialogContentText>
+                        <TextField
+                          autoFocus
+                          required
+                          id='tenNganh'
+                          margin="dense"
+                          label="Tên ngành"
+                          fullWidth
+                          variant="standard"
+                          onBlur={(e) => setTenNganh(e.target.value.trim())}
+                          error={errorTenNganh}
+                          onInput={(e) => setErrorTenNganh(e.target.value.trim() === "")}
+                          helperText="Vui lòng nhập tên ngành"
+                          autoComplete='off'
+                        />
+                       <Autocomplete
+                          options={khoas}
+                          getOptionLabel={(option) => option.ten || ''}
+                          noOptionsText="Không tìm thấy khoa"
+                          required
+                          id="disable-clearable"
+                          disableClearable
+                          onChange={(event, newValue) => setSelectedKhoa(newValue)} // Cập nhật state khi chọn khoa
+                          renderInput={(params) => (
+                            <TextField {...params} label="Chọn khoa" variant="standard" />
+                          )}
+                        />
+                      </DialogContent>
+                      <DialogActions>
+                        <Button onClick={handleCloseNganhs}>Hủy</Button>
+                        <Button
+                          onClick={handleSubmit}
+                        >
+                          Lưu
+                        </Button>
+                      </DialogActions>
+                    </Dialog>
           
         </div>
       </div>
@@ -135,31 +338,101 @@ function TestPage()
        <TableContainer component={Paper}>
        <Table sx={{ minWidth: 700 }} aria-label="customized table">
          <TableHead sx={{position: 'sticky',top: 0,  zIndex: 1,backgroundColor: "#0071A6",}}>
-           <TableRow>
-            <StyledTableCell align="center" >STT</StyledTableCell>
-             <StyledTableCell align="center" >Mã Ngành</StyledTableCell>
-             <StyledTableCell align="center" >Tên Ngành</StyledTableCell>
-             <StyledTableCell align="center" >Tên Khoa</StyledTableCell>
-             <StyledTableCell align="center"></StyledTableCell>
-           </TableRow>
+          <TableRow>
+            <StyledTableCell align="center">STT</StyledTableCell>
+            <StyledTableCell align="center">Mã Ngành</StyledTableCell>
+            <StyledTableCell align="center">Tên Ngành</StyledTableCell>
+            <StyledTableCell align="center">Tên Khoa</StyledTableCell>
+            <StyledTableCell align="center"></StyledTableCell>
+          </TableRow>
+
          </TableHead>
          <TableBody sx={{ overflowY: "auto" }}>
-          {filteredData.map((row, index) => (
-            <StyledTableRow key={row.maNganh + row.ten}>  {/* Kết hợp maNganh và ten để tạo key duy nhất */}
-              <StyledTableCell align="center">{index + 1}</StyledTableCell>
-              <StyledTableCell align="center">{row.maNganh}</StyledTableCell>
-              <StyledTableCell align="left">{row.ten}</StyledTableCell>
-              <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
-              <StyledTableCell align="center">
-                <IconButton><EditIcon /></IconButton>
-                <IconButton><MoreHorizIcon /></IconButton>
-              </StyledTableCell>
-            </StyledTableRow>
-          ))}
-        </TableBody>
+            {filteredData.map((row, index) => (
+              <StyledTableRow key={row.maNganh + row.ten}>
+                <StyledTableCell align="center" width={50}>{index + 1}</StyledTableCell>
+                <StyledTableCell align="center" width={150}>{row.maNganh}</StyledTableCell>
+                <StyledTableCell align="left">{row.ten}</StyledTableCell>
+                <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
+                <StyledTableCell align="center" width={150}>
+                  <Tooltip title="Sửa ngành">
+                    <IconButton
+                      onClick={() => handleClickOpenEdit(row.id)}
+                    ><EditIcon /></IconButton>
+                  </Tooltip>
+                  <Tooltip title="Xem danh sách học phần">
+                    <IconButton><FormatListBulletedIcon /></IconButton>
+                  </Tooltip>
+                </StyledTableCell>
+              </StyledTableRow>
+            ))}
 
+        </TableBody>
        </Table>
      </TableContainer>
+          <Dialog id='editNganh' fullWidth open={openEditNganh} onClose={handleCloseEditNganh} TransitionComponent={Fade} >
+            <DialogTitle>Sửa ngành:</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                Sửa thông tin ngành
+              </DialogContentText>
+              {/* Mã ngành: Chỉ đọc */}
+              <TextField
+                required
+                margin="dense"
+                label="Mã ngành"
+                fullWidth
+                variant="standard"
+                InputProps={{ readOnly: true }}
+                focused={false}
+                value={maNganh}
+                autoComplete='off'
+                helperText="Mã ngành không thể thay đổi"
+              />
+              <TextField
+                required
+                margin="dense"
+                label="Tên ngành"
+                fullWidth
+                variant="standard"
+                defaultValue={tenNganh}
+                error={errorTenNganh}
+                onChange={(e) => (inputRef.current = e.target.value)} // Lưu vào ref, không setState
+                onBlur={(e) => setErrorTenNganh(e.target.value.trim() === "")}
+                helperText={errorTenNganh ? "Tên ngành không được để trống" : ""}
+                autoComplete='off'
+              />
+              <TextField
+                required
+                margin="dense"
+                label="Thuộc khoa"
+                fullWidth
+                variant="standard"
+                defaultValue={selectedKhoa}
+                helperText="Không thể thay đổi khoa"
+                InputProps={{ readOnly: true }}
+                focused={false}
+                autoComplete='off'
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseEditNganh}>Hủy</Button>
+              <Button 
+                onClick={() => handleEditSubmit(nganhId)}
+              >Lưu</Button>
+            </DialogActions>
+          </Dialog>
+
+     <Snackbar 
+        open={openSnackbar} 
+        autoHideDuration={3000} 
+        onClose={handleSnackbarClose} 
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} 
+      >
+        <MuiAlert variant='filled' onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </MuiAlert>
+      </Snackbar>
       </div>
     </div>
   );

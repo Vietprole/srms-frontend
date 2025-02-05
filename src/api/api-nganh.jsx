@@ -62,7 +62,7 @@ export const addNganh = async (nganhData) => {
     const response = await axios.post(API_NGANH, nganhData, {
       headers: { Authorization: getAccessToken() }
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.log("error message: ", error.message);
     throw new Error(error.response?.data || "Lỗi bất định");
@@ -75,7 +75,7 @@ export const updateNganh = async (nganhId, updatedData) => {
     const response = await axios.put(`${API_NGANH}/${nganhId}`, updatedData, {
       headers: { Authorization: getAccessToken() }
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.log("error message: ", error.message);
     throw new Error(error.response?.data || "Lỗi bất định");
