@@ -92,10 +92,10 @@ export function NganhForm({ nganh, handleAdd, handleEdit, setIsDialogOpen }) {
             <FormItem>
               <FormLabel>Tên</FormLabel>
               <FormControl>
-                <Input placeholder="CNTT" {...field} />
+                <Input placeholder="Công nghệ thông tin Đặc thù K2021" {...field} />
               </FormControl>
               <FormDescription>
-                This is your public display name.
+                Đây là mục nhập tên Ngành
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -158,7 +158,7 @@ export function NganhForm({ nganh, handleAdd, handleEdit, setIsDialogOpen }) {
                 </PopoverContent>
               </Popover>
               <FormDescription>
-                This is the item that will be used in the dashboard.
+                Khoa mà Ngành đó thuộc về
               </FormDescription>
               <FormMessage />
             </FormItem>

@@ -74,24 +74,6 @@ export function PLOForm({ pLO, handleAdd, handleEdit, setIsDialogOpen }) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        {pLO && (
-          <FormField
-            control={form.control}
-            name="id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Id</FormLabel>
-                <FormControl>
-                  <Input {...field} readOnly/>
-                </FormControl>
-                <FormDescription>
-                  This is your unique identifier.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
         <FormField
           control={form.control}
           name="ten"
@@ -99,10 +81,10 @@ export function PLOForm({ pLO, handleAdd, handleEdit, setIsDialogOpen }) {
             <FormItem>
               <FormLabel>Tên</FormLabel>
               <FormControl>
-                <Input placeholder="Nguyễn Văn A" {...field} />
+                <Input placeholder="PLO 1" {...field} />
               </FormControl>
               <FormDescription>
-                This is your public display name.
+                Đây là mục nhập tên PLO
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -115,10 +97,10 @@ export function PLOForm({ pLO, handleAdd, handleEdit, setIsDialogOpen }) {
             <FormItem>
               <FormLabel>Mô Tả</FormLabel>
               <FormControl>
-                <Input placeholder="Nguyễn Văn A" {...field} />
+                <Input placeholder="Nắm vững lý thuyết" {...field} />
               </FormControl>
               <FormDescription>
-                This is your public display name.
+                Mô tả chi tiết của PLO
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -129,7 +111,7 @@ export function PLOForm({ pLO, handleAdd, handleEdit, setIsDialogOpen }) {
           name="nganhId"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>Chọn Nganh</FormLabel>
+              <FormLabel>Chọn Ngành</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
@@ -145,7 +127,7 @@ export function PLOForm({ pLO, handleAdd, handleEdit, setIsDialogOpen }) {
                         ? comboBoxItems.find(
                             (item) => item.value === field.value
                           )?.label
-                        : "Select Khoa..."}
+                        : "Chọn Ngành..."}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </FormControl>
@@ -181,7 +163,7 @@ export function PLOForm({ pLO, handleAdd, handleEdit, setIsDialogOpen }) {
                 </PopoverContent>
               </Popover>
               <FormDescription>
-                This is the item that will be used in the dashboard.
+                Chọn Ngành mà PLO thuộc về
               </FormDescription>
               <FormMessage />
             </FormItem>

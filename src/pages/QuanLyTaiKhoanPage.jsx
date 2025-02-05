@@ -89,7 +89,7 @@ export default function QuanLyTaiKhoanPage() {
 
   const createTaiKhoanColumns = (handleEdit, handleDelete) => [
     {
-      accessorKey: "TT",
+      accessorKey: "id",
       header: ({ column }) => {
         return (
           <Button

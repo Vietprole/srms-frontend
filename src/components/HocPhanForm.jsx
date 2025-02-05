@@ -96,24 +96,6 @@ export function HocPhanForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        {hocphan && (
-          <FormField
-            control={form.control}
-            name="id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Id</FormLabel>
-                <FormControl>
-                  <Input {...field} readOnly />
-                </FormControl>
-                <FormDescription>
-                  This is your unique identifier.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
         <div className="flex space-x-1">
           <FormField
             control={form.control}
@@ -122,10 +104,10 @@ export function HocPhanForm({
               <FormItem>
                 <FormLabel>Tên</FormLabel>
                 <FormControl>
-                  <Input placeholder="CNTT" {...field} />
+                  <Input placeholder="Cơ sở dữ liệu" {...field} />
                 </FormControl>
                 <FormDescription>
-                  This is your public display name.
+                  Đây là mục nhập tên Học Phần
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -141,7 +123,7 @@ export function HocPhanForm({
                   <Input placeholder="2" {...field} />
                 </FormControl>
                 <FormDescription>
-                  This is your public display name.
+                  Nhập ó số tín chỉ của học phần
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -199,7 +181,7 @@ export function HocPhanForm({
                   <Command>
                     <CommandInput placeholder="Search khoa..." />
                     <CommandList>
-                      <CommandEmpty>No khoa found.</CommandEmpty>
+                      <CommandEmpty>Không tìm thấy Khoa.</CommandEmpty>
                       <CommandGroup>
                         {comboBoxItems.map((item) => (
                           <CommandItem
@@ -226,7 +208,7 @@ export function HocPhanForm({
                 </PopoverContent>
               </Popover>
               <FormDescription>
-                Select the Khoa this HocPhan belongs to.
+                Chọn Khoa mà Học Phần thuộc về
               </FormDescription>
               <FormMessage />
             </FormItem>

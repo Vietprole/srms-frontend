@@ -24,23 +24,23 @@ import { cn } from "@/lib/utils";
 const formSchema = z.object({
   id: z.number(),
   loai: z.string().min(2, {
-    message: "Loai must be at least 2 characters.",
+    message: "Loại phải có từ 2 chữ cái trở lên",
   }),
   trongSo: z.coerce.number()
   .refine((val) => !isNaN(parseFloat(val)), {
-    message: "Trong so must be a number",
+    message: "Trọng số phải là số",
   })
-  .refine((val) => parseFloat(val) > 0 && parseFloat(val) < 1, {
-    message: "Trong so must be between 0 and 1",
+  .refine((val) => parseFloat(val) > 0 && parseFloat(val) <= 1, {
+    message: "Trọng số phải trong khoảng từ 0.1 đến 1",
   }),
   ngayMoNhapDiem: z.date({
-    required_error: "Please select a date.",
+    required_error: "Vui lòng chọn ngày mở nhập điểm",
   }),
   hanNhapDiem: z.date({
-    required_error: "Please select a date.",
+    required_error: "Vui lòng chọn hạn nhập điểm",
   }),
   hanDinhChinh: z.date({
-    required_error: "Please select a date.",
+    required_error: "Vui lòng chọn hạn đính chính",
   }),
 }).refine((data) => {
   return data.hanNhapDiem > data.ngayMoNhapDiem;
@@ -102,10 +102,10 @@ export function BaiKiemTraForm({ baiKiemTra, handleAdd, handleEdit, setIsDialogO
             <FormItem>
               <FormLabel>Loại</FormLabel>
               <FormControl>
-                <Input placeholder="Giữa Kỳ" {...field} />
+                <Input placeholder="GK" {...field} />
               </FormControl>
               <FormDescription>
-                This is your public display name.
+                Loại bài kiểm tra viết tắt
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -121,7 +121,7 @@ export function BaiKiemTraForm({ baiKiemTra, handleAdd, handleEdit, setIsDialogO
                 <Input placeholder="0.3" {...field} />
               </FormControl>
               <FormDescription>
-                This is your public display name.
+                Trọng số của bài kiểm tra
               </FormDescription>
               <FormMessage />
             </FormItem>
