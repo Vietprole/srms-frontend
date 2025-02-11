@@ -28,6 +28,7 @@ import { addHocPhansToNganh } from "@/api/api-nganh";
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import { removeHocPhanFromNganh } from "@/api/api-nganh";
+import { set } from "date-fns";
 
 function DialogHocPhan({ nganhId, open, onClose }) {
   const styles = {
@@ -191,6 +192,7 @@ function DialogHocPhan({ nganhId, open, onClose }) {
         setSnackbarMessage("Thêm học phần vào ngành thành công!");
         setOpenSnackbar(true);
         setOpenAddDialog(false);
+        setSelectedHocPhans([]); // Reset selected checkboxes here
         fetchData();
       } else {
         setSnackbarSeverity("error");
@@ -363,7 +365,7 @@ function DialogHocPhan({ nganhId, open, onClose }) {
                           <TableRow>
                             <StyledTableCell align="center" width={"60pxpx"}> {/* Giảm padding ở đây */}
                             <Checkbox
-                              sx={{ color: "#fff", padding: "0px" }} // Reduced padding of checkbox
+                              sx={{ color: "#fff", padding: "5px" }} // Reduced padding of checkbox
                               indeterminate={selectedHocPhans.length > 0 && selectedHocPhans.length < hocPhanChuaChon.length}
                               checked={selectedHocPhans.length === hocPhanChuaChon.length}
                               onChange={(e) => {
