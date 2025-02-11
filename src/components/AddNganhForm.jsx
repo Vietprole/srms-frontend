@@ -22,7 +22,7 @@ import {
   getSortedRowModel,
 } from "@tanstack/react-table";
 import { addHocPhansToNganh } from "@/api/api-nganh";
-import { getNganhById,updateNganh} from "@/api/api-nganh";
+import { getNganhById} from "@/api/api-nganh";
 import { removeHocPhanFromNganh } from "@/api/api-nganh";
 
 function EditNganhModal({ setOpenModal,nganhId}) {

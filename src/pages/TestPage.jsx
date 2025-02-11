@@ -36,7 +36,7 @@ import {
 } from "@/api/api-nganh";
 import EditIcon from '@mui/icons-material/Edit';
 import Layout from './Layout';
-import TestDialog from '@/components/TestDialog';
+import TestDialog from '@/components/DialogHocPhan';
 function TestPage() 
 {
   const styles = {

@@ -112,7 +112,7 @@ export const addHocPhansToNganh = async (nganhId, hocPhanIdsList) => {
     const response = await axios.post(`${API_NGANH}/${nganhId}/hocphan`, hocPhanIdsList, {
       headers: { Authorization: getAccessToken() }
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.log("error message: ", error.message);
     throw new Error(error.response?.data || "Lỗi bất định");
@@ -124,7 +124,7 @@ export const removeHocPhanFromNganh = async (nganhId, hocPhanId) => {
     const response = await axios.delete(`${API_NGANH}/${nganhId}/hocphan/${hocPhanId}`, {
       headers: { Authorization: getAccessToken() }
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.log("error message: ", error.message);
     throw new Error(error.response?.data || "Lỗi bất định");

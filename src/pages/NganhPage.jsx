@@ -24,6 +24,7 @@ import { useState, useEffect,useRef } from "react";
 import Autocomplete from '@mui/material/Autocomplete';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
+
 import {
   getAllKhoas
 } from "@/api/api-khoa";
@@ -35,8 +36,76 @@ import {
 } from "@/api/api-nganh";
 import EditIcon from '@mui/icons-material/Edit';
 import Layout from './Layout';
+import TestDialog from '@/components/DialogHocPhan';
 function TestPage() 
 {
+  const styles = {
+    main:
+    {
+      width: '100%',
+      height: '91vh',
+      display: 'flex',
+      flexDirection: 'column',
+      overflowY: 'hidden',
+      padding: "10px",
+    },
+    title:
+    {
+      width: '100%',
+      height: '6%',
+      fontSize: '1.2em',
+      fontFamily: 'Roboto',
+      fontWeight: 'bold',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      flexDirection: 'row',
+    },
+    btnMore:
+    {
+      display: 'flex',
+      justifyContent: 'flex-end',
+      marginLeft: 'auto',
+    },
+    tbActions:
+    {
+      width: '100%',
+      height: '6%',
+      display: 'flex',
+      justifyContent: 'flex-start',
+      alignItems: 'center',
+      flexDirection: 'row',
+    },
+    ipSearch:
+    {
+      width: '25%',
+      height: '100%',
+      justifyContent: 'flex-start',
+      borderRadius: '5px',
+    },
+    btnCreate:
+    {
+      width: '10%',
+      height: '100%',
+      display: 'flex',
+      marginLeft: 'auto',
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: '5px',
+      color: 'white',
+      cursor: 'pointer',
+    },
+    table:
+    {
+      width: '100%',
+      height: '98%',
+      display: 'flex',
+      flexDirection: 'column',
+      paddingTop: '10px',
+      overflowY: 'auto',
+    }
+  };
+  const [openDialog, setOpenDialog] = React.useState(false);
   const [openSnackbar, setOpenSnackbar] = React.useState(false);
   const [snackbarMessage, setSnackbarMessage] = React.useState("");
   const [snackbarSeverity, setSnackbarSeverity] = React.useState("success");
@@ -53,6 +122,13 @@ function TestPage()
   const [nganhId, setNganhId] = useState("");
   const inputRef = useRef("");
 
+  const handleOpenDialog = (id) => {
+    setNganhId(id);
+    setOpenDialog(true);
+  };
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  }
 
   const handleClickOpenEdit = async (id) => {
     const nganh = await getNganhById(id);
@@ -362,14 +438,15 @@ function TestPage()
                     ><EditIcon /></IconButton>
                   </Tooltip>
                   <Tooltip title="Xem danh sách học phần">
-                    <IconButton><FormatListBulletedIcon /></IconButton>
+                    <IconButton onClick={()=>handleOpenDialog(row.id)}><FormatListBulletedIcon /></IconButton>
+                    
                     
                   </Tooltip>
                 </StyledTableCell>
               </StyledTableRow>
               
             ))}
-
+            <TestDialog nganhId={nganhId} open={openDialog} onClose={handleCloseDialog}></TestDialog>
         </TableBody>
        </Table>
      </TableContainer>
@@ -444,70 +521,5 @@ function TestPage()
     </Layout>
   );
 };
-const styles = {
-  main:
-  {
-    width: '100%',
-    height: '91vh',
-    display: 'flex',
-    flexDirection: 'column',
-    overflowY: 'hidden',
-    padding: "10px",
-  },
-  title:
-  {
-    width: '100%',
-    height: '6%',
-    fontSize: '1.2em',
-    fontFamily: 'Roboto',
-    fontWeight: 'bold',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    flexDirection: 'row',
-  },
-  btnMore:
-  {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    marginLeft: 'auto',
-  },
-  tbActions:
-  {
-    width: '100%',
-    height: '6%',
-    display: 'flex',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    flexDirection: 'row',
-  },
-  ipSearch:
-  {
-    width: '25%',
-    height: '100%',
-    justifyContent: 'flex-start',
-    borderRadius: '5px',
-  },
-  btnCreate:
-  {
-    width: '10%',
-    height: '100%',
-    display: 'flex',
-    marginLeft: 'auto',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: '5px',
-    color: 'white',
-    cursor: 'pointer',
-  },
-  table:
-  {
-    width: '100%',
-    height: '98%',
-    display: 'flex',
-    flexDirection: 'column',
-    paddingTop: '10px',
-    overflowY: 'auto',
-  }
-};
+
 export default TestPage;
