@@ -1,243 +1,513 @@
-import Layout from "./Layout";
-import DataTable from "@/components/DataTable";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { getAllKhoas } from "@/api/api-khoa";
+import * as React from 'react';
+import { styled } from '@mui/material/styles';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell, { tableCellClasses } from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import TextField from '@mui/material/TextField';
+import SearchIcon from '@mui/icons-material/Search';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import { Fade, Tooltip } from '@mui/material';
+import Box from '@mui/material/Box';
+import { useState, useEffect,useRef } from "react";
+import Autocomplete from '@mui/material/Autocomplete';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
+import {
+  getAllKhoas
+} from "@/api/api-khoa";
 import {
   getNganhs,
-  deleteNganh,
-  updateNganh,
+  addNganh,
+  getNganhById,
+  updateNganh
 } from "@/api/api-nganh";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { NganhForm } from "@/components/NganhForm";
-import { useState, useEffect, useCallback } from "react";
-import { ComboBox } from "@/components/ComboBox";
-import { useSearchParams } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
-import EditNganhModal from "@/components/AddNganhForm";
-import { useToast } from "@/hooks/use-toast";
-
-export default function NganhPage() {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedNganhId, setSelectedNganhId] = useState(null);
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const khoaIdParam = searchParams.get("khoaId");
+import EditIcon from '@mui/icons-material/Edit';
+import Layout from './Layout';
+function TestPage() 
+{
+  const [openSnackbar, setOpenSnackbar] = React.useState(false);
+  const [snackbarMessage, setSnackbarMessage] = React.useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = React.useState("success");
+  const [openAddNganh, setOpenAddNganh] = React.useState(false);
+  const [openEditNganh, setOpenEditNganh] = React.useState(false);
+  const [khoas, setKhoas] = useState([]);
   const [data, setData] = useState([]);
-  const [khoaItems, setKhoaItems] = useState([]);
-  const [khoaId, setKhoaId] = useState(khoaIdParam);
-  const [comboBoxKhoaId, setComboBoxKhoaId] = useState(khoaIdParam);
-  const { toast } = useToast();
+  const [searchQuery, setSearchQuery] = useState(""); // Lưu giá trị tìm kiếm
+  const [filteredData, setFilteredData] = useState(data); // Lưu dữ liệu đã lọc
+  const [errorTenNganh, setErrorTenNganh] = useState(false);
+  const [selectedKhoa, setSelectedKhoa] = useState(null);
+  const [tenNganh, setTenNganh] = useState("");
+  const [maNganh, setMaNganh] = useState("");
+  const [nganhId, setNganhId] = useState("");
+  const inputRef = useRef("");
 
-  const fetchData = useCallback(async () => {
-    const dataKhoa = await getAllKhoas();
-    const mappedComboBoxItems = dataKhoa.map(khoa => ({ label: khoa.ten, value: khoa.id }));
-    setKhoaItems(mappedComboBoxItems);
-    if (khoaId) {
-      const data = await getNganhs(khoaId);
-      setData(data);
+
+  const handleClickOpenEdit = async (id) => {
+    const nganh = await getNganhById(id);
+    setTenNganh(nganh.ten);
+    setMaNganh(nganh.maNganh);
+    setSelectedKhoa(nganh.tenKhoa);
+    inputRef.current = nganh.ten;
+    setOpenEditNganh(true);
+    setNganhId(id);
+  }
+
+  const handleAddNganhs = async() => {
+    const khoas = await getAllKhoas(); // Đợi API trả về dữ liệu
+    setKhoas(khoas);
+    setOpenAddNganh(true);
+  };
+
+  const handleCloseEditNganh = () => {
+    setOpenEditNganh(false);
+    setErrorTenNganh(false);
+    setSelectedKhoa(null);
+    setTenNganh("");
+    setMaNganh("");
+    setNganhId("");
+  }
+
+
+
+  const handleCloseNganhs = () => {
+    setOpenAddNganh(false);
+    setKhoas([]);
+    setErrorTenNganh(false);
+    setSelectedKhoa(null);
+  };
+  const handleSubmit =async  () => {
+    if (tenNganh.trim() === "") {
+      setSnackbarMessage("Tên ngành không được để trống");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+      setErrorTenNganh(true);
       return;
     }
-    const data = await getNganhs(null);
-    setData(data);
-  }, [khoaId]);
+    if(selectedKhoa === null)
+    {
+      setSnackbarMessage("Vui lòng chọn khoa");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+      return;
+    }
+    const nganhData = {
+      ten: tenNganh.trim(),
+      khoaId: selectedKhoa.id
+    };
+    
+    try {
+      const response =  await addNganh(nganhData);  
+      if (response.status === 201) {  
+        setSnackbarMessage("Thêm ngành thành công");
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
+        fetchData();
+        handleCloseNganhs();
+
+      }
+      else if(response.status === 409)
+      {
+        setSnackbarMessage("Ngành đã tồn tại");
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
+      }
+       else {
+        setSnackbarMessage("Lỗi: Không thể thêm ngành");
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
+        
+      }
+    } catch (error) {
+      // Xử lý lỗi khi gọi API
+      console.log("error: ", error);
+      setSnackbarMessage("Lỗi: Không thể thêm ngành");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+    }
+  };
+  
+
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
-  const handleGoClick = () => {
-    setKhoaId(comboBoxKhoaId);
-    if (comboBoxKhoaId === null) {
-      navigate(`/nganh`);
+  }, []);
+  
+  const fetchData = async () => {
+    
+    const nganhs = await getNganhs();
+    setData(nganhs);
+  };
+  
+  useEffect(() => {
+    // Only set filteredData once data has been loaded
+    setFilteredData(data);
+  }, [data]);
+  
+  const filterData = (query) => {
+    if (!query.trim()) {
+      setFilteredData(data); // If search query is empty, show all data
+    } else {
+      const filtered = data.filter((row) =>
+        row.ten.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredData(filtered);
+    }
+  };
+
+  const handleSnackbarClose = () => {
+    setOpenSnackbar(false);
+  };
+
+  const handleEditSubmit = async (nganhId) => {
+    if (inputRef.current.trim() === "") {
+      setSnackbarMessage("Tên ngành không được để trống");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+      setErrorTenNganh(true);
       return;
     }
-    navigate(`/nganh?khoaId=${comboBoxKhoaId}`);
-  };
-
-  const handleEdit = async (id, nganh) => {
+    const nganhData = {
+      ten: inputRef.current.trim(),
+    };
     try {
-      await updateNganh(id, nganh);
-      fetchData();
+      const response = await updateNganh(nganhId,nganhData);
+      if (response.status === 200) {
+        setSnackbarMessage("Sửa tên ngành thành công");
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
+        fetchData();
+        handleCloseEditNganh();
+      }
+      else if (response.status === 404) {
+        setSnackbarMessage("Ngành không tồn tại");
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
+      }
+      else {
+        setSnackbarMessage("Lỗi: Sửa tên ngành không thành công");
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
+      }
     } catch (error) {
-      toast({
-        title: "Lỗi",
-        description: error.message.includes("Không tìm thấy Ngành") ? "Không tìm thấy Ngành" : "Mã ngành đã tồn tại",
-        variant: "destructive",
-      });
+      // Xử lý lỗi khi gọi API
+      console.log("error: ", error);
+      setSnackbarMessage("Lỗi: Không thể sửa ngành");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
     }
+  }
+
+  
+  const handleSearchChange = (event) => {
+    const value = event.target.value;
+    setSearchQuery(value); 
+    filterData(value); 
   };
 
-  const handleDelete = async (id) => {
-    try {
-      await deleteNganh(id);
-      fetchData();
-    } catch (error) {
-      toast({
-        title: "Lỗi",
-        description: error.message.includes("Không tìm thấy Ngành") ? "Không tìm thấy Ngành" : "Ngành chứa các đối tượng con, không thể xóa",
-        variant: "destructive",
-      });
-    }
-  };
+  const StyledTableCell = styled(TableCell)(({ theme }) => ({
+    [`&.${tableCellClasses.head}`]: {
+      backgroundColor: "#0071A6",
+      color: theme.palette.common.white,
+      borderRight: '1px solid #ddd', // Đường phân cách dọc
 
-  const createNganhColumns = (handleEdit, handleDelete) => [
-    {
-      accessorKey: "id",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          TT
-          <ArrowUpDown />
-        </Button>
-      ),
-      cell: ({ row }) => <div className="px-4 py-2">{row.index + 1}</div>,
     },
-    {
-      accessorKey: "maNganh",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Mã Ngành
-          <ArrowUpDown />
-        </Button>
-      ),
-      cell: ({ row }) => <div className="px-4 py-2">{row.getValue("maNganh")}</div>,
+    [`&.${tableCellClasses.body}`]: {
+      fontSize: 14,
+      padding: '5px 10px', // Thêm padding cho các hàng
+      borderRight: '1px solid #ddd', // Đường phân cách dọc
     },
-    {
-      accessorKey: "ten",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Tên
-          <ArrowUpDown />
-        </Button>
-      ),
-      cell: ({ row }) => <div className="px-4 py-2">{row.getValue("ten")}</div>,
+  }));
+  
+  const StyledTableRow = styled(TableRow)(({ theme }) => ({
+    '&:nth-of-type(odd)': {
+      backgroundColor: theme.palette.action.hover,
     },
-    {
-      accessorKey: "tenKhoa",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Khoa
-          <ArrowUpDown />
-        </Button>
-      ),
-      cell: ({ row }) => <div className="px-4 py-2">{row.getValue("tenKhoa")}</div>,
-    },
-    {
-      id: "actions",
-      enableHiding: false,
-      cell: ({ row }) => {
-        const item = row.original;
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Hành động</DropdownMenuLabel>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                    Sửa Ngành
-                  </DropdownMenuItem>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                  <DialogHeader>
-                    <DialogTitle>Sửa Ngành</DialogTitle>
-                    <DialogDescription>
-                      Sửa ngành hiện tại
-                    </DialogDescription>
-                  </DialogHeader>
-                  <NganhForm nganh={item} handleEdit={handleEdit} />
-                </DialogContent>
-              </Dialog>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                    Xóa Ngành
-                  </DropdownMenuItem>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                  <DialogHeader>
-                    <DialogTitle>Xóa Ngành</DialogTitle>
-                    <DialogDescription>
-                      Xóa ngành hiện tại
-                    </DialogDescription>
-                  </DialogHeader>
-                  <p>Bạn có chắc muốn xóa ngành này?</p>
-                  <DialogFooter>
-                    <Button
-                      type="submit"
-                      onClick={() => handleDelete(item.id)}
-                    >
-                      Xóa
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-              <DropdownMenuItem
-                onSelect={(e) => {
-                  setSelectedNganhId(item.id);
-                  setModalOpen(true);
-                }}
-              >
-                Xem Học Phần
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => navigate(`/plo?nganhId=${item.id}`)}>
-                Xem PLO
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      },
-    },
-  ];
+    '&:hover': {
+    backgroundColor:"#D3F3FF", // Màu nền khi hover
+    cursor: 'pointer', // Tùy chọn: Thêm hiệu ứng con trỏ
+  },
+  }));
+
   return (
     <Layout>
-      <div className="w-full">
-        <div className="flex">
-          <ComboBox items={khoaItems} setItemId={setComboBoxKhoaId} initialItemId={comboBoxKhoaId} placeholder="Chọn Khoa"/>
-          <Button onClick={handleGoClick}>Go</Button>
+      <div style={styles.main}>
+      <div style={styles.title}>
+        <span>Danh sách ngành học</span>
+        <div style={styles.btnMore}>
+          <IconButton aria-label="more actions"><MoreVertIcon/></IconButton>
         </div>
-        <DataTable
-          entity="Ngành"
-          createColumns={createNganhColumns}
-          data={data}
-          setData={setData}
-          fetchData={fetchData}
-          deleteItem={handleDelete}
-          columnToBeFiltered={"ten"}
-          ItemForm={NganhForm}
-        />
-        {modalOpen && <EditNganhModal setOpenModal={setModalOpen} nganhId={selectedNganhId} />}
       </div>
+      <div style={styles.tbActions}>
+        <div style={styles.ipSearch}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              border: "2px solid #ccc", // Viền ngoài
+              borderRadius: "20px", // Bo tròn góc
+              padding: "4px 8px", // Khoảng cách nội dung
+              width: "100%", // Chiều rộng toàn khung tìm kiếm
+              maxWidth: "100%", // Đảm bảo full width
+              "&:focus-within": {
+                border: "2px solid #337AB7", // Đổi màu viền khi focus
+              },
+              height: "100%",
+            }}
+          >
+            <TextField
+              fullWidth
+              fontSize="10px"
+              placeholder="Tìm kiếm theo tên ngành..."
+              variant="standard"
+              autoComplete='off'
+              InputProps={{
+                disableUnderline: true,
+                startAdornment: (
+                  <React.Fragment>
+                    <IconButton aria-label="more actions">
+                      <SearchIcon sx={{ color: "#888" }} />
+                    </IconButton>
+                  </React.Fragment>
+                ),
+              }}
+              value={searchQuery} // Liên kết giá trị tìm kiếm với state
+              onChange={handleSearchChange} // Gọi hàm xử lý khi thay đổi
+            />
+          </Box>
+        </div>
+        <div style={styles.btnCreate}>
+          <Button sx={{width:"100%"}} variant="contained" onClick={handleAddNganhs}>Tạo ngành</Button>
+                    <Dialog id='addNganh' fullWidth open={openAddNganh} onClose={handleCloseNganhs}>
+                      <DialogTitle>Tạo ngành mới:</DialogTitle>
+                      <DialogContent >
+                        <DialogContentText>
+                          Thêm ngành mới vào hệ thống
+                        </DialogContentText>
+                        <TextField
+                          autoFocus
+                          required
+                          id='tenNganh'
+                          margin="dense"
+                          label="Tên ngành"
+                          fullWidth
+                          variant="standard"
+                          onBlur={(e) => setTenNganh(e.target.value.trim())}
+                          error={errorTenNganh}
+                          onInput={(e) => setErrorTenNganh(e.target.value.trim() === "")}
+                          helperText="Vui lòng nhập tên ngành"
+                          autoComplete='off'
+                        />
+                       <Autocomplete
+                          options={khoas}
+                          getOptionLabel={(option) => option.ten || ''}
+                          noOptionsText="Không tìm thấy khoa"
+                          required
+                          id="disable-clearable"
+                          disableClearable
+                          onChange={(event, newValue) => setSelectedKhoa(newValue)} // Cập nhật state khi chọn khoa
+                          renderInput={(params) => (
+                            <TextField {...params} label="Chọn khoa" variant="standard" />
+                          )}
+                        />
+                      </DialogContent>
+                      <DialogActions>
+                        <Button onClick={handleCloseNganhs}>Hủy</Button>
+                        <Button
+                          onClick={handleSubmit}
+                        >
+                          Lưu
+                        </Button>
+                      </DialogActions>
+                    </Dialog>
+          
+        </div>
+      </div>
+      <div style={styles.table}>
+      
+       <TableContainer component={Paper}>
+       <Table sx={{ minWidth: 700 }} aria-label="customized table">
+         <TableHead sx={{position: 'sticky',top: 0,  zIndex: 1,backgroundColor: "#0071A6",}}>
+          <TableRow>
+            <StyledTableCell align="center">STT</StyledTableCell>
+            <StyledTableCell align="center">Mã Ngành</StyledTableCell>
+            <StyledTableCell align="center">Tên Ngành</StyledTableCell>
+            <StyledTableCell align="center">Tên Khoa</StyledTableCell>
+            <StyledTableCell align="center"></StyledTableCell>
+          </TableRow>
+
+         </TableHead>
+         <TableBody sx={{ overflowY: "auto" }}>
+            {filteredData.map((row, index) => (
+              <StyledTableRow key={row.maNganh + row.ten}>
+                
+                <StyledTableCell align="center" width={50}>{index + 1}</StyledTableCell>
+                <StyledTableCell align="center" width={150}>{row.maNganh}</StyledTableCell>
+                <StyledTableCell align="left">{row.ten}</StyledTableCell>
+                <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
+                <StyledTableCell align="center" width={150}>
+                  <Tooltip title="Sửa ngành">
+                    <IconButton
+                      onClick={() => handleClickOpenEdit(row.id)}
+                    ><EditIcon /></IconButton>
+                  </Tooltip>
+                  <Tooltip title="Xem danh sách học phần">
+                    <IconButton><FormatListBulletedIcon /></IconButton>
+                    
+                  </Tooltip>
+                </StyledTableCell>
+              </StyledTableRow>
+              
+            ))}
+
+        </TableBody>
+       </Table>
+     </TableContainer>
+          <Dialog id='editNganh' fullWidth open={openEditNganh} onClose={handleCloseEditNganh} TransitionComponent={Fade} >
+            <DialogTitle>Sửa ngành:</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                Sửa thông tin ngành
+              </DialogContentText>
+              {/* Mã ngành: Chỉ đọc */}
+              <TextField
+                required
+                margin="dense"
+                label="Mã ngành"
+                fullWidth
+                variant="standard"
+                InputProps={{ readOnly: true }}
+                focused={false}
+                value={maNganh}
+                autoComplete='off'
+                helperText="Mã ngành không thể thay đổi"
+              />
+              <TextField
+                required
+                margin="dense"
+                label="Tên ngành"
+                fullWidth
+                variant="standard"
+                defaultValue={tenNganh}
+                error={errorTenNganh}
+                onChange={(e) => (inputRef.current = e.target.value)} // Lưu vào ref, không setState
+                onBlur={(e) => setErrorTenNganh(e.target.value.trim() === "")}
+                helperText={errorTenNganh ? "Tên ngành không được để trống" : ""}
+                autoComplete='off'
+              />
+              <TextField
+                required
+                margin="dense"
+                label="Thuộc khoa"
+                fullWidth
+                variant="standard"
+                defaultValue={selectedKhoa}
+                helperText="Không thể thay đổi khoa"
+                InputProps={{ readOnly: true }}
+                focused={false}
+                autoComplete='off'
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseEditNganh}>Hủy</Button>
+              <Button 
+                onClick={() => handleEditSubmit(nganhId)}
+              >Lưu</Button>
+            </DialogActions>
+          </Dialog>
+          
+
+
+     <Snackbar 
+        open={openSnackbar} 
+        autoHideDuration={3000} 
+        onClose={handleSnackbarClose} 
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} 
+      >
+        <MuiAlert variant='filled' onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </MuiAlert>
+      </Snackbar>
+      
+      </div>
+    </div>
     </Layout>
   );
-}
+};
+const styles = {
+  main:
+  {
+    width: '100%',
+    height: '91vh',
+    display: 'flex',
+    flexDirection: 'column',
+    overflowY: 'hidden',
+    padding: "10px",
+  },
+  title:
+  {
+    width: '100%',
+    height: '6%',
+    fontSize: '1.2em',
+    fontFamily: 'Roboto',
+    fontWeight: 'bold',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    flexDirection: 'row',
+  },
+  btnMore:
+  {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    marginLeft: 'auto',
+  },
+  tbActions:
+  {
+    width: '100%',
+    height: '6%',
+    display: 'flex',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  ipSearch:
+  {
+    width: '25%',
+    height: '100%',
+    justifyContent: 'flex-start',
+    borderRadius: '5px',
+  },
+  btnCreate:
+  {
+    width: '10%',
+    height: '100%',
+    display: 'flex',
+    marginLeft: 'auto',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: '5px',
+    color: 'white',
+    cursor: 'pointer',
+  },
+  table:
+  {
+    width: '100%',
+    height: '98%',
+    display: 'flex',
+    flexDirection: 'column',
+    paddingTop: '10px',
+    overflowY: 'auto',
+  }
+};
+export default TestPage;

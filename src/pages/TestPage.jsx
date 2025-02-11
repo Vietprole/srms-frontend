@@ -18,7 +18,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import { Fade, Grow, Slide, Tooltip, Zoom } from '@mui/material';
+import { Fade, Tooltip } from '@mui/material';
 import Box from '@mui/material/Box';
 import { useState, useEffect,useRef } from "react";
 import Autocomplete from '@mui/material/Autocomplete';
@@ -35,11 +35,77 @@ import {
   updateNganh
 } from "@/api/api-nganh";
 import EditIcon from '@mui/icons-material/Edit';
-import { set } from 'date-fns';
-
+import Layout from './Layout';
+import TestDialog from '@/components/TestDialog';
 function TestPage() 
 {
-
+  const styles = {
+    main:
+    {
+      width: '100%',
+      height: '91vh',
+      display: 'flex',
+      flexDirection: 'column',
+      overflowY: 'hidden',
+      padding: "10px",
+    },
+    title:
+    {
+      width: '100%',
+      height: '6%',
+      fontSize: '1.2em',
+      fontFamily: 'Roboto',
+      fontWeight: 'bold',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      flexDirection: 'row',
+    },
+    btnMore:
+    {
+      display: 'flex',
+      justifyContent: 'flex-end',
+      marginLeft: 'auto',
+    },
+    tbActions:
+    {
+      width: '100%',
+      height: '6%',
+      display: 'flex',
+      justifyContent: 'flex-start',
+      alignItems: 'center',
+      flexDirection: 'row',
+    },
+    ipSearch:
+    {
+      width: '25%',
+      height: '100%',
+      justifyContent: 'flex-start',
+      borderRadius: '5px',
+    },
+    btnCreate:
+    {
+      width: '10%',
+      height: '100%',
+      display: 'flex',
+      marginLeft: 'auto',
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: '5px',
+      color: 'white',
+      cursor: 'pointer',
+    },
+    table:
+    {
+      width: '100%',
+      height: '98%',
+      display: 'flex',
+      flexDirection: 'column',
+      paddingTop: '10px',
+      overflowY: 'auto',
+    }
+  };
+  const [openDialog, setOpenDialog] = React.useState(false);
   const [openSnackbar, setOpenSnackbar] = React.useState(false);
   const [snackbarMessage, setSnackbarMessage] = React.useState("");
   const [snackbarSeverity, setSnackbarSeverity] = React.useState("success");
@@ -55,6 +121,15 @@ function TestPage()
   const [maNganh, setMaNganh] = useState("");
   const [nganhId, setNganhId] = useState("");
   const inputRef = useRef("");
+
+  const handleOpenDialog = (id) => {
+    setNganhId(id);
+    setOpenDialog(true);
+  };
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  }
+
   const handleClickOpenEdit = async (id) => {
     const nganh = await getNganhById(id);
     setTenNganh(nganh.ten);
@@ -241,6 +316,7 @@ function TestPage()
   }));
 
   return (
+    <Layout>
       <div style={styles.main}>
       <div style={styles.title}>
         <span>Danh sách ngành học</span>
@@ -350,6 +426,7 @@ function TestPage()
          <TableBody sx={{ overflowY: "auto" }}>
             {filteredData.map((row, index) => (
               <StyledTableRow key={row.maNganh + row.ten}>
+                
                 <StyledTableCell align="center" width={50}>{index + 1}</StyledTableCell>
                 <StyledTableCell align="center" width={150}>{row.maNganh}</StyledTableCell>
                 <StyledTableCell align="left">{row.ten}</StyledTableCell>
@@ -361,12 +438,15 @@ function TestPage()
                     ><EditIcon /></IconButton>
                   </Tooltip>
                   <Tooltip title="Xem danh sách học phần">
-                    <IconButton><FormatListBulletedIcon /></IconButton>
+                    <IconButton onClick={()=>handleOpenDialog(row.id)}><FormatListBulletedIcon /></IconButton>
+                    
+                    
                   </Tooltip>
                 </StyledTableCell>
               </StyledTableRow>
+              
             ))}
-
+            <TestDialog nganhId={nganhId} open={openDialog} onClose={handleCloseDialog}></TestDialog>
         </TableBody>
        </Table>
      </TableContainer>
@@ -422,6 +502,8 @@ function TestPage()
               >Lưu</Button>
             </DialogActions>
           </Dialog>
+          
+
 
      <Snackbar 
         open={openSnackbar} 
@@ -433,74 +515,11 @@ function TestPage()
           {snackbarMessage}
         </MuiAlert>
       </Snackbar>
+      
       </div>
     </div>
+    </Layout>
   );
 };
-const styles = {
-  main:
-  {
-    width: '100%',
-    height: '91vh',
-    display: 'flex',
-    flexDirection: 'column',
-    overflowY: 'hidden',
-    padding: "10px",
-  },
-  title:
-  {
-    width: '100%',
-    height: '6%',
-    fontSize: '1.2em',
-    fontFamily: 'Roboto',
-    fontWeight: 'bold',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    flexDirection: 'row',
-  },
-  btnMore:
-  {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    marginLeft: 'auto',
-  },
-  tbActions:
-  {
-    width: '100%',
-    height: '6%',
-    display: 'flex',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    flexDirection: 'row',
-  },
-  ipSearch:
-  {
-    width: '25%',
-    height: '100%',
-    justifyContent: 'flex-start',
-    borderRadius: '5px',
-  },
-  btnCreate:
-  {
-    width: '10%',
-    height: '100%',
-    display: 'flex',
-    marginLeft: 'auto',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: '5px',
-    color: 'white',
-    cursor: 'pointer',
-  },
-  table:
-  {
-    width: '100%',
-    height: '98%',
-    display: 'flex',
-    flexDirection: 'column',
-    paddingTop: '10px',
-    overflowY: 'auto',
-  }
-};
+
 export default TestPage;
