@@ -24,7 +24,6 @@ import { useState, useEffect,useRef } from "react";
 import Autocomplete from '@mui/material/Autocomplete';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
-
 import {
   getAllKhoas
 } from "@/api/api-khoa";
@@ -103,7 +102,14 @@ function TestPage()
       flexDirection: 'column',
       paddingTop: '10px',
       overflowY: 'auto',
-    }
+    },
+    cbKhoa:
+    {
+      width: '22%',
+      height: '80%',
+      marginLeft: '10px',
+      marginBottom: '10px',
+    },
   };
   const [openDialog, setOpenDialog] = React.useState(false);
   const [openSnackbar, setOpenSnackbar] = React.useState(false);
@@ -121,6 +127,19 @@ function TestPage()
   const [maNganh, setMaNganh] = useState("");
   const [nganhId, setNganhId] = useState("");
   const inputRef = useRef("");
+  const [selectedKhoaFilter, setSelectedKhoaFilter] = useState(null);
+
+  const handleKhoaChange = (event, newValue) => {
+    setSelectedKhoaFilter(newValue);
+    if (!newValue) {
+      setFilteredData(data); // Nếu không chọn khoa nào, hiển thị toàn bộ dữ liệu
+    } else {
+      const filtered = data.filter((row) => row.tenKhoa === newValue.ten);
+      setFilteredData(filtered);
+    }
+  };
+  
+
 
   const handleOpenDialog = (id) => {
     setNganhId(id);
@@ -220,9 +239,10 @@ function TestPage()
   }, []);
   
   const fetchData = async () => {
-    
     const nganhs = await getNganhs();
     setData(nganhs);
+    const khoa = await getAllKhoas();
+    setKhoas(khoa);
   };
   
   useEffect(() => {
@@ -361,6 +381,22 @@ function TestPage()
               onChange={handleSearchChange} // Gọi hàm xử lý khi thay đổi
             />
           </Box>
+        </div>
+        <div style={styles.cbKhoa}>
+        <Autocomplete
+          sx={{ width: "100%" }}
+          options={khoas}
+          getOptionLabel={(option) => option.ten || ""}
+          required
+          disableClearable
+          value={selectedKhoaFilter}
+          onChange={handleKhoaChange}
+          renderInput={(params) => (
+            <TextField {...params} label="Chọn khoa" size="small" />
+          )}
+        />
+
+
         </div>
         <div style={styles.btnCreate}>
           <Button sx={{width:"100%"}} variant="contained" onClick={handleAddNganhs}>Tạo ngành</Button>

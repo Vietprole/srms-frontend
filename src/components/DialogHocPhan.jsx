@@ -28,8 +28,6 @@ import { addHocPhansToNganh } from "@/api/api-nganh";
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import { removeHocPhanFromNganh } from "@/api/api-nganh";
-import { set } from "date-fns";
-
 function DialogHocPhan({ nganhId, open, onClose }) {
   const styles = {
     main: {
@@ -106,6 +104,7 @@ function DialogHocPhan({ nganhId, open, onClose }) {
   };
 
   const handleClose = () => {
+    setSearchQuery(""); // Reset search query when closing dialog
     onClose();
   };
 
