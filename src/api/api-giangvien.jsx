@@ -61,7 +61,7 @@ export const updateGiangVien = async (id, updatedData) => {
     const response = await axios.put(`${API_GIANGVIEN}/${id}`, updatedData, {
       headers: { Authorization: getAccessToken() }
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.log("error message: ", error.message);
     throw new Error(error.response?.data || "Lỗi bất định");

@@ -28,9 +28,7 @@ import {
 } from "@/api/api-khoa";
 import EditIcon from '@mui/icons-material/Edit';
 import Layout from './Layout';
-import {getAllGiangViens,addGiangVien,getGiangVienById} from "@/api/api-giangvien";
-import { get } from 'react-hook-form';
-import { set } from 'date-fns';
+import {getAllGiangViens,addGiangVien,getGiangVienById,updateGiangVien} from "@/api/api-giangvien";
 function TestPage() 
 {
   const styles = {
@@ -120,16 +118,22 @@ function TestPage()
   const [tenGiangVien, setTenGiangVien] = useState("");
   const [errorTenGiangVien, setErrorTenGiangVien] = useState(false);
   const [tenKhoa, setTenKhoa] = useState("");
+  const [giangVienId, setGiangVienId] = useState(null);
+  const [khoaId, setKhoaId] = useState("");
   const handleOpenEditDialog  = async (giangVienId) => {
     const giangVien = await getGiangVienById(giangVienId);
     setTenGiangVien(giangVien.ten);
     setTenKhoa(giangVien.tenKhoa);
     setOpenEditDialog(true);
+    setKhoaId(giangVien.khoaId);
+    setGiangVienId(giangVienId);
   };  
   const handleCloseEditDialog = () => {
     setOpenEditDialog(false);
     setTenGiangVien("");
     setTenKhoa("");
+    setKhoaId("");
+    setGiangVienId(null);
     setErrorTenGiangVien(false);
   };
 
@@ -255,6 +259,45 @@ function TestPage()
       setOpenSnackbar(true);
     }
 
+  };
+  const handleSubmitEditDialog = async () => {
+    if (tenGiangVien.trim() === "") {
+      setSnackbarSeverity("error");
+      setSnackbarMessage("Vui lòng nhập tên giảng viên");
+      setOpenSnackbar(true);
+      return;
+    }
+    const data = {
+      ten: tenGiangVien,
+      khoaId: khoaId,
+    };
+    try {
+      const rp =await updateGiangVien(giangVienId,data);
+      if(rp.status===200)
+      {
+        setSnackbarMessage("Cập nhật giảng viên thành công");
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
+        handleCloseEditDialog();
+        fetchData();
+      }else if(rp.status===404)
+      {
+        setSnackbarMessage("Không tìm thấy giảng viên");
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
+      }
+      else
+      {
+        setSnackbarMessage("Cập nhật giảng viêm thất bại");
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
+      }
+    } catch (error) {
+      setSnackbarMessage("Cập nhật giảng viêm thất bại");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+      console.log(error);
+    }
   };
 
   return (
@@ -437,7 +480,7 @@ function TestPage()
                       <DialogActions>
                         <Button onClick={handleCloseEditDialog} >Hủy</Button>
                         <Button
-                          // onClick={handleSubmitAdd}
+                          onClick={handleSubmitEditDialog}
                         >
                           Lưu
                         </Button>
