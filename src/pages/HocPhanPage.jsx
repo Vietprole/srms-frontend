@@ -292,13 +292,11 @@ function HocPhanPage()
       }
       else
       {
-        setOpenSnackbar(true);
         setSnackbarMessage("Thêm học phần thất bại");
         setSnackbarSeverity("error");
         setOpenSnackbar(true);
       }
     } catch (error) {
-      setOpenSnackbar(true);
       setSnackbarMessage(error.message);
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
@@ -519,7 +517,7 @@ function HocPhanPage()
                 <StyledTableCell align="center" width={150}>{row.soTinChi}</StyledTableCell>
                 <StyledTableCell align="center" width={300}>{row.tenKhoa}</StyledTableCell>
                 <StyledTableCell align="center" width={150}>
-                  <Tooltip title="Sửa học phần">
+                  <Tooltip title="Sửa thông tin học phần">
                     <IconButton
                       onClick={() => handleOpenEditDialog(row.id)}
                     ><EditIcon /></IconButton>
@@ -599,7 +597,6 @@ function HocPhanPage()
                           fullWidth
                           variant="standard"
                           defaultValue={tenKhoa}
-                          error={errorTenHocPhan}
                           helperText="Không thể thay đổi khoa"
                           autoComplete='off'
                           focused={false}

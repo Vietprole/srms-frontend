@@ -48,7 +48,7 @@ export const addGiangVien = async (newData) => {
       headers: { Authorization: getAccessToken() }
     });
     console.log("response", response);
-    return response.data;
+    return response;
   } catch (error) {
     console.log("error message: ", error.message);
     throw new Error(error.response?.data || "Lỗi bất định");
