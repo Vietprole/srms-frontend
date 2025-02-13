@@ -178,7 +178,6 @@ function TestPage()
 
   const handleCloseNganhs = () => {
     setOpenAddNganh(false);
-    setKhoas([]);
     setErrorTenNganh(false);
     setSelectedKhoa(null);
   };
@@ -388,7 +387,6 @@ function TestPage()
           options={khoas}
           getOptionLabel={(option) => option.ten || ""}
           required
-          disableClearable
           value={selectedKhoaFilter}
           onChange={handleKhoaChange}
           renderInput={(params) => (

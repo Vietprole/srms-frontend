@@ -39,7 +39,7 @@ export const getHocPhanById = async (hocphanId) => {
     const response = await axios.get(`${API_HOCPHAN}/${hocphanId}`, {
       headers: { Authorization: getAccessToken() }
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.log("error message: ", error.message);
     throw new Error(error.response?.data || "Lỗi bất định");
@@ -52,7 +52,7 @@ export const addHocPhan = async (hocphanData) => {
     const response = await axios.post(API_HOCPHAN, hocphanData, {
       headers: { Authorization: getAccessToken() }
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.log("error message: ", error.message);
     throw new Error(error.response?.data || "Lỗi bất định");
@@ -65,7 +65,7 @@ export const updateHocPhan = async (hocphanId, updatedData) => {
     const response = await axios.put(`${API_HOCPHAN}/${hocphanId}`, updatedData, {
       headers: { Authorization: getAccessToken() }
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.log("error message: ", error.message);
     throw new Error(error.response?.data || "Lỗi bất định");
