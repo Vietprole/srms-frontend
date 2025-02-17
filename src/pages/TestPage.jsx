@@ -19,16 +19,13 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import {Tooltip } from '@mui/material';
 import Box from '@mui/material/Box';
-import { useState, useEffect,useRef } from "react";
+import { useState, useEffect } from "react";
 import Autocomplete from '@mui/material/Autocomplete';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
-import {
-  getAllKhoas
-} from "@/api/api-khoa";
 import EditIcon from '@mui/icons-material/Edit';
 import Layout from './Layout';
-import {getAllGiangViens,addGiangVien,getGiangVienById,updateGiangVien} from "@/api/api-giangvien";
+import { getAllHocKys } from '@/api/api-hocky';
 function TestPage() 
 {
   const styles = {
@@ -104,48 +101,34 @@ function TestPage()
       marginBottom: '10px',
     },
   };
+  const [schoolYears, setSchoolYears] = useState([]);
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-  const [khoas, setKhoas] = useState([]);
   const [data, setData] = useState([]);
   const [searchQuery, setSearchQuery] = useState(""); // Lưu giá trị tìm kiếm
   const [filteredData, setFilteredData] = useState(data); // Lưu dữ liệu đã lọc
-  const [selectedKhoa, setSelectedKhoa] = useState(null); // Lưu khoa được chọn
   const [selectedKhoaFilter, setSelectedKhoaFilter] = useState(null); // Lưu khoa được chọn để lọc dữ liệu
-  const [tenGiangVien, setTenGiangVien] = useState("");
-  const [errorTenGiangVien, setErrorTenGiangVien] = useState(false);
-  const [tenKhoa, setTenKhoa] = useState("");
-  const [giangVienId, setGiangVienId] = useState(null);
-  const [khoaId, setKhoaId] = useState("");
-  const handleOpenEditDialog  = async (giangVienId) => {
-    const giangVien = await getGiangVienById(giangVienId);
-    setTenGiangVien(giangVien.ten);
-    setTenKhoa(giangVien.tenKhoa);
-    setOpenEditDialog(true);
-    setKhoaId(giangVien.khoaId);
-    setGiangVienId(giangVienId);
-  };  
-  const handleCloseEditDialog = () => {
-    setOpenEditDialog(false);
-    setTenGiangVien("");
-    setTenKhoa("");
-    setKhoaId("");
-    setGiangVienId(null);
-    setErrorTenGiangVien(false);
-  };
 
   const handleOpenAddDialog = () => {
     setOpenAddDialog(true);
-  }
+  };
   const handleCloseAddDialog = () => {
     setOpenAddDialog(false);
-    setSelectedKhoa(null);
-    setTenGiangVien("");
+  };
 
-  }
+
+  const generateSchoolYears = () => {
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    for (let year = 2000; year <= currentYear; year++) {
+      years.push({ label: `${year}-${year + 1}`, value: `${year}-${year + 1}` });
+    }
+    return years;
+  };
+  
 
   const handleKhoaChange = (event, newValue) => {
     setSelectedKhoaFilter(newValue);
@@ -160,18 +143,23 @@ function TestPage()
 
   useEffect(() => {
     fetchData();
+    setSchoolYears(generateSchoolYears());
   }, []); 
   
   
   const fetchData = async () => {
-    const giangvien = await getAllGiangViens();
-    setData(giangvien);
-    setFilteredData(giangvien);
-    const khoa = await getAllKhoas();
-    setKhoas(khoa);
+    const hocki = await getAllHocKys();
+    setData(hocki);
+    setFilteredData(hocki);
+    
   };
   
   
+  const hocKi = [
+    { hocki: 'Kỳ 1', ten : 'Học kỳ 1' },
+    { hocki: 'Kỳ 2', ten : 'Học kỳ 2' },
+    { hocki: 'Kỳ hè', ten : 'Học kỳ hè' },
+  ];
 
   
   const filterData = (query) => {
@@ -220,91 +208,14 @@ function TestPage()
   },
   }));
 
-  const handleSubmitAdd = async () => {
-    if (tenGiangVien.trim() === "") {
-      setSnackbarSeverity("error");
-      setSnackbarMessage("Vui lòng nhập tên giảng viên");
-      setOpenSnackbar(true);
-      return;
-    }
-    if (!selectedKhoa) {
-      setSnackbarSeverity("error");
-      setSnackbarMessage("Vui lòng chọn khoa");
-      setOpenSnackbar(true);
-      return;
-    }
-    const newGiangVien = {
-      ten: tenGiangVien,
-      khoaId: selectedKhoa.id,
-    };
-    try {
-      const rp =await addGiangVien(newGiangVien);
-      if(rp.status===201)
-      {
-        setSnackbarMessage("Thêm giảng viên thành công");
-        setSnackbarSeverity("success");
-        setOpenSnackbar(true);
-        handleCloseAddDialog();
-        fetchData();
-      }
-      else
-      {
-        setSnackbarMessage("Thêm giảng viêm thất bại");
-        setSnackbarSeverity("error");
-        setOpenSnackbar(true);
-      }
-    } catch (error) {
-      setSnackbarMessage(error.message);
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
-    }
 
-  };
-  const handleSubmitEditDialog = async () => {
-    if (tenGiangVien.trim() === "") {
-      setSnackbarSeverity("error");
-      setSnackbarMessage("Vui lòng nhập tên giảng viên");
-      setOpenSnackbar(true);
-      return;
-    }
-    const data = {
-      ten: tenGiangVien,
-      khoaId: khoaId,
-    };
-    try {
-      const rp =await updateGiangVien(giangVienId,data);
-      if(rp.status===200)
-      {
-        setSnackbarMessage("Cập nhật giảng viên thành công");
-        setSnackbarSeverity("success");
-        setOpenSnackbar(true);
-        handleCloseEditDialog();
-        fetchData();
-      }else if(rp.status===404)
-      {
-        setSnackbarMessage("Không tìm thấy giảng viên");
-        setSnackbarSeverity("error");
-        setOpenSnackbar(true);
-      }
-      else
-      {
-        setSnackbarMessage("Cập nhật giảng viêm thất bại");
-        setSnackbarSeverity("error");
-        setOpenSnackbar(true);
-      }
-    } catch (error) {
-      setSnackbarMessage("Cập nhật giảng viêm thất bại");
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
-      console.log(error);
-    }
-  };
+ 
 
   return (
     <Layout>
       <div style={styles.main}>
       <div style={styles.title}>
-        <span>Danh sách giảng viên</span>
+        <span>Danh sách học kỳ</span>
         <div style={styles.btnMore}>
           <IconButton aria-label="more actions"><MoreVertIcon/></IconButton>
         </div>
@@ -329,7 +240,7 @@ function TestPage()
             <TextField
               fullWidth
               fontSize="10px"
-              placeholder="Tìm kiếm theo tên giảng viên..."
+              placeholder="Tìm kiếm theo tên học kỳ..."
               variant="standard"
               autoComplete='off'
               InputProps={{
@@ -342,66 +253,54 @@ function TestPage()
                   </React.Fragment>
                 ),
               }}
-              value={searchQuery} // Liên kết giá trị tìm kiếm với state
-              onChange={handleSearchChange} // Gọi hàm xử lý khi thay đổi
+              // value={searchQuery} // 
+              // onChange={handleSearchChange}//
             />
           </Box>
         </div>
         <div style={styles.cbKhoa}>
-        <Autocomplete
-          sx={{ width: "100%" }}
-          options={khoas}
-          getOptionLabel={(option) => option.ten || ""}
-          required
-          value={selectedKhoaFilter}
-          onChange={handleKhoaChange}
-          renderInput={(params) => (
-            <TextField {...params} label="Chọn khoa" size="small" />
-          )}
-        />
 
 
         </div>
         <div style={styles.btnCreate}>
-          <Button sx={{width:"100%"}} variant="contained" onClick={handleOpenAddDialog}>Tạo giảng viên</Button>
-          <Dialog id='themGiangVien' fullWidth open={openAddDialog} onClose={handleCloseAddDialog} >
-                      <DialogTitle>Tạo giảng viên mới:</DialogTitle>
+          <Button sx={{width:"100%"}} variant="contained" onClick={handleOpenAddDialog}>Tạo học kỳ</Button>
+          <Dialog id='themHocKy' fullWidth open={openAddDialog} onClose={handleCloseAddDialog}>
+                      <DialogTitle>Tạo học kỳ mới:</DialogTitle>
                       <DialogContent >
                         <DialogContentText>
-                          Thêm giảng viên mới vào hệ thống
+                          Thêm học kỳ mới vào hệ thống
                         </DialogContentText>
-                        <TextField
-                          autoFocus
-                          required
-                          id='tenGiangVien'
-                          margin="dense"
-                          label="Tên giảng viên"
-                          fullWidth
-                          variant="standard"
-                          onBlur={(e) => setTenGiangVien(e.target.value.trim())}
-                          error={errorTenGiangVien}
-                          onInput={(e) => setErrorTenGiangVien(e.target.value.trim() === "")}
-                          helperText="Vui lòng nhập tên giảng viên"
-                          autoComplete='off'
-                        />
-          
-                       <Autocomplete
-                          options={khoas}
+                        <Autocomplete
+                          options={hocKi}
                           getOptionLabel={(option) => option.ten || ''}
-                          noOptionsText="Không tìm thấy khoa"
+                          noOptionsText="Không tìm thấy học kì"
                           required
                           id="disable-clearable"
                           disableClearable
-                          onChange={(event, newValue) => setSelectedKhoa(newValue)} // Cập nhật state khi chọn khoa
+                          // onChange={(event, newValue) => setSelectedKhoa(newValue)} // Cập nhật state khi chọn khoa
                           renderInput={(params) => (
-                            <TextField {...params} label="Chọn khoa" variant="standard" />
+                            <TextField {...params} label="Chọn học kì" variant="standard" />
                           )}
                         />
+                        <Autocomplete 
+                          sx={{marginTop: '10px'}}
+                          options={schoolYears}
+                          getOptionLabel={(option) => option.label}
+                          defaultValue={schoolYears[schoolYears.length - 1]} // Chọn năm hiện tại mặc định
+                          noOptionsText="Không tìm thấy học kì"
+                          required
+                          disableClearable
+                          // onChange={(event, newValue) => setSelectedKhoa(newValue)} // Cập nhật state khi chọn khoa
+                          renderInput={(params) => (
+                            <TextField {...params} label="Chọn năm học" variant="standard" />
+                          )}
+                        />
+                        
                       </DialogContent>
                       <DialogActions>
-                        <Button onClick={handleCloseAddDialog} >Hủy</Button>
+                        <Button onClick={handleCloseAddDialog}>Hủy</Button>
                         <Button
-                          onClick={handleSubmitAdd}
+
                         >
                           Lưu
                         </Button>
@@ -416,76 +315,33 @@ function TestPage()
          <TableHead sx={{position: 'sticky',top: 0,  zIndex: 1,backgroundColor: "#0071A6",}}>
           <TableRow>
             <StyledTableCell align="center">STT</StyledTableCell>
-            <StyledTableCell align="center">Tên giảng viên</StyledTableCell>
-            <StyledTableCell align="center">Tên Khoa</StyledTableCell>
+            <StyledTableCell align="center">Mã học kỳ</StyledTableCell>
+            <StyledTableCell align="center">Tên</StyledTableCell>
+            <StyledTableCell align="center">Năm học</StyledTableCell>
             <StyledTableCell align="center"></StyledTableCell>
           </TableRow>
 
          </TableHead>
          <TableBody sx={{ overflowY: "auto" }}>
-            {filteredData.map((row, index) => (
-              <StyledTableRow key={row.maHocPhan || index}>
-                <StyledTableCell align="center" width={150}>{index + 1}</StyledTableCell>
+         {Array.isArray(filteredData) ? (
+            filteredData.map((row, index) => (
+              <StyledTableRow key={row.maHocKy || index}>
+                <StyledTableCell align="center" width={100}>{index + 1}</StyledTableCell>
                 <StyledTableCell align="center">{row.ten}</StyledTableCell>
                 <StyledTableCell align="center" width={450}>{row.tenKhoa}</StyledTableCell>
                 <StyledTableCell align="center" width={150}>
                   <Tooltip title="Sửa học phần">
-                    <IconButton
-                      onClick={() => handleOpenEditDialog(row.id)}
-                    ><EditIcon /></IconButton>
+                    <IconButton><EditIcon /></IconButton>
                   </Tooltip>
-        
                 </StyledTableCell>
               </StyledTableRow>
-              
-            ))}
-            <Dialog id='suaGiangVien' fullWidth open={openEditDialog} onClose={handleCloseEditDialog}>
-                      <DialogTitle>Sửa thông tin giảng viên:</DialogTitle>
-                      <DialogContent >
-                        <DialogContentText>
-                          Sửa thông tin giảng viên này
-                        </DialogContentText>
-                        <TextField
-                          autoFocus
-                          required
-                          id='tenGiangVien'
-                          margin="dense"
-                          label="Tên giảng viên"
-                          defaultValue={tenGiangVien}
-                          fullWidth
-                          variant="standard"
-                          onBlur={(e) => setTenGiangVien(e.target.value.trim())}
-                          error={errorTenGiangVien}
-                          onInput={(e) => setErrorTenGiangVien(e.target.value.trim() === "")}
-                          helperText="Vui lòng nhập tên giảng viên"
-                          autoComplete='off'
-                        />
-                        <TextField
-                          autoFocus
-                          required
-                          id='tenKhoa'
-                          margin="dense"
-                          label="Thuộc khoa"
-                          defaultValue={tenKhoa}
-                          fullWidth
-                          variant="standard"
-                          helperText="Không thể thay đổi khoa"
-                          autoComplete='off'
-                          focused={false}
-                          InputProps={{ readOnly: true }}
-                        />
-          
-                       
-                      </DialogContent>
-                      <DialogActions>
-                        <Button onClick={handleCloseEditDialog} >Hủy</Button>
-                        <Button
-                          onClick={handleSubmitEditDialog}
-                        >
-                          Lưu
-                        </Button>
-                      </DialogActions>
-                    </Dialog>
+            ))
+          ) : (
+            <StyledTableRow>
+              <StyledTableCell align="center" colSpan={5}>Không có dữ liệu</StyledTableCell>
+            </StyledTableRow>
+          )}
+
         </TableBody>
        </Table>
      </TableContainer>

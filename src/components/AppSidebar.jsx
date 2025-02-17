@@ -38,6 +38,7 @@ import CaiDatIcon from "@/assets/icons/cai-dat-icon.png";
 import DangXuatIcon from "@/assets/icons/dang-xuat-icon.png";
 import LogoDUT from "@/assets/logos/logo-dut.png";
 import { getRole } from "@/utils/storage";
+import HocKiIcon from "@/assets/icons/hoc-ki-icon.png";
 const truongKhoaItem = [
   {
     title: "Khoa",
