@@ -1,214 +1,135 @@
-import Layout from "./Layout";
-import DataTable from "@/components/DataTable";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import * as React from 'react';
+import { styled } from '@mui/material/styles';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell, { tableCellClasses } from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import TextField from '@mui/material/TextField';
+import SearchIcon from '@mui/icons-material/Search';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import {Tooltip } from '@mui/material';
+import Box from '@mui/material/Box';
+import { useState, useEffect, useCallback } from "react";
+import Autocomplete from '@mui/material/Autocomplete';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import Layout from './Layout';
+import { useSearchParams, useNavigate } from "react-router-dom";
 import {
   getSinhViens,
   deleteSinhVien,
   addSinhVien,
-  updateSinhVien
+  updateSinhVien,
+  getSinhVienById
 } from "@/api/api-sinhvien";
-import { toast } from "react-toastify";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { SinhVienForm } from "@/components/SinhVienForm";
 import { getAllKhoas } from "@/api/api-khoa";
-import { ComboBox } from "@/components/ComboBox";
-import { useState, useEffect, useCallback } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import { getAllLopHocPhans, getLopHocPhans } from "@/api/api-lophocphan";
 import { getAllNganhs } from "@/api/api-nganh";
-import { createSearchURL } from "@/utils/string";
+import { getAllLopHocPhans, getLopHocPhans } from "@/api/api-lophocphan";
 import { getGiangVienId, getRole } from "@/utils/storage";
 
 const role = getRole();
 const giangVienId = getGiangVienId();
 
-const createSinhVienColumns = (handleEdit, handleDelete) => [
-  {
-    accessorKey: "maSinhVien",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          TT
-          <ArrowUpDown />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div className="px-4 py-2">{row.index + 1}</div>,
+const styles = {
+  main: {
+    width: '100%',
+    height: '91vh',
+    display: 'flex',
+    flexDirection: 'column',
+    overflowY: 'hidden',
+    padding: "10px",
   },
-  {
-    accessorKey: "maSinhVien",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Mã Sinh Viên
-          <ArrowUpDown />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div className="px-4 py-2">{row.getValue("maSinhVien")}</div>,
+  title: {
+    width: '100%',
+    height: '6%',
+    fontSize: '1.2em',
+    fontFamily: 'Roboto',
+    fontWeight: 'bold',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    flexDirection: 'row',
   },
-  {
-    accessorKey: "ten",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Tên
-          <ArrowUpDown />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div className="px-4 py-2">{row.getValue("ten")}</div>,
+  btnMore: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    marginLeft: 'auto',
   },
-  // {
-  //   accessorKey: "khoaId",
-  //   header: ({ column }) => {
-  //     return (
-  //       <Button
-  //         variant="ghost"
-  //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //       >
-  //         Khoa Id
-  //         <ArrowUpDown />
-  //       </Button>
-  //     );
-  //   },
-  //   cell: ({ row }) => <div className="px-4 py-2">{row.getValue("khoaId")}</div>,
-  // },
-  {
-    accessorKey: "tenKhoa",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Tên Khoa
-          <ArrowUpDown />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div className="px-4 py-2">{row.getValue("tenKhoa")}</div>,
+  tbActions: {
+    width: '100%',
+    height: '6%',
+    display: 'flex',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    flexDirection: 'row',
   },
-  {
-    accessorKey: "tenNganh",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Tên Ngành
-          <ArrowUpDown />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div className="px-4 py-2">{row.getValue("tenNganh")}</div>,
+  ipSearch: {
+    width: '25%',
+    height: '100%',
+    justifyContent: 'flex-start',
+    borderRadius: '5px',
   },
-  {
-    accessorKey: "namNhapHoc",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Năm Nhập Học
-          <ArrowUpDown />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div className="px-4 py-2">{row.getValue("namNhapHoc")}</div>,
+  btnCreate: {
+    width: '15%',
+    height: '100%',
+    display: 'flex',
+    marginLeft: 'auto',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: '5px',
+    color: 'white',
+    cursor: 'pointer',
   },
-  {
-    id: "actions",
-    enableHiding: false,
-    cell: ({ row }) => {
-      const student = row.original;
-      if (role === "GiangVien") {
-        return null;
-      }
+  table: {
+    width: '100%',
+    height: '98%',
+    display: 'flex',
+    flexDirection: 'column',
+    paddingTop: '10px',
+    overflowY: 'auto',
+  },
+  filterBox: {
+    width: '22%',
+    height: '80%',
+    marginLeft: '10px',
+    marginBottom: '10px',
+  },
+};
 
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Hành động</DropdownMenuLabel>
-            <Dialog>
-              <DialogTrigger asChild>
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                  Sửa Sinh Viên
-                </DropdownMenuItem>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Sửa Sinh Viên</DialogTitle>
-                  <DialogDescription>
-                    Sửa Sinh viên hiện tại
-                  </DialogDescription>
-                </DialogHeader>
-                <SinhVienForm sinhVien={student} handleEdit={handleEdit} />
-              </DialogContent>
-            </Dialog>
-            <Dialog>
-              <DialogTrigger asChild>
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                  Xóa Sinh Viên
-                </DropdownMenuItem>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Xóa Sinh Viên</DialogTitle>
-                  <DialogDescription>
-                    Xóa sinh viên hiện tại
-                  </DialogDescription>
-                </DialogHeader>
-                <p>Bạn có chắc muốn xóa sinh viên này?</p>
-                <DialogFooter>
-                  <Button
-                    type="submit"
-                    onClick={() => handleDelete(student.id)}
-                  >
-                    Xóa
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  [`&.${tableCellClasses.head}`]: {
+    backgroundColor: "#0071A6",
+    color: theme.palette.common.white,
+    borderRight: '1px solid #ddd',
   },
-];
+  [`&.${tableCellClasses.body}`]: {
+    fontSize: 14,
+    padding: '5px 10px',
+    borderRight: '1px solid #ddd',
+  },
+}));
+
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  '&:nth-of-type(odd)': {
+    backgroundColor: theme.palette.action.hover,
+  },
+  '&:hover': {
+    backgroundColor:"#D3F3FF",
+    cursor: 'pointer',
+  },
+}));
 
 export default function SinhVienPage() {
   const navigate = useNavigate();
@@ -227,6 +148,20 @@ export default function SinhVienPage() {
   const [comboBoxLopHocPhanId, setComboBoxLopHocPhanId] = useState(lopHocPhanIdParam);
   const [comboBoxNganhId, setComboBoxNganhId] = useState(nganhIdParam);
   const baseUrl = "/sinhvien";
+
+  const [openAddDialog, setOpenAddDialog] = useState(false);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [tenSinhVien, setTenSinhVien] = useState("");
+  const [selectedKhoa, setSelectedKhoa] = useState(null);
+  const [selectedNganh, setSelectedNganh] = useState(null);
+  const [namNhapHoc, setNamNhapHoc] = useState("");
+  const [selectedStudentId, setSelectedStudentId] = useState(null);
 
   const fetchData = useCallback(async () => {
     const dataKhoa = await getAllKhoas();
@@ -273,54 +208,429 @@ export default function SinhVienPage() {
   const handleAddSinhVien = async (newSinhVien) => {
     try {
       await addSinhVien(newSinhVien);
-      toast.success("Thêm sinh viên thành công!");
       fetchData();
     } catch (error) {
-      toast.error("Thêm sinh viên thất bại!");
+      
     }
   };
 
   const handleUpdateSinhVien = async (updatedSinhVien) => {
     try {
       await updateSinhVien(updatedSinhVien);
-      toast.success("Cập nhật sinh viên thành công!");
       fetchData();
     } catch (error) {
-      toast.error("Cập nhật sinh viên thất bại!");
+      // toast.error("Cập nhật sinh viên thất bại!");
     }
   };
 
-  const handleDeleteSinhVien = async (id) => {
+  const handleDeleteSinhVien = async () => {
     try {
-      await deleteSinhVien(id);
-      toast.success("Xóa sinh viên thành công!");
-      fetchData();
+      await deleteSinhVien(selectedStudentId);
+      setSnackbarMessage("Xóa sinh viên thành công");
+      setSnackbarSeverity("success");
+      setOpenSnackbar(true);
+      handleCloseDeleteDialog();
+      fetchData(); // Cập nhật lại danh sách sinh viên
     } catch (error) {
-      toast.error("Xóa sinh viên thất bại!");
+      setSnackbarMessage(error.message);
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
     }
+  };
+
+  const handleOpenAddDialog = () => {
+    setOpenAddDialog(true);
+  };
+
+  const handleCloseAddDialog = () => {
+    setOpenAddDialog(false);
+    setTenSinhVien("");
+    setSelectedKhoa(null);
+    setSelectedNganh(null);
+    setNamNhapHoc("");
+  };
+
+  const handleSubmitAdd = async () => {
+    if (!tenSinhVien || !selectedKhoa || !selectedNganh || !namNhapHoc) {
+      setSnackbarSeverity("error");
+      setSnackbarMessage("Vui lòng điền đầy đủ thông tin");
+      setOpenSnackbar(true);
+      return;
+    }
+
+    const newSinhVien = {
+      ten: tenSinhVien,
+      khoaId: selectedKhoa.value,
+      nganhId: selectedNganh.value,
+      namNhapHoc: parseInt(namNhapHoc)
+    };
+
+    try {
+      const response = await addSinhVien(newSinhVien);
+      if (response) {
+        setSnackbarMessage("Thêm sinh viên thành công");
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
+        handleCloseAddDialog();
+        fetchData();
+      }
+    } catch (error) {
+      setSnackbarMessage(error.message);
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+    }
+  };
+
+  const handleSubmitEdit = async () => {
+    if (!tenSinhVien || !selectedKhoa || !selectedNganh || !namNhapHoc) {
+      setSnackbarSeverity("error");
+      setSnackbarMessage("Vui lòng điền đầy đủ thông tin");
+      setOpenSnackbar(true);
+      return;
+    }
+
+    const updatedSinhVien = {
+      ten: tenSinhVien,
+      khoaId: selectedKhoa.value,
+      nganhId: selectedNganh.value,
+      namNhapHoc: parseInt(namNhapHoc)
+    };
+
+    try {
+      const response = await updateSinhVien(selectedStudentId, updatedSinhVien);
+      if (response) {
+        setSnackbarMessage("Cập nhật sinh viên thành công");
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
+        handleCloseEditDialog();
+        fetchData(); // Cập nhật lại danh sách sinh viên
+      }
+    } catch (error) {
+      setSnackbarMessage(error.message);
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+    }
+  };
+
+  const handleOpenEditDialog = async (sinhVienId) => {
+    const sinhVien = await getSinhVienById(sinhVienId);
+    setTenSinhVien(sinhVien.ten);
+    setSelectedKhoa({ value: sinhVien.khoaId, label: sinhVien.tenKhoa });
+    setSelectedNganh({ value: sinhVien.nganhId, label: sinhVien.tenNganh });
+    setNamNhapHoc(sinhVien.namNhapHoc);
+    setSelectedStudentId(sinhVienId);
+    setOpenEditDialog(true);
+  };
+
+  const handleCloseEditDialog = () => {
+    setOpenEditDialog(false);
+    setTenSinhVien("");
+    setSelectedKhoa(null);
+    setSelectedNganh(null);
+    setNamNhapHoc("");
+  };
+
+  const handleOpenDeleteDialog = (sinhVienId) => {
+    setSelectedStudentId(sinhVienId);
+    setOpenDeleteDialog(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setOpenDeleteDialog(false);
+    setSelectedStudentId(null);
   };
 
   return (
     <Layout>
-      <div className="w-full">
-        <div className="flex gap-1">
-          <ComboBox items={khoaItems} setItemId={setComboBoxKhoaId} initialItemId={khoaId} placeholder="Chọn Khoa"/>
-          <ComboBox items={nganhItems} setItemId={setComboBoxNganhId} initialItemId={nganhId} placeholder="Chọn Ngành"/>
-          <ComboBox items={lopHocPhanItems} setItemId={setComboBoxLopHocPhanId} initialItemId={lopHocPhanId} placeholder="Chọn lớp học phần"/>
-          <Button onClick={handleGoClick}>Go</Button>
+      <div style={styles.main}>
+        <div style={styles.title}>
+          <span>Danh sách sinh viên</span>
+          <div style={styles.btnMore}>
+            <IconButton aria-label="more actions"><MoreVertIcon/></IconButton>
+          </div>
         </div>
-        <DataTable
-          entity="Sinh Viên"
-          createColumns={createSinhVienColumns}
-          data={data}
-          fetchData={fetchData}
-          deleteItem={handleDeleteSinhVien}
-          columnToBeFiltered={"ten"}
-          ItemForm={SinhVienForm}
-          handleAdd={handleAddSinhVien}
-          handleUpdate={handleUpdateSinhVien}
-          hasCreateButton={role === "Admin" || role === "PhongDaoTao"}
-        />
+        
+        <div style={styles.tbActions}>
+          <div style={styles.ipSearch}>
+            <Box sx={{
+              display: "flex",
+              alignItems: "center",
+              border: "2px solid #ccc",
+              borderRadius: "20px",
+              padding: "4px 8px",
+              width: "100%",
+              maxWidth: "100%",
+              "&:focus-within": {
+                border: "2px solid #337AB7",
+              },
+              height: "100%",
+            }}>
+              <TextField
+                fullWidth
+                placeholder="Tìm kiếm theo tên sinh viên..."
+                variant="standard"
+                autoComplete='off'
+                InputProps={{
+                  disableUnderline: true,
+                  startAdornment: (
+                    <IconButton>
+                      <SearchIcon sx={{ color: "#888" }} />
+                    </IconButton>
+                  ),
+                }}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </Box>
+          </div>
+
+          <div style={styles.filterBox}>
+            <Autocomplete
+              options={khoaItems}
+              getOptionLabel={(option) => option.label || ""}
+              value={khoaItems.find(item => item.value === comboBoxKhoaId) || null}
+              onChange={(_, newValue) => setComboBoxKhoaId(newValue?.value)}
+              renderInput={(params) => (
+                <TextField {...params} label="Chọn khoa" size="small" />
+              )}
+            />
+          </div>
+
+          <div style={styles.filterBox}>
+            <Autocomplete
+              options={nganhItems}
+              getOptionLabel={(option) => option.label || ""}
+              value={nganhItems.find(item => item.value === comboBoxNganhId) || null}
+              onChange={(_, newValue) => setComboBoxNganhId(newValue?.value)}
+              renderInput={(params) => (
+                <TextField {...params} label="Chọn ngành" size="small" />
+              )}
+            />
+          </div>
+
+          {(role === "Admin" || role === "PhongDaoTao") && (
+            <div style={styles.btnCreate}>
+              <Button 
+                variant="contained" 
+                onClick={handleOpenAddDialog}
+                sx={{width:"100%"}}
+              >
+                Tạo sinh viên
+              </Button>
+            </div>
+          )}
+        </div>
+
+        <div style={styles.table}>
+          <TableContainer component={Paper}>
+            <Table sx={{ minWidth: 700 }} aria-label="customized table">
+              <TableHead sx={{position: 'sticky', top: 0, zIndex: 1, backgroundColor: "#0071A6"}}>
+                <TableRow>
+                  <StyledTableCell align="center">STT</StyledTableCell>
+                  <StyledTableCell align="center">Mã sinh viên</StyledTableCell>
+                  <StyledTableCell align="center">Tên sinh viên</StyledTableCell>
+                  <StyledTableCell align="center">Khoa</StyledTableCell>
+                  <StyledTableCell align="center">Ngành</StyledTableCell>
+                  <StyledTableCell align="center">Năm nhập học</StyledTableCell>
+                  {(role === "Admin" || role === "PhongDaoTao") && (
+                    <StyledTableCell align="center">Thao tác</StyledTableCell>
+                  )}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {data.map((row, index) => (
+                  <StyledTableRow key={row.id}>
+                    <StyledTableCell align="center">{index + 1}</StyledTableCell>
+                    <StyledTableCell align="center">{row.maSinhVien}</StyledTableCell>
+                    <StyledTableCell align="center">{row.ten}</StyledTableCell>
+                    <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
+                    <StyledTableCell align="center">{row.tenNganh}</StyledTableCell>
+                    <StyledTableCell align="center">{row.namNhapHoc}</StyledTableCell>
+                    {(role === "Admin" || role === "PhongDaoTao") && (
+                      <StyledTableCell align="center">
+                        <Tooltip title="Sửa sinh viên">
+                          <IconButton onClick={() => handleOpenEditDialog(row.id)}>
+                            <EditIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Xóa sinh viên">
+                          <IconButton onClick={() => handleOpenDeleteDialog(row.id)}>
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </StyledTableCell>
+                    )}
+                  </StyledTableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </div>
+
+        <Dialog open={openAddDialog} onClose={handleCloseAddDialog}>
+          <DialogTitle>Tạo Sinh Viên</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Tạo Sinh Viên mới
+            </DialogContentText>
+            
+            <TextField
+              autoFocus
+              margin="dense"
+              label="Tên"
+              fullWidth
+              variant="outlined"
+              value={tenSinhVien}
+              onChange={(e) => setTenSinhVien(e.target.value)}
+              helperText="Tên hiển thị của sinh viên"
+              sx={{ mb: 2 }}
+            />
+            
+            <Autocomplete
+              options={khoaItems}
+              getOptionLabel={(option) => option.label || ""}
+              value={selectedKhoa}
+              onChange={(_, newValue) => setSelectedKhoa(newValue)}
+              renderInput={(params) => (
+                <TextField 
+                  {...params} 
+                  label="Chọn Khoa" 
+                  variant="outlined" 
+                  helperText="Khoa của sinh viên"
+                />
+              )}
+              sx={{ mb: 2 }}
+            />
+            
+            <Autocomplete
+              options={nganhItems}
+              getOptionLabel={(option) => option.label || ""}
+              value={selectedNganh}
+              onChange={(_, newValue) => setSelectedNganh(newValue)}
+              renderInput={(params) => (
+                <TextField 
+                  {...params} 
+                  label="Chọn Ngành" 
+                  variant="outlined" 
+                  helperText="Ngành sinh viên nhập học"
+                />
+              )}
+              sx={{ mb: 2 }}
+            />
+            
+            <TextField
+              margin="dense"
+              label="Năm Nhập Học"
+              type="number"
+              fullWidth
+              variant="outlined"
+              value={namNhapHoc}
+              onChange={(e) => setNamNhapHoc(e.target.value)}
+              helperText="Năm sinh viên nhập học"
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseAddDialog}>Hủy</Button>
+            <Button onClick={handleSubmitAdd}>Submit</Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog open={openEditDialog} onClose={handleCloseEditDialog}>
+          <DialogTitle>Sửa Sinh Viên</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Cập nhật thông tin sinh viên
+            </DialogContentText>
+            
+            <TextField
+              autoFocus
+              margin="dense"
+              label="Tên"
+              fullWidth
+              variant="outlined"
+              value={tenSinhVien}
+              onChange={(e) => setTenSinhVien(e.target.value)}
+              helperText="Tên hiển thị của sinh viên"
+              sx={{ mb: 2 }}
+            />
+            
+            <Autocomplete
+              options={khoaItems}
+              getOptionLabel={(option) => option.label || ""}
+              value={selectedKhoa}
+              onChange={(_, newValue) => setSelectedKhoa(newValue)}
+              renderInput={(params) => (
+                <TextField 
+                  {...params} 
+                  label="Chọn Khoa" 
+                  variant="outlined" 
+                  helperText="Khoa của sinh viên"
+                />
+              )}
+              sx={{ mb: 2 }}
+            />
+            
+            <Autocomplete
+              options={nganhItems}
+              getOptionLabel={(option) => option.label || ""}
+              value={selectedNganh}
+              onChange={(_, newValue) => setSelectedNganh(newValue)}
+              renderInput={(params) => (
+                <TextField 
+                  {...params} 
+                  label="Chọn Ngành" 
+                  variant="outlined" 
+                  helperText="Ngành sinh viên nhập học"
+                />
+              )}
+              sx={{ mb: 2 }}
+            />
+            
+            <TextField
+              margin="dense"
+              label="Năm Nhập Học"
+              type="number"
+              fullWidth
+              variant="outlined"
+              value={namNhapHoc}
+              onChange={(e) => setNamNhapHoc(e.target.value)}
+              helperText="Năm sinh viên nhập học"
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseEditDialog}>Hủy</Button>
+            <Button onClick={handleSubmitEdit}>Cập nhật</Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
+          <DialogTitle>Xóa Sinh Viên</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Bạn có chắc chắn muốn xóa sinh viên này không?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDeleteDialog}>Hủy</Button>
+            <Button onClick={handleDeleteSinhVien}>Xóa</Button>
+          </DialogActions>
+        </Dialog>
+
+        <Snackbar 
+          open={openSnackbar} 
+          autoHideDuration={3000} 
+          onClose={() => setOpenSnackbar(false)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        >
+          <MuiAlert 
+            variant='filled' 
+            onClose={() => setOpenSnackbar(false)} 
+            severity={snackbarSeverity} 
+            sx={{ width: '100%' }}
+          >
+            {snackbarMessage}
+          </MuiAlert>
+        </Snackbar>
       </div>
     </Layout>
   );
