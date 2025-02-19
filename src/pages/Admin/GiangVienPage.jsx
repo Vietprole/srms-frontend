@@ -19,18 +19,17 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import {Tooltip } from '@mui/material';
 import Box from '@mui/material/Box';
-import { useState, useEffect,useRef } from "react";
+import { useState, useEffect } from "react";
 import Autocomplete from '@mui/material/Autocomplete';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import {
   getAllKhoas
 } from "@/api/api-khoa";
-import { getAllHocPhans,addHocPhan,getHocPhanById,updateHocPhan } from '@/api/api-hocphan';
 import EditIcon from '@mui/icons-material/Edit';
-import Layout from './Layout';
-
-function HocPhanPage() 
+import Layout from '../Layout';
+import {getAllGiangViens,addGiangVien,getGiangVienById,updateGiangVien} from "@/api/api-giangvien";
+function GiangVienPage() 
 {
   const styles = {
     main:
@@ -105,6 +104,7 @@ function HocPhanPage()
       marginBottom: '10px',
     },
   };
+  const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -113,71 +113,39 @@ function HocPhanPage()
   const [data, setData] = useState([]);
   const [searchQuery, setSearchQuery] = useState(""); // Lưu giá trị tìm kiếm
   const [filteredData, setFilteredData] = useState(data); // Lưu dữ liệu đã lọc
-  const [selectedKhoaFilter, setSelectedKhoaFilter] = useState(null);
-  const [openAddDialog, setOpenAddDialog] = useState(false);
-  const [tenHocPhan, setTenHocPhan] = useState("");
-  const [soTinChi, setSoTinChi] = useState("");
-  const [selectedKhoa, setSelectedKhoa] = useState(null);
-  const [errorTenHocPhan, setErrorTenHocPhan] = useState(false);
-  const [errorSoTinChi, setErrorSoTinChi] = useState(false);
-  const soTinChiRef = useRef("");
-  const tenHocPhanRef = useRef("");
-  const [maHocPhan, setMaHocPhan] = useState("");
+  const [selectedKhoa, setSelectedKhoa] = useState(null); // Lưu khoa được chọn
+  const [selectedKhoaFilter, setSelectedKhoaFilter] = useState(null); // Lưu khoa được chọn để lọc dữ liệu
+  const [tenGiangVien, setTenGiangVien] = useState("");
+  const [errorTenGiangVien, setErrorTenGiangVien] = useState(false);
   const [tenKhoa, setTenKhoa] = useState("");
-  const [hocPhanId, setHocPhanId] = useState("");
-  const handleOpenEditDialog = async(hocPhanId) => {
-    const hocphan = await getHocPhanById(hocPhanId);
-    if(hocphan.status===200)
-    {
-     
-      setTenHocPhan(hocphan.data.ten);
-      setSoTinChi(hocphan.data.soTinChi);
-      setSelectedKhoa(hocphan.data.khoa);
-      tenHocPhanRef.current = hocphan.data.ten;
-      soTinChiRef.current = hocphan.data.soTinChi;
-      setMaHocPhan(hocphan.data.maHocPhan);
-      setTenKhoa(hocphan.data.tenKhoa);
-      setHocPhanId(hocPhanId);
-      setOpenEditDialog(true);
-
-    }
-    else if(hocphan.status===404)
-    {
-      setSnackbarMessage("Không tìm thấy học phần");
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
-    }
-    else
-    {
-      setSnackbarMessage("Lỗi không xác định");
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
-    }
-  };
-
-  const handleCloseDialogEditHocPhans = () => {
+  const [giangVienId, setGiangVienId] = useState(null);
+  const [khoaId, setKhoaId] = useState("");
+  const handleOpenEditDialog  = async (giangVienId) => {
+    const giangVien = await getGiangVienById(giangVienId);
+    setTenGiangVien(giangVien.ten);
+    setTenKhoa(giangVien.tenKhoa);
+    setOpenEditDialog(true);
+    setKhoaId(giangVien.khoaId);
+    setGiangVienId(giangVienId);
+  };  
+  const handleCloseEditDialog = () => {
     setOpenEditDialog(false);
-    setTenHocPhan("");
-    setSoTinChi("");
-    setSelectedKhoa(null);
-    setErrorTenHocPhan(false);
-    setErrorSoTinChi(false);
+    setTenGiangVien("");
     setTenKhoa("");
-    tenHocPhanRef.current = "";
-    soTinChiRef.current = "";
+    setKhoaId("");
+    setGiangVienId(null);
+    setErrorTenGiangVien(false);
+  };
 
-  };
-  const handleOpenAddDialog = async() => {
+  const handleOpenAddDialog = () => {
     setOpenAddDialog(true);
-  };
-  const handleCloseDialogAddHocPhans = () => {
-    setTenHocPhan("");
-    setSoTinChi("");
-    setSelectedKhoa(null);
-    setErrorTenHocPhan(false);
-    setErrorSoTinChi(false);
+  }
+  const handleCloseAddDialog = () => {
     setOpenAddDialog(false);
-  };
+    setSelectedKhoa(null);
+    setTenGiangVien("");
+
+  }
 
   const handleKhoaChange = (event, newValue) => {
     setSelectedKhoaFilter(newValue);
@@ -196,9 +164,9 @@ function HocPhanPage()
   
   
   const fetchData = async () => {
-    const hocphans = await getAllHocPhans();
-    setData(hocphans);
-    setFilteredData(hocphans); 
+    const giangvien = await getAllGiangViens();
+    setData(giangvien);
+    setFilteredData(giangvien);
     const khoa = await getAllKhoas();
     setKhoas(khoa);
   };
@@ -252,47 +220,36 @@ function HocPhanPage()
   },
   }));
 
-  const handleAddSubmit = async () => {
-    if (tenHocPhan.trim() === "") {
-      
-      setErrorTenHocPhan(true);
-      setSnackbarMessage("Vui lòng nhập tên học phần");
+  const handleSubmitAdd = async () => {
+    if (tenGiangVien.trim() === "") {
       setSnackbarSeverity("error");
-      setOpenSnackbar(true);
-      return;
-    }
-    if(soTinChi.trim() === "")
-    {
-      setErrorSoTinChi(true);
-      setSnackbarMessage("Vui lòng nhập số tín chỉ");
-      setSnackbarSeverity("error");
+      setSnackbarMessage("Vui lòng nhập tên giảng viên");
       setOpenSnackbar(true);
       return;
     }
     if (!selectedKhoa) {
-      setSnackbarMessage("Vui lòng chọn khoa");
       setSnackbarSeverity("error");
+      setSnackbarMessage("Vui lòng chọn khoa");
       setOpenSnackbar(true);
       return;
     }
-    const hocphanData = {
-      ten: tenHocPhan,
-      soTinChi: soTinChi,
+    const newGiangVien = {
+      ten: tenGiangVien,
       khoaId: selectedKhoa.id,
     };
     try {
-      const rp =await addHocPhan(hocphanData);
+      const rp =await addGiangVien(newGiangVien);
       if(rp.status===201)
       {
-        setSnackbarMessage("Thêm học phần thành công");
+        setSnackbarMessage("Thêm giảng viên thành công");
         setSnackbarSeverity("success");
         setOpenSnackbar(true);
-        handleCloseDialogAddHocPhans();
+        handleCloseAddDialog();
         fetchData();
       }
       else
       {
-        setSnackbarMessage("Thêm học phần thất bại");
+        setSnackbarMessage("Thêm giảng viêm thất bại");
         setSnackbarSeverity("error");
         setOpenSnackbar(true);
       }
@@ -301,63 +258,53 @@ function HocPhanPage()
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     }
+
   };
-  const handleSubmitEdit = async () => {
-    if (tenHocPhanRef.current.trim() === "") {
-      setErrorTenHocPhan(true);
-      setSnackbarMessage("Vui lòng nhập tên học phần");
+  const handleSubmitEditDialog = async () => {
+    if (tenGiangVien.trim() === "") {
       setSnackbarSeverity("error");
+      setSnackbarMessage("Vui lòng nhập tên giảng viên");
       setOpenSnackbar(true);
       return;
     }
-    if(soTinChiRef.current.trim() === "")
-    {
-      setErrorSoTinChi(true);
-      setSnackbarMessage("Vui lòng nhập số tín chỉ");
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
-      return;
-    }
-    const hocphanData = {
-      ten: tenHocPhanRef.current,
-      soTinChi: soTinChiRef.current,
+    const data = {
+      ten: tenGiangVien,
+      khoaId: khoaId,
     };
     try {
-      const rp =await updateHocPhan(hocPhanId,hocphanData);
+      const rp =await updateGiangVien(giangVienId,data);
       if(rp.status===200)
       {
-        setSnackbarMessage("Cập nhật học phần thành công");
+        setSnackbarMessage("Cập nhật giảng viên thành công");
         setSnackbarSeverity("success");
         setOpenSnackbar(true);
-        handleCloseDialogEditHocPhans();
+        handleCloseEditDialog();
         fetchData();
       }else if(rp.status===404)
       {
-        setSnackbarMessage("Không tìm thấy học phần");
+        setSnackbarMessage("Không tìm thấy giảng viên");
         setSnackbarSeverity("error");
         setOpenSnackbar(true);
       }
       else
       {
-        setOpenSnackbar(true);
-        setSnackbarMessage("Cập nhật học phần thất bại");
+        setSnackbarMessage("Cập nhật giảng viêm thất bại");
         setSnackbarSeverity("error");
         setOpenSnackbar(true);
       }
     } catch (error) {
-      setOpenSnackbar(true);
-      setSnackbarMessage(error.message);
+      setSnackbarMessage("Cập nhật giảng viêm thất bại");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
+      console.log(error);
     }
   };
-
 
   return (
     <Layout>
       <div style={styles.main}>
       <div style={styles.title}>
-        <span>Danh sách học phần</span>
+        <span>Danh sách giảng viên</span>
         <div style={styles.btnMore}>
           <IconButton aria-label="more actions"><MoreVertIcon/></IconButton>
         </div>
@@ -382,7 +329,7 @@ function HocPhanPage()
             <TextField
               fullWidth
               fontSize="10px"
-              placeholder="Tìm kiếm theo tên học phần..."
+              placeholder="Tìm kiếm theo tên giảng viên..."
               variant="standard"
               autoComplete='off'
               InputProps={{
@@ -406,7 +353,6 @@ function HocPhanPage()
           options={khoas}
           getOptionLabel={(option) => option.ten || ""}
           required
-          // disableClearable
           value={selectedKhoaFilter}
           onChange={handleKhoaChange}
           renderInput={(params) => (
@@ -417,56 +363,28 @@ function HocPhanPage()
 
         </div>
         <div style={styles.btnCreate}>
-          <Button sx={{width:"100%"}} variant="contained" onClick={()=>{handleOpenAddDialog()}} >Tạo học phần</Button>
-          <Dialog id='themHocPhan' fullWidth open={openAddDialog} onClose={handleCloseDialogAddHocPhans}>
-                      <DialogTitle>Tạo học phần mới:</DialogTitle>
+          <Button sx={{width:"100%"}} variant="contained" onClick={handleOpenAddDialog}>Tạo giảng viên</Button>
+          <Dialog id='themGiangVien' fullWidth open={openAddDialog} onClose={handleCloseAddDialog} >
+                      <DialogTitle>Tạo giảng viên mới:</DialogTitle>
                       <DialogContent >
                         <DialogContentText>
-                          Thêm học phần mới vào hệ thống
+                          Thêm giảng viên mới vào hệ thống
                         </DialogContentText>
                         <TextField
                           autoFocus
                           required
-                          id='tenHocPhan'
+                          id='tenGiangVien'
                           margin="dense"
-                          label="Tên học phần"
+                          label="Tên giảng viên"
                           fullWidth
                           variant="standard"
-                          onBlur={(e) => setTenHocPhan(e.target.value.trim())}
-                          error={errorTenHocPhan}
-                          onInput={(e) => setErrorTenHocPhan(e.target.value.trim() === "")}
-                          helperText="Vui lòng nhập tên học phần"
+                          onBlur={(e) => setTenGiangVien(e.target.value.trim())}
+                          error={errorTenGiangVien}
+                          onInput={(e) => setErrorTenGiangVien(e.target.value.trim() === "")}
+                          helperText="Vui lòng nhập tên giảng viên"
                           autoComplete='off'
                         />
-                        <TextField
-                          autoFocus
-                          required
-                          id="soTinChi"
-                          margin="dense"
-                          label="Số tín chỉ"
-                          variant="standard"
-                          inputRef={soTinChiRef}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            
-                            // Cho phép số thập phân (chỉ 1 dấu '.')
-                            if (/^\d*\.?\d*$/.test(value)) {
-                              soTinChiRef.current = value; 
-                              setErrorSoTinChi(false);
-                            } else {
-                              soTinChiRef.current = ""; 
-                              e.target.value = ""; 
-                              setErrorSoTinChi(true);
-                            }
-                          }}
-                          onBlur={(e) => setSoTinChi(e.target.value.trim())}
-                          inputProps={{ maxLength: 5 }}
-                          error={errorSoTinChi}
-                          helperText={errorSoTinChi ? "Vui lòng nhập số hợp lệ" : "Vui lòng nhập số tín chỉ"}  
-                          autoComplete="off"
-                        />
-
-
+          
                        <Autocomplete
                           options={khoas}
                           getOptionLabel={(option) => option.ten || ''}
@@ -481,9 +399,9 @@ function HocPhanPage()
                         />
                       </DialogContent>
                       <DialogActions>
-                        <Button onClick={handleCloseDialogAddHocPhans}>Hủy</Button>
+                        <Button onClick={handleCloseAddDialog} >Hủy</Button>
                         <Button
-                          onClick={()=>{handleAddSubmit()}}
+                          onClick={handleSubmitAdd}
                         >
                           Lưu
                         </Button>
@@ -498,9 +416,7 @@ function HocPhanPage()
          <TableHead sx={{position: 'sticky',top: 0,  zIndex: 1,backgroundColor: "#0071A6",}}>
           <TableRow>
             <StyledTableCell align="center">STT</StyledTableCell>
-            <StyledTableCell align="center">Mã học phần</StyledTableCell>
-            <StyledTableCell align="center">Tên học phần</StyledTableCell>
-            <StyledTableCell align="center">Số tín chỉ</StyledTableCell>
+            <StyledTableCell align="center">Tên giảng viên</StyledTableCell>
             <StyledTableCell align="center">Tên Khoa</StyledTableCell>
             <StyledTableCell align="center"></StyledTableCell>
           </TableRow>
@@ -509,15 +425,11 @@ function HocPhanPage()
          <TableBody sx={{ overflowY: "auto" }}>
             {filteredData.map((row, index) => (
               <StyledTableRow key={row.maHocPhan || index}>
-
-                
-                <StyledTableCell align="center" width={40}>{index + 1}</StyledTableCell>
-                <StyledTableCell align="center" width={150}>{row.maHocPhan}</StyledTableCell>
-                <StyledTableCell align="left">{row.ten}</StyledTableCell>
-                <StyledTableCell align="center" width={150}>{row.soTinChi}</StyledTableCell>
-                <StyledTableCell align="center" width={300}>{row.tenKhoa}</StyledTableCell>
+                <StyledTableCell align="center" width={150}>{index + 1}</StyledTableCell>
+                <StyledTableCell align="center">{row.ten}</StyledTableCell>
+                <StyledTableCell align="center" width={450}>{row.tenKhoa}</StyledTableCell>
                 <StyledTableCell align="center" width={150}>
-                  <Tooltip title="Sửa thông tin học phần">
+                  <Tooltip title="Sửa học phần">
                     <IconButton
                       onClick={() => handleOpenEditDialog(row.id)}
                     ><EditIcon /></IconButton>
@@ -527,66 +439,26 @@ function HocPhanPage()
               </StyledTableRow>
               
             ))}
-            <Dialog id='suaHocPhan' fullWidth open={openEditDialog} onClose={handleCloseDialogEditHocPhans}>
-                      <DialogTitle>Sửa học phần:</DialogTitle>
+            <Dialog id='suaGiangVien' fullWidth open={openEditDialog} onClose={handleCloseEditDialog}>
+                      <DialogTitle>Sửa thông tin giảng viên:</DialogTitle>
                       <DialogContent >
                         <DialogContentText>
-                          Sửa thông tin học phần
+                          Sửa thông tin giảng viên này
                         </DialogContentText>
                         <TextField
                           autoFocus
                           required
-                          id='maHocPhan'
+                          id='tenGiangVien'
                           margin="dense"
-                          label="Mã học phần"
+                          label="Tên giảng viên"
+                          defaultValue={tenGiangVien}
                           fullWidth
                           variant="standard"
-                          defaultValue={maHocPhan}
-                          helperText="Mã học phần không thể thay đổi"
+                          onBlur={(e) => setTenGiangVien(e.target.value.trim())}
+                          error={errorTenGiangVien}
+                          onInput={(e) => setErrorTenGiangVien(e.target.value.trim() === "")}
+                          helperText="Vui lòng nhập tên giảng viên"
                           autoComplete='off'
-                          focused={false}
-                          InputProps={{ readOnly: true }}
-                        />
-                        <TextField
-                          autoFocus
-                          required
-                          id='tenHocPhan'
-                          margin="dense"
-                          label="Tên học phần"
-                          fullWidth
-                          variant="standard"
-                          defaultValue={tenHocPhan}
-                          onChange={(e) => (tenHocPhanRef.current = e.target.value)} 
-                          onBlur={(e) => setErrorTenHocPhan(e.target.value.trim() === "")}
-                          error={errorTenHocPhan}
-                          helperText="Vui lòng nhập tên học phần"
-                          autoComplete='off'
-                        />
-                        <TextField
-                          autoFocus
-                          required
-                          id="soTinChi"
-                          margin="dense"
-                          label="Số tín chỉ"
-                          variant="standard"
-                          defaultValue={soTinChi}
-                          inputRef={soTinChiRef}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (/^\d*\.?\d*$/.test(value)) {
-                              soTinChiRef.current = value; 
-                              setErrorSoTinChi(false);
-                            } else {
-                              soTinChiRef.current = ""; 
-                              e.target.value = ""; 
-                              setErrorSoTinChi(true);
-                            }
-                          }}
-                          onBlur={(e) => setSoTinChi(e.target.value.trim())}
-                          inputProps={{ maxLength: 5 }}
-                          error={errorSoTinChi}
-                          helperText={errorSoTinChi ? "Vui lòng nhập số hợp lệ" : ""}  
-                          autoComplete="off"
                         />
                         <TextField
                           autoFocus
@@ -594,20 +466,21 @@ function HocPhanPage()
                           id='tenKhoa'
                           margin="dense"
                           label="Thuộc khoa"
+                          defaultValue={tenKhoa}
                           fullWidth
                           variant="standard"
-                          defaultValue={tenKhoa}
                           helperText="Không thể thay đổi khoa"
                           autoComplete='off'
                           focused={false}
                           InputProps={{ readOnly: true }}
                         />
+          
                        
                       </DialogContent>
                       <DialogActions>
-                        <Button onClick={handleCloseDialogEditHocPhans}>Hủy</Button>
+                        <Button onClick={handleCloseEditDialog} >Hủy</Button>
                         <Button
-                          onClick={()=>{handleSubmitEdit()}}
+                          onClick={handleSubmitEditDialog}
                         >
                           Lưu
                         </Button>
@@ -633,4 +506,4 @@ function HocPhanPage()
   );
 };
 
-export default HocPhanPage;
+export default GiangVienPage;

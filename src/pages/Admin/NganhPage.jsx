@@ -34,7 +34,7 @@ import {
   updateNganh
 } from "@/api/api-nganh";
 import EditIcon from '@mui/icons-material/Edit';
-import Layout from './Layout';
+import Layout from '../Layout';
 import TestDialog from '@/components/DialogHocPhan';
 function TestPage() 
 {
@@ -382,17 +382,17 @@ function TestPage()
           </Box>
         </div>
         <div style={styles.cbKhoa}>
-        <Autocomplete
-          sx={{ width: "100%" }}
-          options={khoas}
-          getOptionLabel={(option) => option.ten || ""}
-          required
-          value={selectedKhoaFilter}
-          onChange={handleKhoaChange}
-          renderInput={(params) => (
-            <TextField {...params} label="Chọn khoa" size="small" />
-          )}
-        />
+          <Autocomplete
+            sx={{ width: "100%" }}
+            options={khoas}
+            getOptionLabel={(option) => option.ten || ""}
+            required
+            value={selectedKhoaFilter}
+            onChange={handleKhoaChange}
+            renderInput={(params) => (
+              <TextField {...params} label="Chọn khoa" size="small" />
+            )}
+          />
 
 
         </div>

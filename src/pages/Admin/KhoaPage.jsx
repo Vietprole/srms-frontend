@@ -22,7 +22,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import Tooltip  from '@mui/material/Tooltip';
-import Layout from "./Layout";
+import Layout from '../Layout';
 import { useState, useEffect,useCallback } from "react";
 import {
   getAllKhoas,

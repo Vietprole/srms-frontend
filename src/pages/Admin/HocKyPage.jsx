@@ -19,10 +19,10 @@ import { useState, useEffect } from "react";
 import Autocomplete from '@mui/material/Autocomplete';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
-import Layout from './Layout';
+import Layout from '../Layout';
 import { getAllHocKys } from '@/api/api-hocky';
 import { addHocKy } from '@/api/api-hocky';
-function TestPage() 
+function HocKiPage() 
 {
   const styles = {
     main:
@@ -369,4 +369,4 @@ function TestPage()
   );
 };
 
-export default TestPage;
+export default HocKiPage;

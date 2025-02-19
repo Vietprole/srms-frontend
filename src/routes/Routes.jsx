@@ -1,10 +1,10 @@
 import { createBrowserRouter } from "react-router-dom";
 import MainPage from "@/pages/MainPage";
-import KhoaPage from "@/pages/KhoaPage";
-import NganhPage from "@/pages/NganhPage";
+import KhoaPage from "@/pages/Admin/KhoaPage";
+import NganhPage from "@/pages/Admin/NganhPage";
 import SinhVienPage from "@/pages/SinhVienPage";
-import GiangVienPage from "@/pages/GiangVienPage";
-import HocPhanPage from "@/pages/HocPhanPage";
+import GiangVienPage from "@/pages/Admin/GiangVienPage";
+import HocPhanPage from "@/pages/Admin/HocPhanPage";
 import PLOPage from "@/pages/PLOPage";
 import MapHocPhanPLOPage from "@/pages/MapHocPhanPLOPage";
 import LopHocPhanPage from "@/pages/LopHocPhanPage";
@@ -29,7 +29,7 @@ import BangDiemGiangVienPage from "@/pages/nhapdiem/BangDiemGiangVienPage";
 import DiemDinhChinhPage from "@/pages/DiemDinhChinhPage";
 import QuanLyTaiKhoanPage from "@/pages/QuanLyTaiKhoanPage";
 import TestPage from "@/pages/TestPage";
-
+import HocKiPage from "@/pages/Admin/HocKyPage";
 const role = getRole();
 const RoleBasedRoute = ({ giangVienElement, defaultElement }) => {
   return role === "GiangVien" ? giangVienElement : defaultElement;
@@ -95,6 +95,10 @@ const routes = [
       { path: ":lopHocPhanId/tong-ket-clo", element: <TongKetCLO /> },
       { path: ":lopHocPhanId/bao-cao-clo", element: <BaoCaoCLO /> },
     ],
+  },
+  {
+    path: "/hocki",
+    element: <HocKiPage />,
   },
   {
     path: "/diemdinhchinh",

@@ -9,7 +9,7 @@ export const getAllHocKys = async () => {
     const response = await axios.get(API_HOCKY, {
       headers: { Authorization: getAccessToken() }
     });
-    return response;
+    return response.data;
   } catch (error) {
     console.log("error message: ", error.message);
     throw new Error(error.response?.data || "Lỗi bất định");
@@ -36,7 +36,7 @@ export const addHocKy = async (studentData) => {
       headers: { Authorization: getAccessToken() }
     });
     console.log("response hocky: ", response);
-    return response.data;
+    return response;
   } catch (error) {
     console.log("error message: ", error.message);
     throw new Error(error.response?.data || "Lỗi bất định");
