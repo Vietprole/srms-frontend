@@ -20,8 +20,13 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import Layout from './Layout';
-import { getAllHocKys } from '@/api/api-hocky';
-import { addHocKy } from '@/api/api-hocky';
+import { getAllLopHocPhans } from '@/api/api-lophocphan';
+import SearchIcon from '@mui/icons-material/Search';
+import Box from '@mui/material/Box';
+import * as React from 'react';
+import EditIcon from '@mui/icons-material/Edit';
+import Tooltip from '@mui/material/Tooltip';
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 function TestPage() 
 {
   const styles = {
@@ -96,76 +101,32 @@ function TestPage()
       marginBottom: '10px',
     },
   };
-  const [schoolYears, setSchoolYears] = useState([]);
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState(data); // Lưu dữ liệu đã lọc
-  const [selectedHocKy, setSelectedHocKy] = useState(null); // Lưu học kỳ được chọn để sửa
-  const [selectedSchoolYear, setSelectedSchoolYear] = useState(null);
-  const [selectedNamHocFilter, setSelectedNamHocFilter] = useState(null); // Lưu khoa được chọn để lọc
 
-  const handleOpenAddDialog = () => {
-    setOpenAddDialog(true);
-  };
-  const handleCloseAddDialog = () => {
-    setOpenAddDialog(false);
-    setSelectedHocKy(null);
-    setSelectedSchoolYear(null);
 
-  };
 
-  const handleNamHocChange = (event, newValue) => {
-    setSelectedNamHocFilter(newValue);
-  
-    if (!newValue) {
-      setFilteredData(data); // Nếu không chọn năm học nào, hiển thị toàn bộ dữ liệu
-    } else {
-      const filtered = data.filter((row) => row.namHoc && row.namHoc.toString() === newValue.value);
-      setFilteredData(filtered);
-    }
-  };
   
 
-  const generateSchoolYears = () => {
-    const currentYear = new Date().getFullYear();
-    const years = [];
-    for (let year = currentYear; year >= 2000; year--) { // Đảo ngược vòng lặp
-      years.push({ label: `${year}-${year + 1}`, value: `${year}-${year + 1}` });
-    }
-    return years;
-  };
   
 
   useEffect(() => {
     fetchData();
-    setSchoolYears(generateSchoolYears());
+    
   }, []); 
   
   
   const fetchData = async () => {
-    const hocki = await getAllHocKys();
-    
-    // Sắp xếp dữ liệu từ năm mới đến năm cũ
-    const sortedData = hocki.sort((a, b) => {
-      const yearA = parseInt(a.namHoc.split('-')[0]);
-      const yearB = parseInt(b.namHoc.split('-')[0]);
-      return yearB - yearA; // Sắp xếp từ năm mới đến năm cũ
-    });
-    
-    setData(sortedData);
-    setFilteredData(sortedData);
+    const lophocphans = await getAllLopHocPhans();
+    setData(lophocphans);
+    setFilteredData(lophocphans);
   };
   
   
-  
-  const hocKi = [
-    { hocki: 'Kỳ 1', ten : 'Học kỳ 1' },
-    { hocki: 'Kỳ 2', ten : 'Học kỳ 2' },
-    { hocki: 'Kỳ hè', ten : 'Học kỳ hè' },
-  ];
 
   const handleSnackbarClose = () => {
     setOpenSnackbar(false);
@@ -196,66 +157,56 @@ function TestPage()
   }));
 
 
-  const handleSubmitAdd = async () => {
-    if(selectedHocKy === null)
-    {
-      setSnackbarMessage("Vui lòng chọn học kì");
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
-      return;
-    }
-    if(selectedSchoolYear === null)
-    {
-      setSnackbarMessage("Vui lòng chọn năm học");
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
-      return;
-    }
-    const data = {
-      ten: selectedHocKy,
-      namHoc: selectedSchoolYear,
-    };
-    
-    try
-    {
-      const res = await addHocKy(data);
-      if(res.status === 200)
-        {
-          setSnackbarMessage("Thêm học kì thành công");
-          setSnackbarSeverity("success");
-          setOpenSnackbar(true);
-          handleCloseAddDialog();
-          fetchData();
-        }
-        else
-        {
-          setSnackbarMessage("Thêm học kì thất bại");
-          setSnackbarSeverity("error");
-          setOpenSnackbar(true);
-        }
-    }catch(error)
-    {
-      console.log(error);
-      setSnackbarMessage("Thêm học kì thất bại");
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
-    }
-    
-  };
 
   return (
     <Layout>
       <div style={styles.main}>
       <div style={styles.title}>
-        <span>Danh sách học kỳ</span>
+        <span>Danh sách lớp học phần</span>
         <div style={styles.btnMore}>
           <IconButton aria-label="more actions"><MoreVertIcon/></IconButton>
         </div>
       </div>
       <div style={styles.tbActions}>
-
+      <div style={styles.ipSearch}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              border: "2px solid #ccc", // Viền ngoài
+              borderRadius: "20px", // Bo tròn góc
+              padding: "4px 8px", // Khoảng cách nội dung
+              width: "100%", // Chiều rộng toàn khung tìm kiếm
+              maxWidth: "100%", // Đảm bảo full width
+              "&:focus-within": {
+                border: "2px solid #337AB7", // Đổi màu viền khi focus
+              },
+              height: "100%",
+            }}
+          >
+            <TextField
+              fullWidth
+              fontSize="10px"
+              placeholder="Tìm kiếm theo tên lớp học phần..."
+              variant="standard"
+              autoComplete='off'
+              InputProps={{
+                disableUnderline: true,
+                startAdornment: (
+                  <React.Fragment>
+                    <IconButton aria-label="more actions">
+                      <SearchIcon sx={{ color: "#888" }} />
+                    </IconButton>
+                  </React.Fragment>
+                ),
+              }}
+              // value={searchQuery} // Liên kết giá trị tìm kiếm với state
+              // onChange={handleSearchChange} // Gọi hàm xử lý khi thay đổi
+            />
+          </Box>
+        </div>
         <div style={styles.cbKhoa}>
-          <Autocomplete
+          {/* <Autocomplete
             sx={{ width: "100%" }}
             options={schoolYears}
             getOptionLabel={(option) => option.label}
@@ -265,58 +216,11 @@ function TestPage()
             renderInput={(params) => (
               <TextField {...params} label="Chọn năm học" size="small" />
             )}
-          />
+          /> */}
         </div>
         <div style={styles.btnCreate}>
-          <Button sx={{width:"100%"}} variant="contained" onClick={handleOpenAddDialog}>Tạo học kỳ</Button>
-          <Dialog id='themHocKy' fullWidth open={openAddDialog} onClose={handleCloseAddDialog}>
-                      <DialogTitle>Tạo học kỳ mới:</DialogTitle>
-                      <DialogContent >
-                        <DialogContentText>
-                          Thêm học kỳ mới vào hệ thống
-                        </DialogContentText>
-                        <Autocomplete
-                          options={hocKi}
-                          getOptionLabel={(option) => option.ten || ''}
-                          noOptionsText="Không tìm thấy học kì"
-                          required
-                          id="disable-clearable"
-                          disableClearable
-                          // onChange={(event, newValue) => setSelectedKhoa(newValue)} // Cập nhật state khi chọn khoa
-                          onChange={(event, newValue) => setSelectedHocKy(newValue.hocki)} // Cập nhật state khi chọn khoa
-                          renderInput={(params) => (
-                            <TextField {...params} label="Chọn học kì" variant="standard" />
-                          )}
-                        />
-                        <Autocomplete 
-                          sx={{marginTop: '10px'}}
-                          options={schoolYears}
-                          getOptionLabel={(option) => option.label}
-                          noOptionsText="Không tìm thấy học kì"
-                          required
-                          disableClearable
-                          onChange={(event, newValue) => {
-                            if (newValue) {
-                              const yearStart = parseInt(newValue.value.split('-')[0]); // Lấy năm đầu tiên (2025)
-                              setSelectedSchoolYear(yearStart); // Lưu 2025
-                            }
-                          }}
-                          renderInput={(params) => (
-                            <TextField {...params} label="Chọn năm học" variant="standard" />
-                          )}
-                        />
-                        
-                      </DialogContent>
-                      <DialogActions>
-                        <Button onClick={handleCloseAddDialog}>Hủy</Button>
-                        <Button
-                          onClick={handleSubmitAdd}
-                          variant='contained'
-                        >
-                          Lưu
-                        </Button>
-                      </DialogActions>
-                    </Dialog>
+          <Button sx={{width:"100%"}} variant="contained">Tạo lớp học phần</Button>
+
         </div>
       </div>
       <div style={styles.table}>
@@ -326,19 +230,36 @@ function TestPage()
           <TableHead sx={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: "#0071A6" }}>
             <TableRow>
               <StyledTableCell align="center">STT</StyledTableCell>
-              <StyledTableCell align="center">Mã học kỳ</StyledTableCell>
-              <StyledTableCell align="center">Tên</StyledTableCell>
+              <StyledTableCell align="center">Mã lớp học phần</StyledTableCell>
+              <StyledTableCell align="center">Tên lớp học phần</StyledTableCell>
+              <StyledTableCell align="center">Giảng viên dạy</StyledTableCell>
+              <StyledTableCell align="center">Học kỳ</StyledTableCell>
               <StyledTableCell align="center">Năm học</StyledTableCell>
+              <StyledTableCell align="center"></StyledTableCell>
             </TableRow>
           </TableHead>
           <TableBody sx={{ overflowY: "auto" }}>
             {Array.isArray(filteredData) && filteredData.length > 0 ? (
               filteredData.map((row, index) => (
                 <StyledTableRow key={row.maHocKy || index}>
-                  <StyledTableCell align="center" width={100}>{index + 1}</StyledTableCell>
-                  <StyledTableCell align="center" width={250}>{row.maHocKy}</StyledTableCell>
+                  <StyledTableCell align="center" width={50}>{index + 1}</StyledTableCell>
+                  <StyledTableCell align="center" width={200}>{row.maLopHocPhan}</StyledTableCell>
                   <StyledTableCell align="center">{row.ten}</StyledTableCell>
-                  <StyledTableCell align="center" width={300}>{row.namHoc}</StyledTableCell>
+                  <StyledTableCell align="center" width={250}>{row.tenGiangVien}</StyledTableCell>
+                  <StyledTableCell align="center" width={150}>{row.tenHocKy}</StyledTableCell>
+                  <StyledTableCell align="center" width={150}>{row.namHoc}</StyledTableCell>
+                  <StyledTableCell align="center" width={150}>
+                  <Tooltip title="Sửa thông tin lớp học phần">
+                    <IconButton
+        
+                    ><EditIcon /></IconButton>
+                  </Tooltip>
+                  <Tooltip title="Danh sách sinh viên">
+                    <IconButton
+        
+                    ><FormatListBulletedIcon/></IconButton>
+                  </Tooltip>
+                  </StyledTableCell>
                 </StyledTableRow>
               ))
             ) : (

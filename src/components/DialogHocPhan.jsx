@@ -28,6 +28,8 @@ import { addHocPhansToNganh } from "@/api/api-nganh";
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import { removeHocPhanFromNganh } from "@/api/api-nganh";
+import SaveIcon from '@mui/icons-material/Save';
+import { getHocPhansByNganhId,updateHocPhanCotLois } from "@/api/api-nganh";
 function DialogHocPhan({ nganhId, open, onClose }) {
   const styles = {
     main: {
@@ -59,6 +61,7 @@ function DialogHocPhan({ nganhId, open, onClose }) {
     btnAdd: {
       width: "18%",
       height: "100%",
+      marginRight: "10px",
       
     },
     btnDelete: {
@@ -66,6 +69,11 @@ function DialogHocPhan({ nganhId, open, onClose }) {
       height: "100%",
       marginLeft: "auto",
       padding: "0 10px",
+    },
+    btnSave: {
+      width: "10%",
+      height: "100%",
+      
     },
   };
 
@@ -82,7 +90,7 @@ function DialogHocPhan({ nganhId, open, onClose }) {
   const [openAlertDialog, setOpenAlertDialog] = useState(false);
   const [searchQuery, setSearchQuery] = useState(""); // Lưu giá trị tìm kiếm
   const [filteredData, setFilteredData] = useState(hocPhanDaChon); // Lưu dữ liệu đã lọc
-
+  const [originalData, setOriginalData] = useState([]);
   useEffect(() => {
     if (open && nganhId) {
       fetchData();
@@ -92,12 +100,15 @@ function DialogHocPhan({ nganhId, open, onClose }) {
   const fetchData = async () => {
     try {
       const nganhs = await getNganhById(nganhId);
-      const hocphans = await getHocPhans(null,nganhId, null);
+      const hocphans = await getHocPhansByNganhId(nganhId);
       const totalCredits = hocphans.reduce((total, hocPhan) => total + hocPhan.soTinChi, 0);
+      setOriginalData(hocphans);
       setHocPhanDaChon(hocphans);
       setFilteredData(hocphans);
       setNganh(nganhs);
       setTongSoTinChi(totalCredits);
+      
+
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu ngành:", error);
     }
@@ -257,8 +268,46 @@ function DialogHocPhan({ nganhId, open, onClose }) {
     setOpenAlertDialog(false);
     setSelectedDeleteHocPhan([]);
   };
+  const handleToggleCotLoi = (hocPhanId) => {
+    setFilteredData((prevData) =>
+      prevData.map((hp) =>
+        hp.id === hocPhanId ? { ...hp, laCotLoi: !hp.laCotLoi } : hp
+      )
+    );
+  };
   
+  const handleSaveCotLoi = async () => {
+    const updatedHocPhans = filteredData.map((hp) => ({
+      HocPhanId: hp.id,
+      LaCotLoi: hp.laCotLoi
+    }));
+  
+    try {
+      const rp=await updateHocPhanCotLois(nganhId, updatedHocPhans);
+      if(rp.status===200){
+        setSnackbarSeverity("success");
+        setSnackbarMessage("Cập nhật học phần cốt lõi thành công!");
+        setOpenSnackbar(true);
+        fetchData();
+      }
+      else{
+        setSnackbarSeverity("error");
+        setSnackbarMessage("Cập nhật học phần cốt lõi thất bại!");
+        setOpenSnackbar(true);
+      }
 
+      
+    } catch (error) {
+        setSnackbarSeverity("error");
+        setSnackbarMessage("Cập nhật học phần cốt lõi thất bại!");
+        setOpenSnackbar(true);
+        console.log("error",error);
+    }
+  };
+  const hasChanges = () => {
+    return JSON.stringify(originalData) !== JSON.stringify(filteredData);
+  };
+  
   return (
     <Dialog
       maxWidth="lg"
@@ -425,65 +474,74 @@ function DialogHocPhan({ nganhId, open, onClose }) {
                     </DialogActions>
                 </Dialog>
               </div>
+              <div style={styles.btnSave}>
+                <Button sx={{width:"100%"}} variant="contained" startIcon={<SaveIcon/>}  disabled={!hasChanges()} onClick={handleSaveCotLoi}>Lưu</Button>
+              </div>
               
             </div>
             <div style={styles.mainContent}>
             <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 700 }} aria-label="customized table">
-                  <TableHead sx={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: "#0071A6" }}>
-                    <TableRow>
-                      <StyledTableCell align="center">
-                        <Checkbox
-                          sx={{ color: "#fff" }}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              // Chọn tất cả học phần
-                              setSelectedDeleteHocPhan(hocPhanDaChon.map((row) => row.id));
-                            } else {
-                              // Bỏ chọn tất cả
-                              setSelectedDeleteHocPhan([]);
-                            }
-                          }}
-                          checked={selectedDeleteHocPhan.length === hocPhanDaChon.length}
-                        />
-                      </StyledTableCell>
-                      <StyledTableCell align="center">STT</StyledTableCell>
-                      <StyledTableCell align="center">Mã học phần</StyledTableCell>
-                      <StyledTableCell align="center">Tên học phần</StyledTableCell>
-                      <StyledTableCell align="center">Thuộc khoa</StyledTableCell>
-                      <StyledTableCell align="center">Số tín chỉ</StyledTableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {filteredData.length === 0 ? (
-                      <TableRow>
-                        <StyledTableCell colSpan={6} align="center">
-                          Chưa có học phần được thêm vào ngành
-                        </StyledTableCell>
-                      </TableRow>
-                    ) : (
-                      filteredData.map((row, index) => (
-                        <StyledTableRow key={row.id || index}>
-                          <StyledTableCell align="center">
-                            <Checkbox
-                              checked={selectedDeleteHocPhan.includes(row.id)}
-                              onChange={() => handleSelect(row.id)}
-                            />
-                          </StyledTableCell>
-                          <StyledTableCell align="center" width={50}>{index + 1}</StyledTableCell>
-                          <StyledTableCell align="center" width={150}>{row.maHocPhan}</StyledTableCell>
-                          <StyledTableCell align="left">{row.ten}</StyledTableCell>
-                          <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
-                          <StyledTableCell align="center" width={200}>{row.soTinChi}</StyledTableCell>
-                        </StyledTableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <Table sx={{ minWidth: 700 }} aria-label="customized table">
+                <TableHead sx={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: "#0071A6" }}>
+                  <TableRow>
+                    <StyledTableCell align="center">
+                      <Checkbox
+                        sx={{ color: "#fff" }}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            // Chọn tất cả học phần
+                            setSelectedDeleteHocPhan(hocPhanDaChon.map((row) => row.id));
+                          } else {
+                            // Bỏ chọn tất cả
+                            setSelectedDeleteHocPhan([]);
+                          }
+                        }}
+                        checked={selectedDeleteHocPhan.length === hocPhanDaChon.length}
+                      />
+                    </StyledTableCell>
+                    <StyledTableCell align="center">STT</StyledTableCell>
+                    <StyledTableCell align="center">Mã học phần</StyledTableCell>
+                    <StyledTableCell align="center">Tên học phần</StyledTableCell>
+                    <StyledTableCell align="center">Thuộc khoa</StyledTableCell>
+                    <StyledTableCell align="center">Số tín chỉ</StyledTableCell>
+                    <StyledTableCell align="center">Là cốt lõi</StyledTableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+  {filteredData.length === 0 ? (
+    <TableRow>
+      <StyledTableCell colSpan={7} align="center">
+        Chưa có học phần được thêm vào ngành
+      </StyledTableCell>
+    </TableRow>
+  ) : (
+    filteredData.map((row, index) => (
+      <StyledTableRow key={row.id || index}>
+        <StyledTableCell align="center">
+          <Checkbox
+            checked={selectedDeleteHocPhan.includes(row.id)}
+            onChange={() => handleSelect(row.id)}
+          />
+        </StyledTableCell>
+        <StyledTableCell align="center" width={50}>{index + 1}</StyledTableCell>
+        <StyledTableCell align="center" width={150}>{row.maHocPhan}</StyledTableCell>
+        <StyledTableCell align="left">{row.ten}</StyledTableCell>
+        <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
+        <StyledTableCell align="center" width={150}>{row.soTinChi}</StyledTableCell>
+        <StyledTableCell align="center" width={150}>
+          <Checkbox
+            checked={row.laCotLoi}
+            onChange={() => handleToggleCotLoi(row.id)}
+          />
+        </StyledTableCell>
+      </StyledTableRow>
+    ))
+  )}
+</TableBody>
 
 
-
+              </Table>
+            </TableContainer>
             </div>
 
               

@@ -140,4 +140,16 @@ export const addNganhWithHocPhan = async (nganhData) => {
     console.error("Lỗi khi tạo ngành: ", error.message);
   }
 };
+export const updateHocPhanCotLois = async (nganhId, updateCotLoiDTOs) => {
+  try {
+    const response = await axios.patch(`${API_NGANH}/${nganhId}/hocphan/cotloi`, updateCotLoiDTOs, {
+      headers: { Authorization: getAccessToken() }
+    });
+    return response;
+  } catch (error) {
+    console.log("Lỗi khi cập nhật học phần cốt lõi: ", error.message);
+    throw new Error(error.response?.data || "Lỗi bất định");
+  }
+};
+
 
