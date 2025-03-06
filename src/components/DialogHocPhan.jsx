@@ -14,7 +14,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import Button from "@mui/material/Button";
 import AddIcon from '@mui/icons-material/Add'; 
 import DeleteIcon from '@mui/icons-material/Delete';
-import { getHocPhans,getAllHocPhanNotNganhId } from "@/api/api-hocphan";
+import { getAllHocPhanNotNganhId } from "@/api/api-hocphan";
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';

@@ -139,8 +139,6 @@ function TestPage()
     }
   };
   
-
-
   const handleOpenDialog = (id) => {
     setNganhId(id);
     setOpenDialog(true);
@@ -173,8 +171,6 @@ function TestPage()
     setMaNganh("");
     setNganhId("");
   }
-
-
 
   const handleCloseNganhs = () => {
     setOpenAddNganh(false);
@@ -232,7 +228,6 @@ function TestPage()
     }
   };
   
-
   useEffect(() => {
     fetchData();
   }, []);
@@ -303,7 +298,6 @@ function TestPage()
     }
   }
 
-  
   const handleSearchChange = (event) => {
     const value = event.target.value;
     setSearchQuery(value); 
@@ -393,8 +387,6 @@ function TestPage()
               <TextField {...params} label="Chọn khoa" size="small" />
             )}
           />
-
-
         </div>
         <div style={styles.btnCreate}>
           <Button sx={{width:"100%"}} variant="contained" onClick={handleAddNganhs}>Tạo ngành</Button>
