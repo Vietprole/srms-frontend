@@ -529,7 +529,7 @@ export default function SinhVienPage() {
           </TableContainer>
         </div>
 
-        <Dialog open={openAddDialog} onClose={handleCloseAddDialog}>
+        <Dialog open={openAddDialog} onClose={handleCloseAddDialog} fullWidth>
           <DialogTitle>Tạo sinh viên mới:</DialogTitle>
           <DialogContent>
             <DialogContentText>
