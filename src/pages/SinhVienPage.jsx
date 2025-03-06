@@ -38,6 +38,7 @@ import { getAllKhoas } from "@/api/api-khoa";
 import { getAllNganhs } from "@/api/api-nganh";
 import { getAllLopHocPhans, getLopHocPhans } from "@/api/api-lophocphan";
 import { getGiangVienId, getRole } from "@/utils/storage";
+import { getNganhsByKhoaId } from "@/api/api-nganh"; 
 
 const role = getRole();
 const giangVienId = getGiangVienId();
@@ -162,6 +163,7 @@ export default function SinhVienPage() {
   const [selectedNganh, setSelectedNganh] = useState(null);
   const [namNhapHoc, setNamNhapHoc] = useState("");
   const [selectedStudentId, setSelectedStudentId] = useState(null);
+  const [filteredData, setFilteredData] = useState([]);
 
   const fetchData = useCallback(async () => {
     const dataKhoa = await getAllKhoas();
@@ -179,6 +181,7 @@ export default function SinhVienPage() {
 
       const dataSinhVien = await getSinhViens(khoaId, nganhId, lopHocPhanId);
       setData(dataSinhVien);
+      setFilteredData(dataSinhVien);
       return;
     }
     const data = await getAllLopHocPhans();
@@ -187,6 +190,7 @@ export default function SinhVienPage() {
 
     const dataSinhVien = await getSinhViens(khoaId, nganhId, lopHocPhanId);
     setData(dataSinhVien);
+    setFilteredData(dataSinhVien);
   }, [khoaId, nganhId, lopHocPhanId]);
 
   useEffect(() => {
@@ -340,6 +344,59 @@ export default function SinhVienPage() {
     setSelectedStudentId(null);
   };
 
+  const handleKhoaChange = async (event, newValue) => {
+    setSelectedKhoa(newValue);
+    setSelectedNganh(null);
+    
+    if (newValue) {
+      const dataNganh = await getNganhsByKhoaId(newValue.value);
+      const mappedNganhItems = dataNganh.map(nganh => ({
+        label: nganh.ten,
+        value: nganh.id
+      }));
+      setNganhItems(mappedNganhItems);
+    } else {
+      setNganhItems([]);
+    }
+    
+    filterData(newValue, null);
+  };
+
+  const handleNganhChange = (event, newValue) => {
+    setSelectedNganh(newValue);
+    filterData(selectedKhoa, newValue);
+  };
+
+  const filterData = (khoa, nganh) => {
+    let filteredData = data;
+
+    if (khoa) {
+      filteredData = filteredData.filter((sinhVien) => sinhVien.khoaId === khoa.value);
+    }
+
+    if (nganh) {
+      filteredData = filteredData.filter((sinhVien) => sinhVien.nganhId === nganh.value);
+    }
+
+    setFilteredData(filteredData);
+  };
+
+  const handleKhoaChangeInForm = async (event, newValue) => {
+    setSelectedKhoa(newValue);
+    setSelectedNganh(null);
+
+    if (newValue) {
+      const dataNganh = await getNganhsByKhoaId(newValue.value);
+      const mappedNganhItems = dataNganh.map(nganh => ({
+        label: nganh.ten,
+        value: nganh.id
+      }));
+      setNganhItems(mappedNganhItems);
+    } else {
+      setNganhItems([]);
+    }
+  };
+
   return (
     <Layout>
       <div style={styles.main}>
@@ -388,25 +445,30 @@ export default function SinhVienPage() {
             <Autocomplete
               options={khoaItems}
               getOptionLabel={(option) => option.label || ""}
-              value={khoaItems.find(item => item.value === comboBoxKhoaId) || null}
-              onChange={(_, newValue) => setComboBoxKhoaId(newValue?.value)}
+              value={selectedKhoa}
+              onChange={handleKhoaChange}
               renderInput={(params) => (
-                <TextField {...params} label="Chọn khoa" size="small" />
+                <TextField {...params} label="Chọn Khoa" size="small" />
               )}
             />
           </div>
 
-          <div style={styles.filterBox}>
-            <Autocomplete
-              options={nganhItems}
-              getOptionLabel={(option) => option.label || ""}
-              value={nganhItems.find(item => item.value === comboBoxNganhId) || null}
-              onChange={(_, newValue) => setComboBoxNganhId(newValue?.value)}
-              renderInput={(params) => (
-                <TextField {...params} label="Chọn ngành" size="small" />
-              )}
-            />
-          </div>
+          {selectedKhoa && (
+            <div style={styles.filterBox}>
+              <Autocomplete
+                options={nganhItems}
+                getOptionLabel={(option) => option.label || ""}
+                value={selectedNganh}
+                onChange={(event, newValue) => {
+                  setSelectedNganh(newValue);
+                  filterData(selectedKhoa, newValue);
+                }}
+                renderInput={(params) => (
+                  <TextField {...params} label="Chọn Ngành" size="small" />
+                )}
+              />
+            </div>
+          )}
 
           {(role === "Admin" || role === "PhongDaoTao") && (
             <div style={styles.btnCreate}>
@@ -438,7 +500,7 @@ export default function SinhVienPage() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {data.map((row, index) => (
+                {filteredData.map((row, index) => (
                   <StyledTableRow key={row.id}>
                     <StyledTableCell align="center">{index + 1}</StyledTableCell>
                     <StyledTableCell align="center">{row.maSinhVien}</StyledTableCell>
@@ -468,138 +530,150 @@ export default function SinhVienPage() {
         </div>
 
         <Dialog open={openAddDialog} onClose={handleCloseAddDialog}>
-          <DialogTitle>Tạo Sinh Viên</DialogTitle>
+          <DialogTitle>Tạo sinh viên mới:</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Tạo Sinh Viên mới
+              Thêm sinh viên mới vào hệ thống
             </DialogContentText>
             
             <TextField
-              autoFocus
+              required
               margin="dense"
-              label="Tên"
+              label="Tên sinh viên"
               fullWidth
-              variant="outlined"
+              variant="standard"
               value={tenSinhVien}
               onChange={(e) => setTenSinhVien(e.target.value)}
-              helperText="Tên hiển thị của sinh viên"
-              sx={{ mb: 2 }}
+              helperText="Vui lòng nhập tên sinh viên"
+              autoComplete='off'
             />
             
             <Autocomplete
               options={khoaItems}
               getOptionLabel={(option) => option.label || ""}
               value={selectedKhoa}
-              onChange={(_, newValue) => setSelectedKhoa(newValue)}
+              onChange={handleKhoaChangeInForm}
               renderInput={(params) => (
                 <TextField 
                   {...params} 
-                  label="Chọn Khoa" 
-                  variant="outlined" 
+                  label="Chọn khoa" 
+                  variant="standard"
+                  margin="dense"
+                  required
                   helperText="Khoa của sinh viên"
                 />
               )}
-              sx={{ mb: 2 }}
             />
-            
-            <Autocomplete
-              options={nganhItems}
-              getOptionLabel={(option) => option.label || ""}
-              value={selectedNganh}
-              onChange={(_, newValue) => setSelectedNganh(newValue)}
-              renderInput={(params) => (
-                <TextField 
-                  {...params} 
-                  label="Chọn Ngành" 
-                  variant="outlined" 
-                  helperText="Ngành sinh viên nhập học"
-                />
-              )}
-              sx={{ mb: 2 }}
-            />
-            
+
+            {selectedKhoa && (
+              <Autocomplete
+                options={nganhItems}
+                getOptionLabel={(option) => option.label || ""}
+                value={selectedNganh}
+                onChange={(event, newValue) => setSelectedNganh(newValue)}
+                renderInput={(params) => (
+                  <TextField 
+                    {...params} 
+                    label="Chọn ngành" 
+                    variant="standard"
+                    margin="dense"
+                    required
+                    helperText="Ngành sinh viên nhập học"
+                  />
+                )}
+              />
+            )}
+
             <TextField
+              required
               margin="dense"
-              label="Năm Nhập Học"
+              label="Năm nhập học"
               type="number"
               fullWidth
-              variant="outlined"
+              variant="standard"
               value={namNhapHoc}
               onChange={(e) => setNamNhapHoc(e.target.value)}
               helperText="Năm sinh viên nhập học"
+              autoComplete='off'
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseAddDialog}>Hủy</Button>
-            <Button onClick={handleSubmitAdd}>Submit</Button>
+            <Button onClick={handleCloseAddDialog}>HỦY</Button>
+            <Button onClick={handleSubmitAdd}>LƯU</Button>
           </DialogActions>
         </Dialog>
 
         <Dialog open={openEditDialog} onClose={handleCloseEditDialog}>
-          <DialogTitle>Sửa Sinh Viên</DialogTitle>
+          <DialogTitle>Sửa sinh viên:</DialogTitle>
           <DialogContent>
             <DialogContentText>
               Cập nhật thông tin sinh viên
             </DialogContentText>
             
             <TextField
-              autoFocus
+              required
               margin="dense"
-              label="Tên"
+              label="Tên sinh viên"
               fullWidth
-              variant="outlined"
+              variant="standard"
               value={tenSinhVien}
               onChange={(e) => setTenSinhVien(e.target.value)}
-              helperText="Tên hiển thị của sinh viên"
-              sx={{ mb: 2 }}
+              helperText="Vui lòng nhập tên sinh viên"
+              autoComplete='off'
             />
             
             <Autocomplete
               options={khoaItems}
               getOptionLabel={(option) => option.label || ""}
               value={selectedKhoa}
-              onChange={(_, newValue) => setSelectedKhoa(newValue)}
+              onChange={handleKhoaChangeInForm}
               renderInput={(params) => (
                 <TextField 
                   {...params} 
-                  label="Chọn Khoa" 
-                  variant="outlined" 
+                  label="Chọn khoa" 
+                  variant="standard"
+                  margin="dense"
+                  required
                   helperText="Khoa của sinh viên"
                 />
               )}
-              sx={{ mb: 2 }}
             />
-            
-            <Autocomplete
-              options={nganhItems}
-              getOptionLabel={(option) => option.label || ""}
-              value={selectedNganh}
-              onChange={(_, newValue) => setSelectedNganh(newValue)}
-              renderInput={(params) => (
-                <TextField 
-                  {...params} 
-                  label="Chọn Ngành" 
-                  variant="outlined" 
-                  helperText="Ngành sinh viên nhập học"
-                />
-              )}
-              sx={{ mb: 2 }}
-            />
-            
+
+            {selectedKhoa && (
+              <Autocomplete
+                options={nganhItems}
+                getOptionLabel={(option) => option.label || ""}
+                value={selectedNganh}
+                onChange={(event, newValue) => setSelectedNganh(newValue)}
+                renderInput={(params) => (
+                  <TextField 
+                    {...params} 
+                    label="Chọn ngành" 
+                    variant="standard"
+                    margin="dense"
+                    required
+                    helperText="Ngành sinh viên nhập học"
+                  />
+                )}
+              />
+            )}
+
             <TextField
+              required
               margin="dense"
-              label="Năm Nhập Học"
+              label="Năm nhập học"
               type="number"
               fullWidth
-              variant="outlined"
+              variant="standard"
               value={namNhapHoc}
               onChange={(e) => setNamNhapHoc(e.target.value)}
               helperText="Năm sinh viên nhập học"
+              autoComplete='off'
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseEditDialog}>Hủy</Button>
-            <Button onClick={handleSubmitEdit}>Cập nhật</Button>
+            <Button onClick={handleCloseEditDialog}>HỦY</Button>
+            <Button onClick={handleSubmitEdit}>LƯU</Button>
           </DialogActions>
         </Dialog>
 
