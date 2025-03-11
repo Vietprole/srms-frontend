@@ -371,29 +371,39 @@ function HocPhanPage()
     try {
       // Lấy danh sách tất cả ngành
       const nganhs = await getAllNganhs();
+      const tenNganhs = []; // Mảng chứa tên các ngành mà học phần thuộc về
       
       // Kiểm tra từng ngành xem có chứa học phần cần xóa không
       for (const nganh of nganhs) {
         const hocPhansInNganh = await getHocPhansByNganhId(nganh.id);
         const found = hocPhansInNganh.find(hp => hp.id === hocPhanId);
         if (found) {
-          return nganh.ten; // Trả về tên ngành nếu tìm thấy
+          tenNganhs.push(nganh.ten); // Thêm tên ngành vào mảng
         }
       }
-      return null; // Trả về null nếu không thuộc ngành nào
+      
+      return tenNganhs; // Trả về mảng tên các ngành, rỗng nếu không thuộc ngành nào
     } catch (error) {
       console.error("Lỗi khi kiểm tra ngành của học phần:", error);
-      return null;
+      return [];
     }
   };
 
   const handleDeleteHocPhan = async () => {
     try {
-      // Kiểm tra xem học phần thuộc ngành nào
-      const tenNganh = await getHocPhanNganh(selectedHocPhanId);
+      // Kiểm tra xem học phần thuộc những ngành nào
+      const tenNganhs = await getHocPhanNganh(selectedHocPhanId);
       
-      if (tenNganh) {
-        setSnackbarMessage(`Học phần đã được thêm vào ngành ${tenNganh}, vui lòng xóa học phần ra khỏi ngành trước khi thao tác`);
+      if (tenNganhs.length > 0) {
+        // Nếu học phần thuộc nhiều ngành
+        if (tenNganhs.length > 1) {
+          const danhSachNganh = tenNganhs.join(", ");
+          setSnackbarMessage(`Học phần đã được thêm vào các ngành: ${danhSachNganh}. Vui lòng xóa học phần ra khỏi các ngành trước khi thao tác`);
+        } 
+        // Nếu học phần chỉ thuộc một ngành
+        else {
+          setSnackbarMessage(`Học phần đã được thêm vào ngành ${tenNganhs[0]}, vui lòng xóa học phần ra khỏi ngành trước khi thao tác`);
+        }
         setSnackbarSeverity("error");
         setOpenSnackbar(true);
         handleCloseDeleteDialog();
