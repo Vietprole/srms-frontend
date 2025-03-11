@@ -603,7 +603,7 @@ export default function SinhVienPage() {
           </DialogActions>
         </Dialog>
 
-        <Dialog open={openEditDialog} onClose={handleCloseEditDialog}>
+        <Dialog open={openEditDialog} onClose={handleCloseEditDialog} fullWidth>
           <DialogTitle>Sửa sinh viên:</DialogTitle>
           <DialogContent>
             <DialogContentText>

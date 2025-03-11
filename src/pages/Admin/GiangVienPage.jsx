@@ -27,8 +27,9 @@ import {
   getAllKhoas
 } from "@/api/api-khoa";
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import Layout from '../Layout';
-import {getAllGiangViens,addGiangVien,getGiangVienById,updateGiangVien} from "@/api/api-giangvien";
+import {getAllGiangViens,addGiangVien,getGiangVienById,updateGiangVien,deleteGiangVien} from "@/api/api-giangvien";
 function GiangVienPage() 
 {
   const styles = {
@@ -107,6 +108,7 @@ function GiangVienPage()
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [khoas, setKhoas] = useState([]);
@@ -300,6 +302,31 @@ function GiangVienPage()
     }
   };
 
+  const handleOpenDeleteDialog = (giangVienId) => {
+    setGiangVienId(giangVienId);
+    setOpenDeleteDialog(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setOpenDeleteDialog(false);
+    setGiangVienId(null);
+  };
+
+  const handleDeleteGiangVien = async () => {
+    try {
+      await deleteGiangVien(giangVienId);
+      setSnackbarMessage("Xóa giảng viên thành công");
+      setSnackbarSeverity("success");
+      setOpenSnackbar(true);
+      handleCloseDeleteDialog();
+      fetchData();
+    } catch (error) {
+      setSnackbarMessage("Xóa giảng viên thất bại");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+    }
+  };
+
   return (
     <Layout>
       <div style={styles.main}>
@@ -429,12 +456,16 @@ function GiangVienPage()
                 <StyledTableCell align="center">{row.ten}</StyledTableCell>
                 <StyledTableCell align="center" width={450}>{row.tenKhoa}</StyledTableCell>
                 <StyledTableCell align="center" width={150}>
-                  <Tooltip title="Sửa học phần">
-                    <IconButton
-                      onClick={() => handleOpenEditDialog(row.id)}
-                    ><EditIcon /></IconButton>
+                  <Tooltip title="Sửa giảng viên">
+                    <IconButton onClick={() => handleOpenEditDialog(row.id)}>
+                      <EditIcon />
+                    </IconButton>
                   </Tooltip>
-        
+                  <Tooltip title="Xóa giảng viên">
+                    <IconButton onClick={() => handleOpenDeleteDialog(row.id)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
                 </StyledTableCell>
               </StyledTableRow>
               
@@ -486,6 +517,18 @@ function GiangVienPage()
                         </Button>
                       </DialogActions>
                     </Dialog>
+            <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
+              <DialogTitle>Xóa Giảng Viên</DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Bạn có chắc chắn muốn xóa giảng viên này không?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleCloseDeleteDialog}>Hủy</Button>
+                <Button onClick={handleDeleteGiangVien}>Xóa</Button>
+              </DialogActions>
+            </Dialog>
         </TableBody>
        </Table>
      </TableContainer>

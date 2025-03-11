@@ -26,9 +26,11 @@ import MuiAlert from '@mui/material/Alert';
 import {
   getAllKhoas
 } from "@/api/api-khoa";
-import { getAllHocPhans,addHocPhan,getHocPhanById,updateHocPhan } from '@/api/api-hocphan';
+import { getAllHocPhans,addHocPhan,getHocPhanById,updateHocPhan,deleteHocPhan } from '@/api/api-hocphan';
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import Layout from '../Layout';
+import { getHocPhansByNganhId, getAllNganhs } from "@/api/api-nganh";
 
 function HocPhanPage() 
 {
@@ -125,6 +127,9 @@ function HocPhanPage()
   const [maHocPhan, setMaHocPhan] = useState("");
   const [tenKhoa, setTenKhoa] = useState("");
   const [hocPhanId, setHocPhanId] = useState("");
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [selectedHocPhanId, setSelectedHocPhanId] = useState(null);
+
   const handleOpenEditDialog = async(hocPhanId) => {
     const hocphan = await getHocPhanById(hocPhanId);
     if(hocphan.status===200)
@@ -196,11 +201,19 @@ function HocPhanPage()
   
   
   const fetchData = async () => {
-    const hocphans = await getAllHocPhans();
-    setData(hocphans);
-    setFilteredData(hocphans); 
-    const khoa = await getAllKhoas();
-    setKhoas(khoa);
+    try {
+      const hocphans = await getAllHocPhans();
+      // Đảm bảo response từ API trả về thêm thông tin tenNganh
+      setData(hocphans);
+      setFilteredData(hocphans);
+      const khoa = await getAllKhoas();
+      setKhoas(khoa);
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu:", error);
+      setSnackbarMessage("Không thể tải dữ liệu: " + error.message);
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+    }
   };
   
   
@@ -318,40 +331,96 @@ function HocPhanPage()
       setOpenSnackbar(true);
       return;
     }
+
     const hocphanData = {
       ten: tenHocPhanRef.current,
-      soTinChi: soTinChiRef.current,
+      soTinChi: parseFloat(soTinChiRef.current) // Convert to number
     };
+
     try {
-      const rp =await updateHocPhan(hocPhanId,hocphanData);
-      if(rp.status===200)
-      {
+      const response = await updateHocPhan(hocPhanId, hocphanData);
+      if(response.status === 200) {
         setSnackbarMessage("Cập nhật học phần thành công");
         setSnackbarSeverity("success");
         setOpenSnackbar(true);
         handleCloseDialogEditHocPhans();
-        fetchData();
-      }else if(rp.status===404)
-      {
-        setSnackbarMessage("Không tìm thấy học phần");
-        setSnackbarSeverity("error");
-        setOpenSnackbar(true);
-      }
-      else
-      {
-        setOpenSnackbar(true);
+        fetchData(); // Refresh data
+      } else {
         setSnackbarMessage("Cập nhật học phần thất bại");
         setSnackbarSeverity("error");
         setOpenSnackbar(true);
       }
     } catch (error) {
-      setOpenSnackbar(true);
       setSnackbarMessage(error.message);
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     }
   };
 
+  const handleOpenDeleteDialog = (hocPhanId) => {
+    setSelectedHocPhanId(hocPhanId);
+    setOpenDeleteDialog(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setOpenDeleteDialog(false);
+    setSelectedHocPhanId(null);
+  };
+
+  const getHocPhanNganh = async (hocPhanId) => {
+    try {
+      // Lấy danh sách tất cả ngành
+      const nganhs = await getAllNganhs();
+      
+      // Kiểm tra từng ngành xem có chứa học phần cần xóa không
+      for (const nganh of nganhs) {
+        const hocPhansInNganh = await getHocPhansByNganhId(nganh.id);
+        const found = hocPhansInNganh.find(hp => hp.id === hocPhanId);
+        if (found) {
+          return nganh.ten; // Trả về tên ngành nếu tìm thấy
+        }
+      }
+      return null; // Trả về null nếu không thuộc ngành nào
+    } catch (error) {
+      console.error("Lỗi khi kiểm tra ngành của học phần:", error);
+      return null;
+    }
+  };
+
+  const handleDeleteHocPhan = async () => {
+    try {
+      // Kiểm tra xem học phần thuộc ngành nào
+      const tenNganh = await getHocPhanNganh(selectedHocPhanId);
+      
+      if (tenNganh) {
+        setSnackbarMessage(`Học phần đã được thêm vào ngành ${tenNganh}, vui lòng xóa học phần ra khỏi ngành trước khi thao tác`);
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
+        handleCloseDeleteDialog();
+        return;
+      }
+
+      // Nếu không thuộc ngành nào thì tiến hành xóa
+      await deleteHocPhan(selectedHocPhanId);
+      setSnackbarMessage("Xóa học phần thành công");
+      setSnackbarSeverity("success");
+      setOpenSnackbar(true);
+      handleCloseDeleteDialog();
+      fetchData(); // Refresh data
+    } catch (error) {
+      if (error.message.includes("404")) {
+        setSnackbarMessage("Học phần đã được xóa trước đó");
+        setSnackbarSeverity("info");
+        setOpenSnackbar(true);
+        handleCloseDeleteDialog();
+        fetchData();
+      } else {
+        setSnackbarMessage("Xóa học phần thất bại: " + error.message);
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
+      }
+    }
+  };
 
   return (
     <Layout>
@@ -520,16 +589,24 @@ function HocPhanPage()
                   <Tooltip title="Sửa thông tin học phần">
                     <IconButton
                       onClick={() => handleOpenEditDialog(row.id)}
-                    ><EditIcon /></IconButton>
+                    >
+                      <EditIcon />
+                    </IconButton>
                   </Tooltip>
-        
+                  <Tooltip title="Xóa học phần">
+                    <IconButton
+                      onClick={() => handleOpenDeleteDialog(row.id)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
                 </StyledTableCell>
               </StyledTableRow>
               
             ))}
             <Dialog id='suaHocPhan' fullWidth open={openEditDialog} onClose={handleCloseDialogEditHocPhans}>
                       <DialogTitle>Sửa học phần:</DialogTitle>
-                      <DialogContent >
+                      <DialogContent>
                         <DialogContentText>
                           Sửa thông tin học phần
                         </DialogContentText>
@@ -556,10 +633,12 @@ function HocPhanPage()
                           fullWidth
                           variant="standard"
                           defaultValue={tenHocPhan}
-                          onChange={(e) => (tenHocPhanRef.current = e.target.value)} 
-                          onBlur={(e) => setErrorTenHocPhan(e.target.value.trim() === "")}
+                          onChange={(e) => {
+                            tenHocPhanRef.current = e.target.value;
+                            setErrorTenHocPhan(e.target.value.trim() === "");
+                          }}
                           error={errorTenHocPhan}
-                          helperText="Vui lòng nhập tên học phần"
+                          helperText={errorTenHocPhan ? "Vui lòng nhập tên học phần" : ""}
                           autoComplete='off'
                         />
                         <TextField
@@ -570,23 +649,21 @@ function HocPhanPage()
                           label="Số tín chỉ"
                           variant="standard"
                           defaultValue={soTinChi}
-                          inputRef={soTinChiRef}
                           onChange={(e) => {
                             const value = e.target.value;
                             if (/^\d*\.?\d*$/.test(value)) {
-                              soTinChiRef.current = value; 
+                              soTinChiRef.current = value;
                               setErrorSoTinChi(false);
                             } else {
-                              soTinChiRef.current = ""; 
-                              e.target.value = ""; 
+                              soTinChiRef.current = "";
+                              e.target.value = "";
                               setErrorSoTinChi(true);
                             }
                           }}
-                          onBlur={(e) => setSoTinChi(e.target.value.trim())}
-                          inputProps={{ maxLength: 5 }}
                           error={errorSoTinChi}
-                          helperText={errorSoTinChi ? "Vui lòng nhập số hợp lệ" : ""}  
-                          autoComplete="off"
+                          helperText={errorSoTinChi ? "Vui lòng nhập số hợp lệ" : ""}
+                          autoComplete='off'
+                          inputProps={{ maxLength: 5 }}
                         />
                         <TextField
                           autoFocus
@@ -602,17 +679,26 @@ function HocPhanPage()
                           focused={false}
                           InputProps={{ readOnly: true }}
                         />
-                       
                       </DialogContent>
                       <DialogActions>
-                        <Button onClick={handleCloseDialogEditHocPhans}>Hủy</Button>
-                        <Button
-                          onClick={()=>{handleSubmitEdit()}}
-                        >
-                          Lưu
-                        </Button>
+                        <Button onClick={handleCloseDialogEditHocPhans}>HỦY</Button>
+                        <Button onClick={handleSubmitEdit}>LƯU</Button>
                       </DialogActions>
                     </Dialog>
+            <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
+              <DialogTitle>Xóa Học Phần</DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Bạn có chắc chắn muốn xóa học phần này không?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleCloseDeleteDialog}>Hủy</Button>
+                <Button onClick={handleDeleteHocPhan} color="error">
+                  Xóa
+                </Button>
+              </DialogActions>
+            </Dialog>
         </TableBody>
        </Table>
      </TableContainer>
