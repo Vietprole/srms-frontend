@@ -31,6 +31,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Layout from '../Layout';
 import { getHocPhansByNganhId, getAllNganhs } from "@/api/api-nganh";
+import { getLopHocPhans } from "@/api/api-lophocphan";
 
 function HocPhanPage() 
 {
@@ -389,28 +390,57 @@ function HocPhanPage()
     }
   };
 
+  const getHocPhanLopHocPhan = async (hocPhanId) => {
+    try {
+      const lopHocPhans = await getLopHocPhans(hocPhanId, null, null, null);
+      return lopHocPhans.map(lhp => lhp.ten);
+    } catch (error) {
+      console.error("Lỗi khi kiểm tra lớp học phần:", error);
+      return [];
+    }
+  };
+
   const handleDeleteHocPhan = async () => {
     try {
-      // Kiểm tra xem học phần thuộc những ngành nào
+      // Kiểm tra học phần thuộc những ngành nào
       const tenNganhs = await getHocPhanNganh(selectedHocPhanId);
+      // Kiểm tra học phần thuộc những lớp học phần nào
+      const tenLopHocPhans = await getHocPhanLopHocPhan(selectedHocPhanId);
       
+      let errorMessage = "";
+      
+      // Xử lý thông báo cho ngành
       if (tenNganhs.length > 0) {
-        // Nếu học phần thuộc nhiều ngành
         if (tenNganhs.length > 1) {
-          const danhSachNganh = tenNganhs.join(", ");
-          setSnackbarMessage(`Học phần đã được thêm vào các ngành: ${danhSachNganh}. Vui lòng xóa học phần ra khỏi các ngành trước khi thao tác`);
-        } 
-        // Nếu học phần chỉ thuộc một ngành
-        else {
-          setSnackbarMessage(`Học phần đã được thêm vào ngành ${tenNganhs[0]}, vui lòng xóa học phần ra khỏi ngành trước khi thao tác`);
+          errorMessage += `Học phần đã được thêm vào các ngành: ${tenNganhs.join(", ")}`;
+        } else {
+          errorMessage += `Học phần đã được thêm vào ngành ${tenNganhs[0]}`;
         }
+      }
+
+      // Xử lý thông báo cho lớp học phần
+      if (tenLopHocPhans.length > 0) {
+        if (errorMessage) {
+          errorMessage += " và ";
+        }
+        if (tenLopHocPhans.length > 1) {
+          errorMessage += `Học phần thuộc các lớp học phần: ${tenLopHocPhans.join(", ")}`;
+        } else {
+          errorMessage += `Học phần thuộc lớp học phần ${tenLopHocPhans[0]}`;
+        }
+      }
+
+      // Nếu có bất kỳ ràng buộc nào
+      if (errorMessage) {
+        errorMessage += ". Vui lòng xóa học phần khỏi các ràng buộc trước khi thao tác";
+        setSnackbarMessage(errorMessage);
         setSnackbarSeverity("error");
         setOpenSnackbar(true);
         handleCloseDeleteDialog();
         return;
       }
 
-      // Nếu không thuộc ngành nào thì tiến hành xóa
+      // Nếu không có ràng buộc nào thì tiến hành xóa
       await deleteHocPhan(selectedHocPhanId);
       setSnackbarMessage("Xóa học phần thành công");
       setSnackbarSeverity("success");
