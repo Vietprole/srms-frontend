@@ -1,3 +1,4 @@
+/* eslint-disable react/display-name */
 import * as React from 'react';
 import { styled } from '@mui/material/styles';
 import Table from '@mui/material/Table';
@@ -36,6 +37,7 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import Layout from '../Layout';
 import TestDialog from '@/components/DialogHocPhan';
+import { TableVirtuoso } from "react-virtuoso";
 function TestPage() 
 {
   const styles = {
@@ -97,7 +99,7 @@ function TestPage()
     table:
     {
       width: '100%',
-      height: '98%',
+      height: '100vb',
       display: 'flex',
       flexDirection: 'column',
       paddingTop: '10px',
@@ -334,6 +336,75 @@ function TestPage()
   },
   }));
 
+  const columns = [
+    { width: 50, label: "STT", dataKey: "index", align: "center" },
+    { width: 150, label: "Mã Ngành", dataKey: "maNganh", align: "center" },
+    {  label: "Tên Ngành", dataKey: "ten", align: "center" },
+    { width: 300, label: "Tên Khoa", dataKey: "tenKhoa", align: "center" },
+    { width: 150, label: "", dataKey: "actions", align: "center" },
+  ];
+
+  const VirtuosoTableComponents = {
+    Scroller: React.forwardRef((props, ref) => (
+      <TableContainer component={Paper} {...props} ref={ref} sx={{ height: "calc(100vh - 200px)" }} />
+    )),
+    
+    Table: (props) => (
+      <Table {...props} sx={{ borderCollapse: "separate", tableLayout: "fixed", backgroundColor: "white" }} />
+    ),
+    TableHead: React.forwardRef((props, ref) => <TableHead {...props} ref={ref} />),
+    TableRow: StyledTableRow, // Sử dụng StyledTableRow bạn đã định nghĩa
+    TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
+    TableCell: StyledTableCell, // Sử dụng StyledTableCell bạn đã định nghĩa
+  };
+  
+  
+  
+  function fixedHeaderContent() {
+    return (
+      <StyledTableRow>
+        {columns.map((column) => (
+          <StyledTableCell
+            key={column.dataKey}
+            variant="head"
+            align="center" // Cố định căn giữa
+            style={{ width: column.width, textAlign: "center" }} // Đảm bảo text ở giữa
+          >
+            {column.label}
+          </StyledTableCell>
+        ))}
+      </StyledTableRow>
+    );
+  }
+  
+  
+  
+  
+  function rowContent(index, row) {
+    return (
+      <>
+        <StyledTableCell align="center">{index + 1}</StyledTableCell> {/* STT */}
+        <StyledTableCell align="center">{row.maNganh}</StyledTableCell>
+        <StyledTableCell align="left">{row.ten}</StyledTableCell>
+        <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
+        <StyledTableCell align="center" width={150}>
+          <Tooltip title="Sửa ngành">
+            <IconButton onClick={() => handleClickOpenEdit(row.id)}>
+              <EditIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Xem danh sách học phần">
+            <IconButton onClick={() => handleOpenDialog(row.id)}>
+              <FormatListBulletedIcon />
+            </IconButton>
+          </Tooltip>
+        </StyledTableCell>
+      </>
+    );
+  }
+  
+  
+
   return (
     <Layout>
       <div style={styles.main}>
@@ -444,8 +515,19 @@ function TestPage()
         </div>
       </div>
       <div style={styles.table}>
-      
-       <TableContainer component={Paper}>
+      <Paper style={{ height: "100vh", width: "100%" }}>
+
+  <TableVirtuoso style={{ width: "100%", height: "100%" }} // Đảm bảo full height
+    data={filteredData}
+    components={VirtuosoTableComponents}
+    fixedHeaderContent={fixedHeaderContent}
+    itemContent={rowContent}
+  />
+</Paper>
+<TestDialog nganhId={nganhId} open={openDialog} onClose={handleCloseDialog} />
+
+
+       {/* <TableContainer component={Paper}>
        <Table sx={{ minWidth: 700 }} aria-label="customized table">
          <TableHead sx={{position: 'sticky',top: 0,  zIndex: 1,backgroundColor: "#0071A6",}}>
           <TableRow>
@@ -483,7 +565,9 @@ function TestPage()
             <TestDialog nganhId={nganhId} open={openDialog} onClose={handleCloseDialog}></TestDialog>
         </TableBody>
        </Table>
-     </TableContainer>
+     </TableContainer> */}
+
+
           <Dialog id='editNganh' fullWidth open={openEditNganh} onClose={handleCloseEditNganh} TransitionComponent={Fade} >
             <DialogTitle>Sửa ngành:</DialogTitle>
             <DialogContent>

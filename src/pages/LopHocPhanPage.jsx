@@ -26,8 +26,6 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import Layout from './Layout';
-import { LopHocPhanForm } from "@/components/LopHocPhanForm";
-import EditSinhVienLopHocPhan from "@/components/EditSinhVienLopHocPhanForm";
 import {
   getLopHocPhans,
   deleteLopHocPhan,
@@ -149,7 +147,6 @@ export default function LopHocPhanPage() {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-  const [modalOpen, setModalOpen] = useState(false);
   const [selectedLopHocPhanId, setSelectedLopHocPhanId] = useState(null);
 
   const [data, setData] = useState([]);
