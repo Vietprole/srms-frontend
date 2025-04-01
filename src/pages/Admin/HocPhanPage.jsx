@@ -32,7 +32,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import Layout from '../Layout';
 import { getHocPhansByNganhId, getAllNganhs } from "@/api/api-nganh";
 import { getLopHocPhans } from "@/api/api-lophocphan";
-
+import { TableVirtuoso } from "react-virtuoso";
 function HocPhanPage() 
 {
   const styles = {
@@ -317,6 +317,9 @@ function HocPhanPage()
     }
   };
   const handleSubmitEdit = async () => {
+    // Kiểm tra giá trị của soTinChiRef.current
+    const soTinChiValue = String(soTinChiRef.current || "").trim();
+  
     if (tenHocPhanRef.current.trim() === "") {
       setErrorTenHocPhan(true);
       setSnackbarMessage("Vui lòng nhập tên học phần");
@@ -324,23 +327,23 @@ function HocPhanPage()
       setOpenSnackbar(true);
       return;
     }
-    if(soTinChiRef.current.trim() === "")
-    {
+  
+    if (soTinChiValue === "") {
       setErrorSoTinChi(true);
       setSnackbarMessage("Vui lòng nhập số tín chỉ");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       return;
     }
-
+  
     const hocphanData = {
       ten: tenHocPhanRef.current,
-      soTinChi: parseFloat(soTinChiRef.current) // Convert to number
+      soTinChi: parseFloat(soTinChiValue) // Chuyển đổi thành số
     };
-
+  
     try {
       const response = await updateHocPhan(hocPhanId, hocphanData);
-      if(response.status === 200) {
+      if (response.status === 200) {
         setSnackbarMessage("Cập nhật học phần thành công");
         setSnackbarSeverity("success");
         setOpenSnackbar(true);
@@ -357,6 +360,7 @@ function HocPhanPage()
       setOpenSnackbar(true);
     }
   };
+  
 
   const handleOpenDeleteDialog = (hocPhanId) => {
     setSelectedHocPhanId(hocPhanId);
@@ -461,6 +465,76 @@ function HocPhanPage()
       }
     }
   };
+  const columns = [
+    { width: 50, label: "STT", dataKey: "index", align: "center" },
+    { width: 150, label: "Mã Học Phần", dataKey: "maHocPhan", align: "center" },
+    { label: "Tên Học Phần", dataKey: "tenHocPhan", align: "left" },
+    { width: 100, label: "Số Tín Chỉ", dataKey: "soTinChi", align: "center" },
+    { width: 200, label: "Tên Khoa", dataKey: "tenKhoa", align: "center" },
+    { width: 150, label: "", dataKey: "actions", align: "center" },
+  ];
+  
+  const VirtuosoTableComponents = {
+    Scroller: React.forwardRef((props, ref) => (
+      <TableContainer component={Paper} {...props} ref={ref} sx={{ height: "calc(100vh - 200px)", overflowY: "auto" }} />
+    )),
+    Table: (props) => (
+      <Table {...props} sx={{ borderCollapse: "separate", tableLayout: "fixed", backgroundColor: "white" }} />
+    ),
+    TableHead: React.forwardRef((props, ref) => (
+      <TableHead {...props} ref={ref} sx={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#0071A6" }} />
+    )),
+    TableRow: StyledTableRow,
+    TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
+    TableCell: StyledTableCell,
+  };
+  
+  function fixedHeaderContent() {
+    return (
+      <StyledTableRow>
+        {columns.map((column) => (
+          <StyledTableCell
+            key={column.dataKey}
+            variant="head"
+            align="center"
+            style={{ width: column.width, textAlign: "center" }}
+          >
+            {column.label}
+          </StyledTableCell>
+        ))}
+      </StyledTableRow>
+    );
+  }
+  
+  function rowContent(index, row) {
+    return (
+      <>
+        <StyledTableCell align="center">{index + 1}</StyledTableCell>
+        <StyledTableCell align="center">{row.maHocPhan}</StyledTableCell>
+        <StyledTableCell align="left">{row.ten}</StyledTableCell>
+        <StyledTableCell align="center">{row.soTinChi}</StyledTableCell>
+        <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
+        <StyledTableCell align="center" width={150}>
+          <Tooltip title="Sửa học phần">
+          <IconButton
+                      onClick={() => handleOpenEditDialog(row.id)}
+                    >
+              <EditIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Xóa học phần">
+              <IconButton
+                  onClick={() => handleOpenDeleteDialog(row.id)}
+              >
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
+        </StyledTableCell>
+      </>
+    );
+  }
+  
+  
 
   return (
     <Layout>
@@ -602,7 +676,7 @@ function HocPhanPage()
       </div>
       <div style={styles.table}>
       
-       <TableContainer component={Paper}>
+       {/* <TableContainer component={Paper}>
        <Table sx={{ minWidth: 700 }} aria-label="customized table">
          <TableHead sx={{position: 'sticky',top: 0,  zIndex: 1,backgroundColor: "#0071A6",}}>
           <TableRow>
@@ -644,7 +718,32 @@ function HocPhanPage()
               </StyledTableRow>
               
             ))}
-            <Dialog id='suaHocPhan' fullWidth open={openEditDialog} onClose={handleCloseDialogEditHocPhans}>
+
+           
+        </TableBody>
+       </Table>
+     </TableContainer> */}
+     <TableVirtuoso
+      data={data}
+      components={VirtuosoTableComponents}
+      fixedHeaderContent={fixedHeaderContent}
+      itemContent={rowContent}
+    />
+     <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
+              <DialogTitle>Xóa Học Phần</DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Bạn có chắc chắn muốn xóa học phần này không?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleCloseDeleteDialog}>Hủy</Button>
+                <Button onClick={handleDeleteHocPhan} color="error">
+                  Xóa
+                </Button>
+              </DialogActions>
+            </Dialog>
+     <Dialog id='suaHocPhan' fullWidth open={openEditDialog} onClose={handleCloseDialogEditHocPhans}>
                       <DialogTitle>Sửa học phần:</DialogTitle>
                       <DialogContent>
                         <DialogContentText>
@@ -725,23 +824,6 @@ function HocPhanPage()
                         <Button onClick={handleSubmitEdit}>LƯU</Button>
                       </DialogActions>
                     </Dialog>
-            <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
-              <DialogTitle>Xóa Học Phần</DialogTitle>
-              <DialogContent>
-                <DialogContentText>
-                  Bạn có chắc chắn muốn xóa học phần này không?
-                </DialogContentText>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={handleCloseDeleteDialog}>Hủy</Button>
-                <Button onClick={handleDeleteHocPhan} color="error">
-                  Xóa
-                </Button>
-              </DialogActions>
-            </Dialog>
-        </TableBody>
-       </Table>
-     </TableContainer>
      <Snackbar 
         open={openSnackbar} 
         autoHideDuration={3000} 
