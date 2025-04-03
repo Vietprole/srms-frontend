@@ -34,11 +34,17 @@ export default function MapHocPhanPLOPage() {
           getHocPhans(null, nganhId, laCotLoi),
           getPLOsByNganhId(nganhId),
         ]);
+        // Sắp xếp các PLO theo thứ tự số
+        const sortedPLOs = pLOsData.sort((a, b) => {
+          const aNum = parseInt(a.ten.split(' ')[1]); // Giả sử tên có dạng "PLO 1"
+          const bNum = parseInt(b.ten.split(' ')[1]);
+          return aNum - bNum;
+        });
         setHocPhans(hocPhansData);
-        setPLOs(pLOsData);
+        setPLOs(sortedPLOs);
   
         const toggledData = {};
-        for (const plo of pLOsData) {
+        for (const plo of sortedPLOs) {
           const hocPhanData = await getHocPhansByPLOId(plo.id);
           toggledData[plo.id] = hocPhanData.map(hocPhan => hocPhan.id);
         }
