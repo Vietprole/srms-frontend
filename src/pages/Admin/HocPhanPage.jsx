@@ -475,16 +475,19 @@ function HocPhanPage()
   ];
   
   const VirtuosoTableComponents = {
+    // eslint-disable-next-line react/display-name
     Scroller: React.forwardRef((props, ref) => (
       <TableContainer component={Paper} {...props} ref={ref} sx={{ height: "calc(100vh - 200px)", overflowY: "auto" }} />
     )),
     Table: (props) => (
       <Table {...props} sx={{ borderCollapse: "separate", tableLayout: "fixed", backgroundColor: "white" }} />
     ),
+    // eslint-disable-next-line react/display-name
     TableHead: React.forwardRef((props, ref) => (
       <TableHead {...props} ref={ref} sx={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#0071A6" }} />
     )),
     TableRow: StyledTableRow,
+    // eslint-disable-next-line react/display-name
     TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
     TableCell: StyledTableCell,
   };
@@ -675,56 +678,8 @@ function HocPhanPage()
         </div>
       </div>
       <div style={styles.table}>
-      
-       {/* <TableContainer component={Paper}>
-       <Table sx={{ minWidth: 700 }} aria-label="customized table">
-         <TableHead sx={{position: 'sticky',top: 0,  zIndex: 1,backgroundColor: "#0071A6",}}>
-          <TableRow>
-            <StyledTableCell align="center">STT</StyledTableCell>
-            <StyledTableCell align="center">Mã học phần</StyledTableCell>
-            <StyledTableCell align="center">Tên học phần</StyledTableCell>
-            <StyledTableCell align="center">Số tín chỉ</StyledTableCell>
-            <StyledTableCell align="center">Tên Khoa</StyledTableCell>
-            <StyledTableCell align="center"></StyledTableCell>
-          </TableRow>
-
-         </TableHead>
-         <TableBody sx={{ overflowY: "auto" }}>
-            {filteredData.map((row, index) => (
-              <StyledTableRow key={row.maHocPhan || index}>
-
-                
-                <StyledTableCell align="center" width={40}>{index + 1}</StyledTableCell>
-                <StyledTableCell align="center" width={150}>{row.maHocPhan}</StyledTableCell>
-                <StyledTableCell align="left">{row.ten}</StyledTableCell>
-                <StyledTableCell align="center" width={150}>{row.soTinChi}</StyledTableCell>
-                <StyledTableCell align="center" width={300}>{row.tenKhoa}</StyledTableCell>
-                <StyledTableCell align="center" width={150}>
-                  <Tooltip title="Sửa thông tin học phần">
-                    <IconButton
-                      onClick={() => handleOpenEditDialog(row.id)}
-                    >
-                      <EditIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Xóa học phần">
-                    <IconButton
-                      onClick={() => handleOpenDeleteDialog(row.id)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </Tooltip>
-                </StyledTableCell>
-              </StyledTableRow>
-              
-            ))}
-
-           
-        </TableBody>
-       </Table>
-     </TableContainer> */}
      <TableVirtuoso
-      data={data}
+      data={filteredData}
       components={VirtuosoTableComponents}
       fixedHeaderContent={fixedHeaderContent}
       itemContent={rowContent}

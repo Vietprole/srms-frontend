@@ -27,6 +27,18 @@ import * as React from 'react';
 import EditIcon from '@mui/icons-material/Edit';
 import Tooltip from '@mui/material/Tooltip';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { TableVirtuoso } from 'react-virtuoso';
+import {
+  getPLOs,
+  deletePLO,
+  addPLO,
+  updatePLO,
+  getAllPLOs
+} from "@/api/api-plo";
+import {
+  getAllNganhs,
+} from "@/api/api-nganh";
 function TestPage() 
 {
   const styles = {
@@ -106,24 +118,16 @@ function TestPage()
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [data, setData] = useState([]);
-  const [filteredData, setFilteredData] = useState(data); // Lưu dữ liệu đã lọc
-
-
-
-  
-
-  
-
+  const [filteredData, setFilteredData] = useState(data);
   useEffect(() => {
     fetchData();
-    
   }, []); 
   
   
   const fetchData = async () => {
-    const lophocphans = await getAllLopHocPhans();
-    setData(lophocphans);
-    setFilteredData(lophocphans);
+    const plos = await getAllPLOs();
+    setData(plos);
+    setFilteredData(plos);
   };
   
   
@@ -156,13 +160,82 @@ function TestPage()
   },
   }));
 
+  const columns = [
+    { width: 50, label: "STT", dataKey: "index", align: "center" },
+    { width: 200, label: "Tên PLO", dataKey: "ten", align: "center" },
+    { label: "Mô tả", dataKey: "moTa", align: "center" },
+    { width: 350, label: "Thuộc ngành", dataKey: "tenNganh", align: "center" },
+    { width: 200, label: "", dataKey: "tenNganh", align: "center" },
+  ];
+  
+  const VirtuosoTableComponents = {
+    // eslint-disable-next-line react/display-name
+    Scroller: React.forwardRef((props, ref) => (
+      <TableContainer component={Paper} {...props} ref={ref} sx={{ height: "calc(100vh - 200px)", overflowY: "auto" }} />
+    )),
+    Table: (props) => (
+      <Table {...props} sx={{ borderCollapse: "separate", tableLayout: "fixed", backgroundColor: "white" }} />
+    ),
+    // eslint-disable-next-line react/display-name
+    TableHead: React.forwardRef((props, ref) => (
+      <TableHead {...props} ref={ref} sx={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#0071A6" }} />
+    )),
+    TableRow: StyledTableRow,
+    // eslint-disable-next-line react/display-name
+    TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
+    TableCell: StyledTableCell,
+  };
+  
+  function fixedHeaderContent() {
+    return (
+      <StyledTableRow>
+        {columns.map((column) => (
+          <StyledTableCell
+            key={column.dataKey}
+            variant="head"
+            align="center"
+            style={{ width: column.width, textAlign: "center" }}
+          >
+            {column.label}
+          </StyledTableCell>
+        ))}
+      </StyledTableRow>
+    );
+  }
+  
+  function rowContent(index, row) {
+    return (
+      <>
+        <StyledTableCell align="center">{index + 1}</StyledTableCell>
+        <StyledTableCell align="center">{row.ten}</StyledTableCell>
+        <StyledTableCell align="center">{row.moTa}</StyledTableCell>
+        <StyledTableCell align="center">{row.tenNganh}</StyledTableCell>
+        <StyledTableCell align="center" width={150}>
+          <Tooltip title="Sửa học phần">
+          <IconButton
+   
+                    >
+              <EditIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Xóa học phần">
+              <IconButton
+
+              >
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
+        </StyledTableCell>
+      </>
+    );
+  }
 
 
   return (
     <Layout>
       <div style={styles.main}>
       <div style={styles.title}>
-        <span>Danh sách lớp học phần</span>
+        <span>Danh sách PLO</span>
         <div style={styles.btnMore}>
           <IconButton aria-label="more actions"><MoreVertIcon/></IconButton>
         </div>
@@ -187,7 +260,7 @@ function TestPage()
             <TextField
               fullWidth
               fontSize="10px"
-              placeholder="Tìm kiếm theo tên lớp học phần..."
+              placeholder="Tìm kiếm theo tên PLO..."
               variant="standard"
               autoComplete='off'
               InputProps={{
@@ -200,78 +273,83 @@ function TestPage()
                   </React.Fragment>
                 ),
               }}
-              // value={searchQuery} // Liên kết giá trị tìm kiếm với state
-              // onChange={handleSearchChange} // Gọi hàm xử lý khi thay đổi
+            
             />
           </Box>
         </div>
         <div style={styles.cbKhoa}>
-          {/* <Autocomplete
-            sx={{ width: "100%" }}
-            options={schoolYears}
-            getOptionLabel={(option) => option.label}
-            required
-            value={selectedNamHocFilter}
-            onChange={handleNamHocChange}
-            renderInput={(params) => (
-              <TextField {...params} label="Chọn năm học" size="small" />
-            )}
-          /> */}
+        
         </div>
         <div style={styles.btnCreate}>
-          <Button sx={{width:"100%"}} variant="contained">Tạo lớp học phần</Button>
+          <Button sx={{width:"100%"}} variant="contained">Tạo PLO</Button>
+          <Dialog id='themPLO' fullWidth >
+                      <DialogTitle>Tạo PLO mới:</DialogTitle>
+                      <DialogContent >
+                        <DialogContentText>
+                          Thêm PLO vào hệ thống
+                        </DialogContentText>
+                        <TextField
+                          autoFocus
+                          required
+                          id='tenPLO'
+                          margin="dense"
+                          label="Tên PLO"
+                          fullWidth
+                          variant="standard"
+                          // onBlur={(e) => setTenHocPhan(e.target.value.trim())}
+                          // error={errorTenHocPhan}
+                          // onInput={(e) => setErrorTenHocPhan(e.target.value.trim() === "")}
+                          helperText="Vui lòng nhập tên PLO"
+                          autoComplete='off'
+                        />
+
+                        <TextField
+                          autoFocus
+                          required
+                          id='tenPLO'
+                          margin="dense"
+                          label="Mô tả PLO"
+                          fullWidth
+                          variant="standard"
+                          // onBlur={(e) => setTenHocPhan(e.target.value.trim())}
+                          // error={errorTenHocPhan}
+                          // onInput={(e) => setErrorTenHocPhan(e.target.value.trim() === "")}
+                          helperText="Vui lòng nhập mô tả cho PLO"
+                          autoComplete='off'
+                        />
+                       <Autocomplete
+                          // options={khoas}
+                          getOptionLabel={(option) => option.ten || ''}
+                          noOptionsText="Không tìm thấy khoa"
+                          required
+                          id="disable-clearable"
+                          disableClearable
+                          // onChange={(event, newValue) => setSelectedKhoa(newValue)} // Cập nhật state khi chọn khoa
+                          renderInput={(params) => (
+                            <TextField {...params} label="Chọn khoa" variant="standard" />
+                          )}
+                        />
+                      </DialogContent>
+                      <DialogActions>
+                        <Button>Hủy</Button>
+                        <Button
+
+                        >
+                          Lưu
+                        </Button>
+                      </DialogActions>
+                    </Dialog>
 
         </div>
       </div>
       <div style={styles.table}>
-      
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 700 }} aria-label="customized table">
-          <TableHead sx={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: "#0071A6" }}>
-            <TableRow>
-              <StyledTableCell align="center">STT</StyledTableCell>
-              <StyledTableCell align="center">Mã lớp học phần</StyledTableCell>
-              <StyledTableCell align="center">Tên lớp học phần</StyledTableCell>
-              <StyledTableCell align="center">Giảng viên dạy</StyledTableCell>
-              <StyledTableCell align="center">Học kỳ</StyledTableCell>
-              <StyledTableCell align="center">Năm học</StyledTableCell>
-              <StyledTableCell align="center"></StyledTableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody sx={{ overflowY: "auto" }}>
-            {Array.isArray(filteredData) && filteredData.length > 0 ? (
-              filteredData.map((row, index) => (
-                <StyledTableRow key={row.maHocKy || index}>
-                  <StyledTableCell align="center" width={50}>{index + 1}</StyledTableCell>
-                  <StyledTableCell align="center" width={200}>{row.maLopHocPhan}</StyledTableCell>
-                  <StyledTableCell align="center">{row.ten}</StyledTableCell>
-                  <StyledTableCell align="center" width={250}>{row.tenGiangVien}</StyledTableCell>
-                  <StyledTableCell align="center" width={150}>{row.tenHocKy}</StyledTableCell>
-                  <StyledTableCell align="center" width={150}>{row.namHoc}</StyledTableCell>
-                  <StyledTableCell align="center" width={150}>
-                  <Tooltip title="Sửa thông tin lớp học phần">
-                    <IconButton
-        
-                    ><EditIcon /></IconButton>
-                  </Tooltip>
-                  <Tooltip title="Danh sách sinh viên">
-                    <IconButton
-        
-                    ><FormatListBulletedIcon/></IconButton>
-                  </Tooltip>
-                  </StyledTableCell>
-                </StyledTableRow>
-              ))
-            ) : (
-              <StyledTableRow>
-                <StyledTableCell align="center" colSpan={4}>
-                  Không có dữ liệu
-                </StyledTableCell>
-              </StyledTableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            
+      <TableVirtuoso
+      data={filteredData}
+      components={VirtuosoTableComponents}
+      fixedHeaderContent={fixedHeaderContent}
+      itemContent={rowContent}
+    />
 
      <Snackbar 
         open={openSnackbar} 
