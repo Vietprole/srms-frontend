@@ -34,7 +34,6 @@ export const getAllNganhs = async () => {
     const response = await axios.get(API_NGANH, {
       headers: { Authorization: getAccessToken() }
     });
-    console.log("response data: ", response.data);
     return response.data;
   } catch (error) {
     console.log("error message: ", error.message);

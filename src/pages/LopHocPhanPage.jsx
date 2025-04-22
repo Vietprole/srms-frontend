@@ -50,7 +50,7 @@ import {
   addSinhViensToLopHocPhan,
   removeSinhVienFromLopHocPhan 
 } from "@/api/api-lophocphan";
-
+import VirtualizedAutocomplete from '../components/VirtualizedAutocomplete';
 const styles = {
   main: {
     width: '100%',
@@ -726,16 +726,18 @@ export default function LopHocPhanPage() {
               helperText={errorTenLopHocPhan ? "Vui lòng nhập tên lớp học phần" : ""}
               autoComplete="off"
             />
-
-            <Autocomplete
+            <VirtualizedAutocomplete
               options={hocPhanItems}
-              getOptionLabel={(option) => option.label || ""}
               value={selectedHocPhanAdd}
-              onChange={(event, newValue) => setSelectedHocPhanAdd(newValue)}
-              renderInput={(params) => (
-                <TextField {...params} label="Chọn học phần" variant="standard" required />
-              )}
+              onChange={(e, newVal) => setSelectedHocPhanAdd(newVal)}
+              getOptionLabel={(option) => ` ${option.label}`}
+              label="Chọn học phần"
+              noOptionsText="Không tìm thấy học phần"  // Thông báo nếu không có kết quả
             />
+
+
+
+
 
             <Autocomplete
               options={hocKyItems}
@@ -746,16 +748,15 @@ export default function LopHocPhanPage() {
                 <TextField {...params} label="Chọn học kỳ" variant="standard" required />
               )}
             />
+<VirtualizedAutocomplete
+  options={comboBoxGiangViens}
+  value={selectedGiangVien}
+  onChange={(e, newVal) => setSelectedGiangVien(newVal)}
+  getOptionLabel={(option) => option.label || ""}
+  label="Chọn giảng viên"
+  noOptionsText="Không tìm thấy giảng viên"  // Thông báo nếu không có kết quả
+/>
 
-            <Autocomplete
-              options={comboBoxGiangViens}
-              getOptionLabel={(option) => option.label || ""}
-              value={selectedGiangVien}
-              onChange={(event, newValue) => setSelectedGiangVien(newValue)}
-              renderInput={(params) => (
-                <TextField {...params} label="Chọn giảng viên" variant="standard" required />
-              )}
-            />
 
             <TextField
               required

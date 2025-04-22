@@ -59,7 +59,7 @@ export const getPLOById = async (id) => {
     const response = await axios.get(`${API_PLO}/${id}`, {
       headers: { Authorization: getAccessToken() }
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.log("error message: ", error.message);
     throw new Error(error.response?.data || "Lỗi bất định");
@@ -71,7 +71,7 @@ export const addPLO = async (newData) => {
     const response = await axios.post(API_PLO, newData, {
       headers: { Authorization: getAccessToken() }
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.log("error message: ", error.message);
     throw new Error(error.response?.data || "Lỗi bất định");
@@ -83,7 +83,7 @@ export const updatePLO = async (id, updatedData) => {
     const response = await axios.put(`${API_PLO}/${id}`, updatedData, {
       headers: { Authorization: getAccessToken() }
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.log("error message: ", error.message);
     throw new Error(error.response?.data || "Lỗi bất định");
@@ -95,7 +95,7 @@ export const deletePLO = async (id) => {
     const response = await axios.delete(`${API_PLO}/${id}`, {
       headers: { Authorization: getAccessToken() }
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.log("error message: ", error.message);
     throw new Error(error.response?.data || "Lỗi bất định");
@@ -131,7 +131,7 @@ export const updateCLOsToPLO = async (ploId, cloIdsList) => {
     const response = await axios.put(`${API_PLO}/${ploId}/clo`, cloIdsList, {
       headers: { Authorization: getAccessToken() }
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.log("error message: ", error.message);
     throw new Error(error.response?.data || "Lỗi bất định");
@@ -167,7 +167,7 @@ export const updateHocPhansToPLO = async (ploId, hocPhanIdsList) => {
     const response = await axios.put(`${API_PLO}/${ploId}/hocphan`, hocPhanIdsList, {
       headers: { Authorization: getAccessToken() }
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.log("error message: ", error.message);
     throw new Error(error.response?.data || "Lỗi bất định");

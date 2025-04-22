@@ -526,48 +526,6 @@ function TestPage()
 </Paper>
 <TestDialog nganhId={nganhId} open={openDialog} onClose={handleCloseDialog} />
 
-
-       {/* <TableContainer component={Paper}>
-       <Table sx={{ minWidth: 700 }} aria-label="customized table">
-         <TableHead sx={{position: 'sticky',top: 0,  zIndex: 1,backgroundColor: "#0071A6",}}>
-          <TableRow>
-            <StyledTableCell align="center">STT</StyledTableCell>
-            <StyledTableCell align="center">Mã Ngành</StyledTableCell>
-            <StyledTableCell align="center">Tên Ngành</StyledTableCell>
-            <StyledTableCell align="center">Tên Khoa</StyledTableCell>
-            <StyledTableCell align="center"></StyledTableCell>
-          </TableRow>
-
-         </TableHead>
-         <TableBody sx={{ overflowY: "auto" }}>
-            {filteredData.map((row, index) => (
-              <StyledTableRow key={row.maNganh + row.ten}>
-                
-                <StyledTableCell align="center" width={50}>{index + 1}</StyledTableCell>
-                <StyledTableCell align="center" width={150}>{row.maNganh}</StyledTableCell>
-                <StyledTableCell align="left">{row.ten}</StyledTableCell>
-                <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
-                <StyledTableCell align="center" width={150}>
-                  <Tooltip title="Sửa ngành">
-                    <IconButton
-                      onClick={() => handleClickOpenEdit(row.id)}
-                    ><EditIcon /></IconButton>
-                  </Tooltip>
-                  <Tooltip title="Xem danh sách học phần">
-                    <IconButton onClick={()=>handleOpenDialog(row.id)}><FormatListBulletedIcon /></IconButton>
-                    
-                    
-                  </Tooltip>
-                </StyledTableCell>
-              </StyledTableRow>
-              
-            ))}
-            <TestDialog nganhId={nganhId} open={openDialog} onClose={handleCloseDialog}></TestDialog>
-        </TableBody>
-       </Table>
-     </TableContainer> */}
-
-
           <Dialog id='editNganh' fullWidth open={openEditNganh} onClose={handleCloseEditNganh} TransitionComponent={Fade} >
             <DialogTitle>Sửa ngành:</DialogTitle>
             <DialogContent>
