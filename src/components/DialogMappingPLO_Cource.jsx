@@ -7,10 +7,6 @@ import { getNganhById } from "@/api/api-nganh";
 import Typography  from "@mui/material/Typography";
 import DialogContentText from '@mui/material/DialogContentText';
 import { Box } from "@mui/material";
-import TextField from "@mui/material/TextField";
-import { Fragment } from "react";
-import IconButton from "@mui/material/IconButton";
-import SearchIcon from "@mui/icons-material/Search";
 import Button from "@mui/material/Button";
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -27,8 +23,9 @@ import SaveIcon from '@mui/icons-material/Save';
 import { getHocPhansByNganhId } from "@/api/api-nganh";
 import { getPLOsByNganhId, getHocPhansByPLOId, updateHocPhansToPLO } from '@/api/api-plo';
 import React from "react";
+import { useCallback, useMemo } from "react";
+
 import { TableVirtuoso } from "react-virtuoso";
-import { useMemo } from "react";
 function DialogPLOHocPhan({ nganhId, open, onClose }) {
   const styles = {
     main: {
@@ -106,7 +103,6 @@ function DialogPLOHocPhan({ nganhId, open, onClose }) {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [tongSoTinChi, setTongSoTinChi] = useState(0);
-  const [searchQuery, setSearchQuery] = useState(""); // Lưu giá trị tìm kiếm
   const [hocPhanTheoPLO, setHocPhanTheoPLO] = useState({}); // Biến tạm lưu trạng thái checkbox
   const [originalHocPhanTheoPLO, setOriginalHocPhanTheoPLO] = useState({});
   
@@ -123,8 +119,6 @@ function DialogPLOHocPhan({ nganhId, open, onClose }) {
       const hocphans = await getHocPhansByNganhId(nganhId);
       const totalCredits = hocphans.reduce((total, hp) => total + hp.soTinChi, 0);
       const plos = await getPLOsByNganhId(nganhId);
-  
-      // Lấy học phần theo từng PLO
       const ploHocPhanMap = {}; 
       for (const plo of plos) {
         try {
@@ -173,15 +167,10 @@ function DialogPLOHocPhan({ nganhId, open, onClose }) {
   
   
   const handleClose = () => {
-    setSearchQuery(""); // Reset search query when closing dialog
     onClose();
   };
   
 
-  const handleSearchChange = (event) => {
-    const value = event.target.value;
-    setSearchQuery(value); // Cập nhật giá trị tìm kiếm
-  };
   
   const handleSnackbarClose = () => {
     setOpenSnackbar(false);
@@ -203,19 +192,20 @@ function DialogPLOHocPhan({ nganhId, open, onClose }) {
       </StyledTableRow>
     );
   };
-  const rowContent = (index, row) => {
+  const rowContent = useCallback((index, row) => {
+    console.log(`Rendering row ${index}:`, row);
+  
     return (
       <>
         <StyledTableCell align="center">{index + 1}</StyledTableCell>
         <StyledTableCell align="center">{row.maHocPhan}</StyledTableCell>
         <StyledTableCell align="left">{row.ten}</StyledTableCell>
-  
         {lsPLO.map((plo) => (
           <StyledTableCell align="center" key={`checkbox-${row.id}-${plo.id}`}>
             <Checkbox
               checked={hocPhanTheoPLO?.[plo.id]?.includes(row.id) || false}
               onChange={(e) => {
-                e.stopPropagation(); // chặn bubble nếu cần
+                e.stopPropagation();
                 handleTogglePLOCheckbox(row.id, plo.id);
               }}
             />
@@ -223,23 +213,11 @@ function DialogPLOHocPhan({ nganhId, open, onClose }) {
         ))}
       </>
     );
-  };
+  }, [hocPhanTheoPLO, lsPLO]);
+  
+  
 
   const handleTogglePLOCheckbox = (hocPhanId, ploId) => {
-    // Cập nhật hocPhanDaChon (danh sách render)
-    setHocPhanDaChon((prev) =>
-      prev.map((hp) => {
-        if (hp.id === hocPhanId) {
-          return {
-            ...hp,
-            [`plo${ploId}`]: !hp[`plo${ploId}`],
-          };
-        }
-        return hp;
-      })
-    );
-  
-    // Cập nhật hocPhanTheoPLO (state gốc phục vụ lưu DB)
     setHocPhanTheoPLO((prev) => {
       const currentList = prev[ploId] || [];
       const exists = currentList.includes(hocPhanId);
@@ -252,6 +230,7 @@ function DialogPLOHocPhan({ nganhId, open, onClose }) {
       };
     });
   };
+  
   
 const handleSavePLOs = async () => {
   let hasChanges = false;
@@ -324,23 +303,35 @@ const handleSavePLOs = async () => {
     align: "center"
   }));
   const columns = [...staticColumns, ...dynamicColumns];
-
   const VirtuosoTableComponents = {
-    // eslint-disable-next-line react/display-name
     Scroller: React.forwardRef((props, ref) => (
-      <TableContainer component={Paper} {...props} ref={ref} sx={{ height: "calc(100vh - 200px)" }} />
+      <TableContainer
+        component={Paper}
+        {...props}
+        ref={ref}
+        sx={{
+          height: '100%',
+          maxHeight: '100%',
+          overflow: 'auto',
+          backgroundColor: 'white',
+        }}
+      />
     )),
-    
     Table: (props) => (
-      <Table {...props} sx={{ borderCollapse: "separate", tableLayout: "fixed", backgroundColor: "white" }} />
+      <Table
+        {...props}
+        sx={{
+          borderCollapse: 'separate',
+          tableLayout: 'fixed',
+        }}
+      />
     ),
-    // eslint-disable-next-line react/display-name
     TableHead: React.forwardRef((props, ref) => <TableHead {...props} ref={ref} />),
-    TableRow: StyledTableRow, // Sử dụng StyledTableRow bạn đã định nghĩa
-    // eslint-disable-next-line react/display-name
+    TableRow: StyledTableRow,
     TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
-    TableCell: StyledTableCell, // Sử dụng StyledTableCell bạn đã định nghĩa
+    TableCell: StyledTableCell,
   };
+  
   
   
   const hasChanges = isDifferent(hocPhanTheoPLO, originalHocPhanTheoPLO);
@@ -379,43 +370,6 @@ const handleSavePLOs = async () => {
         {nganh ? (
           <div style={styles.main}>
             <div style={styles.mainAction}>
-              <div style={styles.tfSearch}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    border: "2px solid #ccc", // Viền ngoài
-                    borderRadius: "20px", // Bo tròn góc
-                    padding: "4px 8px", // Khoảng cách nội dung
-                    width: "100%", // Chiều rộng toàn khung tìm kiếm
-                    maxWidth: "100%", // Đảm bảo full width
-                    "&:focus-within": {
-                      border: "2px solid #337AB7", // Đổi màu viền khi focus
-                    },
-                    height: "100%",
-                  }}
-                >
-                  <TextField
-                    fullWidth
-                    fontSize="10px"
-                    placeholder="Tìm kiếm theo tên học phần..."
-                    variant="standard"
-                    autoComplete='off'
-                    InputProps={{
-                      disableUnderline: true,
-                      startAdornment: (
-                        <Fragment>
-                          <IconButton aria-label="more actions">
-                            <SearchIcon sx={{ color: "#888" }} />
-                          </IconButton>
-                        </Fragment>
-                      ),
-                    }}
-                    value={searchQuery} 
-                    onChange={handleSearchChange} 
-                  />
-                </Box>
-              </div>
               <div style={styles.btnDelete}></div>
               <div style={styles.btnAdd}></div>
               <div style={styles.btnSave}>
@@ -431,6 +385,19 @@ const handleSavePLOs = async () => {
               </div>
             </div>
             <div style={styles.mainContent}>
+            <TableVirtuoso
+  style={{ height: '100%' }}
+  data={hocPhanDaChon}
+  components={VirtuosoTableComponents}
+  itemContent={(index) => {
+    const row = hocPhanDaChon[index];
+    return rowContent(index, row);
+  }}
+  
+  fixedHeaderContent={fixedHeaderContent}
+/>
+
+
               
             </div>              
           </div>

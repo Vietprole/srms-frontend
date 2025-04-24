@@ -146,6 +146,7 @@ export default function NoiCLOPLO() {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [isChanged, setIsChanged] = useState(false);
   const handleSnackbarClose = () => {
     setOpenSnackbar(false);
   };
@@ -167,6 +168,12 @@ export default function NoiCLOPLO() {
       const cloData = await getCLOsByLopHocPhanId(newValue.id);
       setPLOs(plos);
       setCLOs(cloData);
+      const toggledData = {};
+      for (const plo of plos) {
+        const cloData = await getCLOsByPLOId(plo.id);
+        toggledData[plo.id] = cloData.map(clo => clo.id);
+      }
+      setToggledData(toggledData);
     } else {
       setPLOs([]);
       setCLOs([]);
@@ -184,9 +191,10 @@ export default function NoiCLOPLO() {
         }
       }
   
-      setSnackbarMessage("Lưu thành công!");
+      setSnackbarMessage("Lưu CLO-PLO thành công!");
       setSnackbarSeverity("success");
       setOpenSnackbar(true);
+      setIsChanged(false);
     } catch (error) {
       console.error("Lỗi khi lưu:", error);
       setSnackbarMessage("Đã xảy ra lỗi khi lưu dữ liệu.");
@@ -208,13 +216,16 @@ export default function NoiCLOPLO() {
       ]);
       setCLOs(cLOsData);
       setPLOs(pLOsData);
+      
 
       const toggledData = {};
       for (const plo of pLOsData) {
         const cloData = await getCLOsByPLOId(plo.id);
+        console.log("CLO Data: ", pLOsData);
         toggledData[plo.id] = cloData.map(clo => clo.id);
       }
       setToggledData(toggledData);
+      console.log("Toggled Data: ", toggledData);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -292,14 +303,17 @@ export default function NoiCLOPLO() {
                 setToggledData((prev) => {
                   const current = prev[plo.id] || [];
                   const isChecked = current.includes(clo.id);
-                  return {
+                  const updated = {
                     ...prev,
                     [plo.id]: isChecked
                       ? current.filter((id) => id !== clo.id)
                       : [...current, clo.id],
                   };
+                  setIsChanged(true); // <- Đánh dấu là đã có thay đổi
+                  return updated;
                 });
               }}
+              
             />
           </StyledTableCell>
         ))}
@@ -342,10 +356,16 @@ export default function NoiCLOPLO() {
 
 </div>
 <div style={styles.btnCreate}>
-<Button sx={{width:"100%"}} variant="contained" onClick={handleSave}>Lưu</Button>
-
-
+  <Button 
+    sx={{ width: "100%" }} 
+    variant="contained" 
+    onClick={handleSave} 
+    disabled={!isChanged}
+  >
+    Lưu
+  </Button>
 </div>
+
 </div>
 <div style={styles.table}>
 <TableVirtuoso
