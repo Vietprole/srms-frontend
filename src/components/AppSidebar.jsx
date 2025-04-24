@@ -279,34 +279,61 @@ const phongDaoTaoItem = [
   },
 ]
 
-export function AppSidebar() {
-  const role = getRole(); // Hàm getRole() cần được định nghĩa để lấy vai trò người dùng
-  let items = [];
-  const location = useLocation();
-  const [openItem, setOpenItem] = useState(null); // Trạng thái để mở menu cha
-  const [activeSubItem, setActiveSubItem] = useState(location.pathname); // Lưu trữ URL đang hoạt động
-
-  switch (role) {
-    case 'TruongKhoa':
-      items = truongKhoaItem;
-      break;
-    case 'GiangVien':
-      items = giangVienItem;
-      break;
-    case 'SinhVien':
-      items = sinhVienItem;
-      break;
-    case 'Admin':
-      items = adminItem;
-      break;
-    case 'PhongDaoTao':
-      items = phongDaoTaoItem;
-      break;
-    default:
-      console.warn('Vai trò không hợp lệ hoặc chưa được xác định.');
-      break;
+const nguoiPhuTrachCTDTItems = [
+  {
+    title: "Khoa",
+    url: "/khoa",
+    icon: KhoaIcon,
+  },
+  {
+    title: "Ngành",
+    url: "/nganh",
+    icon: NganhIcon,
+  },
+  
+  {
+    title: "Hồ sơ cá nhân",
+    url: "/hosocanhan",
+    icon: HoSoCaNhanIcon,
+  },
+  {
+    title: "Đăng xuất",
+    url: "/",
+    icon: DangXuatIcon,
   }
-  // items = adminItem;
+];
+
+export function AppSidebar() {
+  const role = getRole();
+  const [items, setItems] = useState([]);
+  const location = useLocation();
+  const [openItem, setOpenItem] = useState(null);
+  const [activeSubItem, setActiveSubItem] = useState(location.pathname);
+
+  useEffect(() => {
+    switch (role) {
+      case "Admin":
+        setItems(adminItem);
+        break;
+      case "GiangVien":
+        setItems(giangVienItem);
+        break;
+      case "SinhVien":
+        setItems(sinhVienItem);
+        break;
+      case "TruongKhoa":
+        setItems(truongKhoaItem);
+        break;
+      case "PhongDaoTao":
+        setItems(phongDaoTaoItem);
+        break;
+      case "NguoiPhuTrachCTĐT":
+        setItems(nguoiPhuTrachCTDTItems);
+        break;
+      default:
+        setItems([]);
+    }
+  }, [role]);
 
   useEffect(() => {
     const currentItem = items.find((item) =>
@@ -324,7 +351,6 @@ export function AppSidebar() {
     e.preventDefault();
     e.stopPropagation();
 
-    // Toggle trạng thái menu cha
     setOpenItem(openItem === title ? null : title);
   };
 
@@ -379,7 +405,7 @@ export function AppSidebar() {
                                 href={subItem.url}
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setActiveSubItem(subItem.url); // Cập nhật URL hoạt động
+                                  setActiveSubItem(subItem.url);
                                 }}
                                 className={`flex items-center p-2 rounded-lg ${
                                   activeSubItem === subItem.url
