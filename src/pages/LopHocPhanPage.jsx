@@ -196,6 +196,9 @@ export default function LopHocPhanPage() {
   const [isLoadingAdd, setIsLoadingAdd] = useState(false);
   const [isLoadingEdit, setIsLoadingEdit] = useState(false);
 
+  // Thêm state để lưu thông tin lớp học phần
+  const [selectedLopHocPhan, setSelectedLopHocPhan] = useState(null);
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -497,9 +500,18 @@ export default function LopHocPhanPage() {
 
   // Sửa lại hàm mở dialog
   const handleOpenSinhVienDialog = async (lopHocPhanId) => {
-    setSelectedLopHocPhanId(lopHocPhanId);
-    setOpenSinhVienDialog(true);
-    await loadSinhVienData(lopHocPhanId);
+    try {
+      setSelectedLopHocPhanId(lopHocPhanId);
+      // Lấy thông tin lớp học phần
+      const lopHocPhan = await getLopHocPhanById(lopHocPhanId);
+      setSelectedLopHocPhan(lopHocPhan);
+      setOpenSinhVienDialog(true);
+      await loadSinhVienData(lopHocPhanId);
+    } catch (error) {
+      setSnackbarMessage("Lỗi khi tải thông tin lớp học phần");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+    }
   };
 
   // Sửa lại hàm xử lý thêm sinh viên
@@ -544,11 +556,11 @@ export default function LopHocPhanPage() {
     }
   };
 
-  // Thêm hàm đóng dialog sinh viên
+  // Sửa lại hàm đóng dialog
   const handleCloseSinhVienDialog = () => {
     setOpenSinhVienDialog(false);
     setSelectedLopHocPhanId(null);
-    // Reset các state liên quan
+    setSelectedLopHocPhan(null); // Reset thông tin lớp học phần
     setDSSinhVien([]);
     setDSSinhVienDaChon([]);
     setSelectedSinhViens([]);
@@ -892,8 +904,34 @@ export default function LopHocPhanPage() {
           maxWidth="xl"
           fullWidth
         >
-          <DialogTitle>
-            Quản lý sinh viên lớp học phần
+          <DialogTitle sx={{ p: 0 }}>
+            <Box sx={{ p: 2, bgcolor: '#f5f5f5' }}>
+              <Typography variant="h6" gutterBottom>
+                Danh sách sinh viên thuộc lớp học phần
+              </Typography>
+              {selectedLopHocPhan && (
+                <Box sx={{ display: 'flex', gap: 4, color: 'text.secondary', fontSize: '0.875rem' }}>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Typography>Mã lớp học phần:</Typography>
+                    <Typography sx={{ color: '#0071A6', fontWeight: 'bold' }}>
+                      {selectedLopHocPhan.maLopHocPhan}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Typography>Tên lớp học phần:</Typography>
+                    <Typography sx={{ color: '#0071A6', fontWeight: 'bold' }}>
+                      {selectedLopHocPhan.ten}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Typography>Giảng viên:</Typography>
+                    <Typography sx={{ color: '#0071A6', fontWeight: 'bold' }}>
+                      {selectedLopHocPhan.tenGiangVien}
+                    </Typography>
+                  </Box>
+                </Box>
+              )}
+            </Box>
           </DialogTitle>
           
           <Backdrop
@@ -908,157 +946,194 @@ export default function LopHocPhanPage() {
           </Backdrop>
 
           <DialogContent>
-            <Grid container spacing={2}>
-              {/* Cột trái - Danh sách sinh viên đã thêm */}
-              <Grid item xs={6}>
-                <Typography variant="h6" gutterBottom>
-                  Danh sách sinh viên đã thêm
-                </Typography>
-                <TextField
-                  fullWidth
-                  variant="outlined"
-                  size="small"
-                  placeholder="Tìm kiếm sinh viên..."
-                  value={searchSinhVienDaChon}
-                  onChange={(e) => setSearchSinhVienDaChon(e.target.value)}
-                  sx={{ mb: 2 }}
-                />
-                <TableContainer component={Paper}>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell padding="checkbox">
-                          <Checkbox
-                            indeterminate={false}
-                            checked={selectedSinhViensDaChon.length > 0 && selectedSinhViensDaChon.length === dsSinhVienDaChon.length}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setSelectedSinhViensDaChon(dsSinhVienDaChon.map(sv => sv.id));
-                              } else {
-                                setSelectedSinhViensDaChon([]);
-                              }
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell>Mã sinh viên</TableCell>
-                        <TableCell>Tên sinh viên</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {dsSinhVienDaChon
-                        .filter(sv => sv.ten.toLowerCase().includes(searchSinhVienDaChon.toLowerCase()))
-                        .map((sv) => (
-                          <TableRow key={sv.id}>
-                            <TableCell padding="checkbox">
-                              <Checkbox
-                                indeterminate={false}
-                                checked={selectedSinhViensDaChon.includes(sv.id)}
-                                defaultChecked={false}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    setSelectedSinhViensDaChon([...selectedSinhViensDaChon, sv.id]);
-                                  } else {
-                                    setSelectedSinhViensDaChon(selectedSinhViensDaChon.filter(id => id !== sv.id));
-                                  }
-                                }}
-                              />
-                            </TableCell>
-                            <TableCell>{sv.maSinhVien}</TableCell>
-                            <TableCell>{sv.ten}</TableCell>
-                          </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-                <Button
-                  variant="contained"
-                  color="error"
-                  sx={{ mt: 2 }}
-                  onClick={handleRemoveSinhVien}
-                  disabled={selectedSinhViensDaChon.length === 0 || isLoading}
-                  startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : null}
-                >
-                  {isLoading ? "Đang xử lý..." : "Xóa sinh viên đã chọn"}
-                </Button>
-              </Grid>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              height: '70vh'
+            }}>
+              {/* Search and Actions Bar */}
+              <Box sx={{
+                display: 'flex',
+                alignItems: 'center',
+                mb: 2,
+                gap: 2
+              }}>
+                {/* Search Box */}
+                <Box sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  border: "2px solid #ccc",
+                  borderRadius: "20px",
+                  padding: "4px 8px",
+                  width: "25%",
+                  "&:focus-within": {
+                    border: "2px solid #337AB7",
+                  },
+                }}>
+                  <TextField
+                    fullWidth
+                    placeholder="Tìm kiếm theo tên sinh viên..."
+                    variant="standard"
+                    autoComplete='off'
+                    InputProps={{
+                      disableUnderline: true,
+                      startAdornment: (
+                        <IconButton aria-label="search">
+                          <SearchIcon sx={{ color: "#888" }} />
+                        </IconButton>
+                      ),
+                    }}
+                    value={searchSinhVien}
+                    onChange={(e) => setSearchSinhVien(e.target.value)}
+                  />
+                </Box>
 
-              {/* Cột phải - Danh sách sinh viên chưa thêm */}
-              <Grid item xs={6}>
-                <Typography variant="h6" gutterBottom>
-                  Danh sách sinh viên chưa thêm
-                </Typography>
-                <TextField
-                  fullWidth
-                  variant="outlined"
-                  size="small"
-                  placeholder="Tìm kiếm sinh viên..."
-                  value={searchSinhVien}
-                  onChange={(e) => setSearchSinhVien(e.target.value)}
-                  sx={{ mb: 2 }}
-                />
-                <TableContainer component={Paper}>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell padding="checkbox">
-                          <Checkbox
-                            indeterminate={false}
-                            checked={selectedSinhViens.length > 0 && selectedSinhViens.length === dsSinhVien.length}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setSelectedSinhViens(dsSinhVien.map(sv => sv.id));
-                              } else {
-                                setSelectedSinhViens([]);
-                              }
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell>Mã sinh viên</TableCell>
-                        <TableCell>Tên sinh viên</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {dsSinhVien
-                        .filter(sv => sv.ten.toLowerCase().includes(searchSinhVien.toLowerCase()))
-                        .map((sv) => (
-                          <TableRow key={sv.id}>
-                            <TableCell padding="checkbox">
-                              <Checkbox
-                                indeterminate={false}
-                                checked={selectedSinhViens.includes(sv.id)}
-                                defaultChecked={false}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    setSelectedSinhViens([...selectedSinhViens, sv.id]);
-                                  } else {
-                                    setSelectedSinhViens(selectedSinhViens.filter(id => id !== sv.id));
-                                  }
-                                }}
-                              />
-                            </TableCell>
-                            <TableCell>{sv.maSinhVien}</TableCell>
-                            <TableCell>{sv.ten}</TableCell>
-                          </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  sx={{ mt: 2 }}
-                  onClick={handleAddSinhVien}
-                  disabled={selectedSinhViens.length === 0 || isLoading}
-                  startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : null}
-                >
-                  {isLoading ? "Đang xử lý..." : "Thêm sinh viên đã chọn"}
-                </Button>
-              </Grid>
-            </Grid>
+                {/* Action Buttons */}
+                <Box sx={{ marginLeft: 'auto', display: 'flex', gap: 1 }}>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    startIcon={<DeleteIcon />}
+                    onClick={handleRemoveSinhVien}
+                    disabled={selectedSinhViensDaChon.length === 0 || isLoading}
+                    sx={{ bgcolor: '#f44336' }}
+                  >
+                    {isLoading ? "Đang xử lý..." : "XÓA SINH VIÊN"}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    startIcon={<span>+</span>}
+                    onClick={handleAddSinhVien}
+                    disabled={selectedSinhViens.length === 0 || isLoading}
+                    sx={{ bgcolor: '#1976d2' }}
+                  >
+                    {isLoading ? "Đang xử lý..." : "THÊM SINH VIÊN"}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="default"
+                    onClick={handleCloseSinhVienDialog}
+                    sx={{ bgcolor: '#9e9e9e', color: 'white' }}
+                  >
+                    ĐÓNG
+                  </Button>
+                </Box>
+              </Box>
+
+              {/* Main Table */}
+              <TableContainer component={Paper} sx={{ height: '100%', overflow: 'auto' }}>
+                <Table stickyHeader>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell padding="checkbox" sx={{ bgcolor: '#0071A6', color: 'white' }}>
+                        <Checkbox
+                          indeterminate={false}
+                          checked={
+                            searchSinhVien.trim() === "" ? 
+                              (dsSinhVien.length > 0 && selectedSinhViens.length === dsSinhVien.length) ||
+                              (dsSinhVienDaChon.length > 0 && selectedSinhViensDaChon.length === dsSinhVienDaChon.length)
+                              :
+                              (dsSinhVien.filter(sv => sv.ten.toLowerCase().includes(searchSinhVien.toLowerCase())).length > 0 &&
+                                selectedSinhViens.length === dsSinhVien.filter(sv => sv.ten.toLowerCase().includes(searchSinhVien.toLowerCase())).length) ||
+                              (dsSinhVienDaChon.filter(sv => sv.ten.toLowerCase().includes(searchSinhVien.toLowerCase())).length > 0 &&
+                                selectedSinhViensDaChon.length === dsSinhVienDaChon.filter(sv => sv.ten.toLowerCase().includes(searchSinhVien.toLowerCase())).length)
+                          }
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              const filteredSinhVien = dsSinhVien.filter(sv => 
+                                sv.ten.toLowerCase().includes(searchSinhVien.toLowerCase())
+                              );
+                              const filteredSinhVienDaChon = dsSinhVienDaChon.filter(sv => 
+                                sv.ten.toLowerCase().includes(searchSinhVien.toLowerCase())
+                              );
+                              
+                              setSelectedSinhViens(filteredSinhVien.map(sv => sv.id));
+                              setSelectedSinhViensDaChon(filteredSinhVienDaChon.map(sv => sv.id));
+                            } else {
+                              setSelectedSinhViens([]);
+                              setSelectedSinhViensDaChon([]);
+                            }
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell sx={{ bgcolor: '#0071A6', color: 'white', fontWeight: 'bold' }}>STT</TableCell>
+                      <TableCell sx={{ bgcolor: '#0071A6', color: 'white', fontWeight: 'bold' }}>Mã sinh viên</TableCell>
+                      <TableCell sx={{ bgcolor: '#0071A6', color: 'white', fontWeight: 'bold' }}>Tên sinh viên</TableCell>
+                      <TableCell sx={{ bgcolor: '#0071A6', color: 'white', fontWeight: 'bold' }}>Lớp</TableCell>
+                      <TableCell sx={{ bgcolor: '#0071A6', color: 'white', fontWeight: 'bold' }}>Trạng thái</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {dsSinhVienDaChon
+                      .filter(sv => sv.ten.toLowerCase().includes(searchSinhVien.toLowerCase()))
+                      .map((sv, index) => (
+                        <TableRow 
+                          key={sv.id}
+                          hover
+                          sx={{
+                            '&:nth-of-type(odd)': {
+                              backgroundColor: '#f5f5f5',
+                            },
+                          }}
+                        >
+                          <TableCell padding="checkbox">
+                            <Checkbox
+                              indeterminate={false}
+                              checked={selectedSinhViensDaChon.includes(sv.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedSinhViensDaChon([...selectedSinhViensDaChon, sv.id]);
+                                } else {
+                                  setSelectedSinhViensDaChon(selectedSinhViensDaChon.filter(id => id !== sv.id));
+                                }
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>{index + 1}</TableCell>
+                          <TableCell>{sv.maSinhVien}</TableCell>
+                          <TableCell>{sv.ten}</TableCell>
+                          <TableCell>{sv.lop || "N/A"}</TableCell>
+                          <TableCell>Đã thêm</TableCell>
+                        </TableRow>
+                    ))}
+                    {dsSinhVien
+                      .filter(sv => sv.ten.toLowerCase().includes(searchSinhVien.toLowerCase()))
+                      .map((sv, index) => (
+                        <TableRow 
+                          key={sv.id}
+                          hover
+                          sx={{
+                            '&:nth-of-type(odd)': {
+                              backgroundColor: '#f5f5f5',
+                            },
+                          }}
+                        >
+                          <TableCell padding="checkbox">
+                            <Checkbox
+                              indeterminate={false}
+                              checked={selectedSinhViens.includes(sv.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedSinhViens([...selectedSinhViens, sv.id]);
+                                } else {
+                                  setSelectedSinhViens(selectedSinhViens.filter(id => id !== sv.id));
+                                }
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>{dsSinhVienDaChon.length + index + 1}</TableCell>
+                          <TableCell>{sv.maSinhVien}</TableCell>
+                          <TableCell>{sv.ten}</TableCell>
+                          <TableCell>{sv.lop || "N/A"}</TableCell>
+                          <TableCell>Chưa thêm</TableCell>
+                        </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </div>
           </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseSinhVienDialog}>Đóng</Button>
-          </DialogActions>
         </Dialog>
 
         {/* Snackbar for notifications */}

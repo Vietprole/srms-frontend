@@ -24,6 +24,8 @@ import { getSinhViensByLopHocPhanId } from "@/api/api-lophocphan";
 import { getSinhViensNotInLopHocPhanId } from "@/api/api-lophocphan";
 import { addSinhViensToLopHocPhan } from "@/api/api-lophocphan";
 import { removeSinhVienFromLopHocPhan } from "@/api/api-lophocphan";
+import { Snackbar } from "@mui/material";
+import MuiAlert from "@mui/material/Alert";
 
 
 function EditSinhVienLopHocPhan({ setOpenModal,lophocphanId}) {
@@ -42,6 +44,10 @@ function EditSinhVienLopHocPhan({ setOpenModal,lophocphanId}) {
   const [columnFiltersDaChon, setColumnFiltersDaChon] = useState([]);
   const [columnVisibilityDaChon, setColumnVisibilityDaChon] = useState({});
   const [rowSelectionDaChon, setRowSelectionDaChon] = useState({});
+
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
   const columnToBeFiltered = "ten";
 
@@ -182,10 +188,17 @@ function EditSinhVienLopHocPhan({ setOpenModal,lophocphanId}) {
         ]);
         setDSSinhVien(Array.isArray(dsSinhViens) ? dsSinhViens : []);
         setDSSinhVienDaChon(Array.isArray(dsSinhVienDaChon) ? dsSinhVienDaChon : []);
+        
+        setSnackbarMessage("Thêm sinh viên thành công");
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
       }
       setRowSelection({});
     } catch (error) {
-      console.error("Error adding selected hoc phan:", error);
+      console.error("Error adding selected sinh vien:", error);
+      setSnackbarMessage("Thêm sinh viên thất bại");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
     }
   };
   
@@ -206,8 +219,15 @@ function EditSinhVienLopHocPhan({ setOpenModal,lophocphanId}) {
       setDSSinhVien(Array.isArray(dsSinhViens) ? dsSinhViens : []);
       setDSSinhVienDaChon(Array.isArray(dsSinhVienDaChon) ? dsSinhVienDaChon : []);
       setRowSelectionDaChon({});
+      
+      setSnackbarMessage("Xóa sinh viên thành công");
+      setSnackbarSeverity("success");
+      setOpenSnackbar(true);
     } catch (error) {
-      console.error("Error removing selected hoc phan:", error);
+      console.error("Error removing selected sinh vien:", error);
+      setSnackbarMessage("Xóa sinh viên thất bại");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
     }
   };
   
@@ -479,6 +499,22 @@ function EditSinhVienLopHocPhan({ setOpenModal,lophocphanId}) {
           </button>
         </div>
       </div>
+
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <MuiAlert
+          variant='filled'
+          onClose={() => setOpenSnackbar(false)}
+          severity={snackbarSeverity}
+          sx={{ width: '100%' }}
+        >
+          {snackbarMessage}
+        </MuiAlert>
+      </Snackbar>
     </div>
   );
 }

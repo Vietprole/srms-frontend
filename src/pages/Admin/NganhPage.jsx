@@ -130,6 +130,17 @@ function TestPage()
   const [nganhId, setNganhId] = useState("");
   const inputRef = useRef("");
   const [selectedKhoaFilter, setSelectedKhoaFilter] = useState(null);
+  const [userRole, setUserRole] = useState('');
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    setUserRole(user?.role || '');
+  }, []);
+
+  const isAdmin = userRole === 'Admin';
+  const isQLCDT = userRole === 'NguoiPhuTrachCTDT';
+  const canCreateNganh = isAdmin;
+  const canEditNganh = isAdmin;
 
   const handleKhoaChange = (event, newValue) => {
     setSelectedKhoaFilter(newValue);
@@ -467,52 +478,54 @@ function TestPage()
 
 
         </div>
-        <div style={styles.btnCreate}>
-          <Button sx={{width:"100%"}} variant="contained" onClick={handleAddNganhs}>Tạo ngành</Button>
-                    <Dialog id='addNganh' fullWidth open={openAddNganh} onClose={handleCloseNganhs}>
-                      <DialogTitle>Tạo ngành mới:</DialogTitle>
-                      <DialogContent >
-                        <DialogContentText>
-                          Thêm ngành mới vào hệ thống
-                        </DialogContentText>
-                        <TextField
-                          autoFocus
-                          required
-                          id='tenNganh'
-                          margin="dense"
-                          label="Tên ngành"
-                          fullWidth
-                          variant="standard"
-                          onBlur={(e) => setTenNganh(e.target.value.trim())}
-                          error={errorTenNganh}
-                          onInput={(e) => setErrorTenNganh(e.target.value.trim() === "")}
-                          helperText="Vui lòng nhập tên ngành"
-                          autoComplete='off'
-                        />
-                       <Autocomplete
-                          options={khoas}
-                          getOptionLabel={(option) => option.ten || ''}
-                          noOptionsText="Không tìm thấy khoa"
-                          required
-                          id="disable-clearable"
-                          disableClearable
-                          onChange={(event, newValue) => setSelectedKhoa(newValue)} // Cập nhật state khi chọn khoa
-                          renderInput={(params) => (
-                            <TextField {...params} label="Chọn khoa" variant="standard" />
-                          )}
-                        />
-                      </DialogContent>
-                      <DialogActions>
-                        <Button onClick={handleCloseNganhs}>Hủy</Button>
-                        <Button
-                          onClick={handleSubmit}
-                        >
-                          Lưu
-                        </Button>
-                      </DialogActions>
-                    </Dialog>
-          
-        </div>
+        {canCreateNganh && (
+          <div style={styles.btnCreate}>
+            <Button sx={{width:"100%"}} variant="contained" onClick={handleAddNganhs}>Tạo ngành</Button>
+                      <Dialog id='addNganh' fullWidth open={openAddNganh} onClose={handleCloseNganhs}>
+                        <DialogTitle>Tạo ngành mới:</DialogTitle>
+                        <DialogContent >
+                          <DialogContentText>
+                            Thêm ngành mới vào hệ thống
+                          </DialogContentText>
+                          <TextField
+                            autoFocus
+                            required
+                            id='tenNganh'
+                            margin="dense"
+                            label="Tên ngành"
+                            fullWidth
+                            variant="standard"
+                            onBlur={(e) => setTenNganh(e.target.value.trim())}
+                            error={errorTenNganh}
+                            onInput={(e) => setErrorTenNganh(e.target.value.trim() === "")}
+                            helperText="Vui lòng nhập tên ngành"
+                            autoComplete='off'
+                          />
+                         <Autocomplete
+                            options={khoas}
+                            getOptionLabel={(option) => option.ten || ''}
+                            noOptionsText="Không tìm thấy khoa"
+                            required
+                            id="disable-clearable"
+                            disableClearable
+                            onChange={(event, newValue) => setSelectedKhoa(newValue)} // Cập nhật state khi chọn khoa
+                            renderInput={(params) => (
+                              <TextField {...params} label="Chọn khoa" variant="standard" />
+                            )}
+                          />
+                        </DialogContent>
+                        <DialogActions>
+                          <Button onClick={handleCloseNganhs}>Hủy</Button>
+                          <Button
+                            onClick={handleSubmit}
+                          >
+                            Lưu
+                          </Button>
+                        </DialogActions>
+                      </Dialog>
+            
+          </div>
+        )}
       </div>
       <div style={styles.table}>
       <Paper style={{ height: "100vh", width: "100%" }}>
@@ -593,6 +606,14 @@ function TestPage()
       </Snackbar>
       
       </div>
+      <Stack spacing={2} sx={{ padding: "20px 0", display: "flex", alignItems: "center" }}>
+        <Pagination 
+          count={pageCount} 
+          page={page} 
+          onChange={handlePageChange}
+          color="primary"
+        />
+      </Stack>
     </div>
     </Layout>
   );
