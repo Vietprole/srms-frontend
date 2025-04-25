@@ -104,6 +104,7 @@ const routes = [
     path: "/diemdinhchinh",
     element: <DiemDinhChinhPage />,
   },
+  { path: "/noi-plo-clo", element: <NoiCLOPLO />},
   {
     path: "/ketqua",
     element: <KetQuaPage />,

@@ -150,6 +150,11 @@ const adminItem = [
     icon: NoiHocPhanPLOIcon,
   },
   {
+    title: "Nối PLO-CLO",
+    url: "/noi-plo-clo",
+    icon: NoiHocPhanPLOIcon,
+  },
+  {
     title: "Giảng viên",
     url: "/giangvien",
     icon: GiangVienIcon,

@@ -139,6 +139,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
     cursor: 'pointer',
   },
 }));
+import { TableVirtuoso } from 'react-virtuoso';
 
 export default function LopHocPhanPage() {
   const [openAddDialog, setOpenAddDialog] = useState(false);
@@ -569,6 +570,78 @@ export default function LopHocPhanPage() {
     setSearchSinhVienDaChon("");
   };
 
+
+  const columns = [
+    { width: 50, label: "STT", dataKey: "index", align: "center" },
+    { width: 150, label: "Mã lớp học phần", dataKey: "maLopHocPhan", align: "center" },
+    { width: 200, label: "Tên lớp học phần", dataKey: "ten", align: "center" },
+    { width: 200, label: "Học phần", dataKey: "tenHocPhan", align: "center" },
+    { width: 150, label: "Học kỳ", dataKey: "tenHocKy", align: "center" },
+    { width: 200, label: "Giảng viên", dataKey: "tenGiangVien", align: "center" },
+    { width: 180, label: "Thao tác", dataKey: "actions", align: "center" },
+  ];
+  
+  const VirtuosoTableComponents = {
+    Scroller: React.forwardRef((props, ref) => (
+      <TableContainer component={Paper} {...props} ref={ref} sx={{ height: "calc(100vh - 200px)" }} />
+    )),
+    Table: (props) => (
+      <Table {...props} sx={{ borderCollapse: "separate", tableLayout: "fixed", backgroundColor: "white" }} />
+    ),
+    TableHead: React.forwardRef((props, ref) => <TableHead {...props} ref={ref} />),
+    TableRow: StyledTableRow,
+    TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
+    TableCell: StyledTableCell,
+  };
+  
+  function fixedHeaderContent() {
+    return (
+      <StyledTableRow>
+        {columns.map((column) => (
+          <StyledTableCell
+            key={column.dataKey}
+            variant="head"
+            align="center"
+            style={{ width: column.width, textAlign: "center" }}
+          >
+            {column.label}
+          </StyledTableCell>
+        ))}
+      </StyledTableRow>
+    );
+  }
+  
+  function rowContent(index, row) {
+    return (
+      <>
+        <StyledTableCell align="center">{index + 1}</StyledTableCell>
+        <StyledTableCell align="center">{row.maLopHocPhan}</StyledTableCell>
+        <StyledTableCell align="center">{row.ten}</StyledTableCell>
+        <StyledTableCell align="center">{row.tenHocPhan}</StyledTableCell>
+        <StyledTableCell align="center">{row.tenHocKy}</StyledTableCell>
+        <StyledTableCell align="center">{row.tenGiangVien}</StyledTableCell>
+        <StyledTableCell align="center">
+          <Tooltip title="Sửa lớp học phần">
+            <IconButton onClick={() => handleOpenEditDialog(row.id)}>
+              <EditIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Xem danh sách sinh viên">
+            <IconButton onClick={() => handleOpenSinhVienDialog(row.id)}>
+              <FormatListBulletedIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Xóa lớp học phần">
+            <IconButton onClick={() => handleOpenDeleteDialog(row.id)}>
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
+        </StyledTableCell>
+      </>
+    );
+  }
+  
+
   return (
     <Layout>
       <div style={styles.main}>
@@ -650,7 +723,7 @@ export default function LopHocPhanPage() {
         </div>
 
         <div style={styles.table}>
-          <TableContainer component={Paper}>
+          {/* <TableContainer component={Paper}>
             <Table sx={{ minWidth: 700 }} aria-label="customized table">
               <TableHead sx={{position: 'sticky', top: 0, zIndex: 1, backgroundColor: "#0071A6"}}>
                 <TableRow>
@@ -693,7 +766,13 @@ export default function LopHocPhanPage() {
                 ))}
               </TableBody>
             </Table>
-          </TableContainer>
+          </TableContainer> */}
+          <TableVirtuoso
+            data={filteredData}
+            components={VirtuosoTableComponents}
+            fixedHeaderContent={fixedHeaderContent}
+            itemContent={(index, row) => rowContent(index, row)}
+          />
         </div>
 
         {/* Add Dialog */}

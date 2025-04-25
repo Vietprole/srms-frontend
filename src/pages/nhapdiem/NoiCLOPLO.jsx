@@ -1,38 +1,26 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { getPLOsByLopHocPhanId, getCLOsByPLOId, updateCLOsToPLO,getPLOsByNganhId } from '@/api/api-plo';
+import { getCLOsByPLOId, updateCLOsToPLO,getPLOsByNganhId } from '@/api/api-plo';
 import { getCLOsByLopHocPhanId } from '@/api/api-clo';
-import MappingTable from '@/components/MappingTable';
-import { getLopHocPhanById } from "../../api/api-lophocphan";
+// import { getLopHocPhanById } from "../../api/api-lophocphan";
 import { styled } from "@mui/material/styles";
 import { TableCell, tableCellClasses } from "@mui/material";
 import TableRow from "@mui/material/TableRow";
 import { Table } from "@mui/material";
 import { TableVirtuoso } from "react-virtuoso";
-import { IconButton } from "@mui/material";
-import { Box, padding } from "@mui/system";
-import { TextField } from "@mui/material";
 import { Snackbar } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
-import SearchIcon from "@mui/icons-material/Search";
 import * as React from 'react';
-import EditIcon from "@mui/icons-material/Edit";
-import Tooltip from "@mui/material/Tooltip";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableBody from "@mui/material/TableBody";
 import Paper from "@mui/material/Paper";
 import Button from "@mui/material/Button";
-import Autocomplete from "@mui/material/Autocomplete";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogActions from "@mui/material/DialogActions";
 import {getAllNganhs} from "../../api/api-nganh"
-import { getHocPhansByNganhId,updateHocPhanCotLois } from "@/api/api-nganh";
+import { getHocPhansByNganhId } from "@/api/api-nganh";
 import VirtualizedAutocomplete from "@/components/VirtualizedAutocomplete";
 import Checkbox from '@mui/material/Checkbox';
+import Layout from '../Layout';
 export default function NoiCLOPLO() {
 
   const styles = {
@@ -138,7 +126,7 @@ export default function NoiCLOPLO() {
   const [toggledData, setToggledData] = useState({});
   const { lopHocPhanId } = useParams();
   const [isLoading, setIsLoading] = useState(true);
-  const [lopHocPhanData,setLopHocPhanData]=useState([]);
+  // const [lopHocPhanData,setLopHocPhanData]=useState([]);
   const [nganhs,setNganhs]=useState([]);
   const [selectedNganhFilter, setSelectedNganhFilter] = useState(null);
   const [hocPhans, setHocPhans] = useState([]);
@@ -206,26 +194,26 @@ export default function NoiCLOPLO() {
 
   const fetchData = useCallback(async () => {
     try {
-      const lopHocPhanData = await getLopHocPhanById(lopHocPhanId);
+      // const lopHocPhanData = await getLopHocPhanById(lopHocPhanId);
       const nganhs= await getAllNganhs();
       setNganhs(nganhs);
-      setLopHocPhanData(lopHocPhanData);
-      const [cLOsData, pLOsData] = await Promise.all([
-        getCLOsByLopHocPhanId(lopHocPhanData.hocPhanId),
-        getPLOsByLopHocPhanId(lopHocPhanId),
-      ]);
-      setCLOs(cLOsData);
-      setPLOs(pLOsData);
+      // setLopHocPhanData(lopHocPhanData);
+      // const [cLOsData, pLOsData] = await Promise.all([
+      //   getCLOsByLopHocPhanId(lopHocPhanData.hocPhanId),
+      //   getPLOsByLopHocPhanId(lopHocPhanId),
+      // ]);
+      // setCLOs(cLOsData);
+      // setPLOs(pLOsData);
       
 
-      const toggledData = {};
-      for (const plo of pLOsData) {
-        const cloData = await getCLOsByPLOId(plo.id);
-        console.log("CLO Data: ", pLOsData);
-        toggledData[plo.id] = cloData.map(clo => clo.id);
-      }
-      setToggledData(toggledData);
-      console.log("Toggled Data: ", toggledData);
+      // const toggledData = {};
+      // for (const plo of pLOsData) {
+      //   const cloData = await getCLOsByPLOId(plo.id);
+      //   console.log("CLO Data: ", pLOsData);
+      //   toggledData[plo.id] = cloData.map(clo => clo.id);
+      // }
+      // setToggledData(toggledData);
+      // console.log("Toggled Data: ", toggledData);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -323,7 +311,9 @@ export default function NoiCLOPLO() {
   
 
   return (
-    <div className="w-full">
+    <Layout>
+
+<div className="w-full">
     <div style={styles.main}>
 <div style={styles.title}>
 <span>Nối PLO-CLO</span>
@@ -389,5 +379,7 @@ export default function NoiCLOPLO() {
         </MuiAlert>
       </Snackbar>
 </div>
+    </Layout>
+    
   );
 }
