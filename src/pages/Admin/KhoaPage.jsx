@@ -559,8 +559,6 @@ function KhoaPage()
                           variant="standard"
                           helperText="Mã khoa chỉ gồm 3 kí tự số và không được chứa các kí tự chữ và các kí tự đặc biệt"
                           value={maKhoaEdit} // k thể sửa mã khoa
-                          // onInput={(e) => handleInputChangeEdit("maKhoa", e.target.value)} // Sử dụng onInput để kiểm tra tính hợp lệ ngay khi nhập liệu
-                          // onBlur={(e) => handleBlurEdit("maKhoa", e.target.value)} // Sử dụng onBlur để kiểm tra tính hợp lệ
                           inputProps={{ maxLength: 3 }}
                           autoComplete='off'
                           error={errorMaKhoaEdit}

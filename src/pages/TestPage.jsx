@@ -1,3 +1,5 @@
+/* eslint-disable react/display-name */
+import * as React from 'react';
 import { styled } from '@mui/material/styles';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -6,28 +8,25 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
+import SearchIcon from '@mui/icons-material/Search';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
+import {Tooltip } from '@mui/material';
+import Box from '@mui/material/Box';
 import { useState, useEffect } from "react";
 import Autocomplete from '@mui/material/Autocomplete';
-import Snackbar from '@mui/material/Snackbar';
-import MuiAlert from '@mui/material/Alert';
+import DatasetLinkedIcon from '@mui/icons-material/DatasetLinked';
+import {
+  getAllKhoas
+} from "@/api/api-khoa";
+import {
+  getNganhs,
+} from "@/api/api-nganh";
 import Layout from './Layout';
-import { getAllLopHocPhans } from '@/api/api-lophocphan';
-import SearchIcon from '@mui/icons-material/Search';
-import Box from '@mui/material/Box';
-import * as React from 'react';
-import EditIcon from '@mui/icons-material/Edit';
-import Tooltip from '@mui/material/Tooltip';
-import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
-function TestPage() 
+import { TableVirtuoso } from "react-virtuoso";
+import DialogPLOHocPhan from '../components/DialogMappingPLO_Cource';
+function NganhPage() 
 {
   const styles = {
     main:
@@ -75,7 +74,7 @@ function TestPage()
     },
     btnCreate:
     {
-      width: '15%',
+      width: '10%',
       height: '100%',
       display: 'flex',
       marginLeft: 'auto',
@@ -88,7 +87,7 @@ function TestPage()
     table:
     {
       width: '100%',
-      height: '98%',
+      height: '100vb',
       display: 'flex',
       flexDirection: 'column',
       paddingTop: '10px',
@@ -98,38 +97,70 @@ function TestPage()
     {
       width: '22%',
       height: '80%',
+      marginLeft: '10px',
       marginBottom: '10px',
     },
   };
-  const [openAddDialog, setOpenAddDialog] = useState(false);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [khoas, setKhoas] = useState([]);
   const [data, setData] = useState([]);
+  const [searchQuery, setSearchQuery] = useState(""); // Lưu giá trị tìm kiếm
   const [filteredData, setFilteredData] = useState(data); // Lưu dữ liệu đã lọc
-
-
-
+  const [selectedKhoaFilter, setSelectedKhoaFilter] = useState(null);
+  const [nganhId, setNganhId] = useState("");
+  const [openDialog, setOpenDialog] = React.useState(false);
+  const handleKhoaChange = (event, newValue) => {
+    setSelectedKhoaFilter(newValue);
+    if (!newValue) {
+      setFilteredData(data); // Nếu không chọn khoa nào, hiển thị toàn bộ dữ liệu
+    } else {
+      const filtered = data.filter((row) => row.tenKhoa === newValue.ten);
+      setFilteredData(filtered);
+    }
+  };
   
+  const handleOpenDialog = (id) => {
+    setNganhId(id);
+    setOpenDialog(true);
+  };
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  }
+
+
+
 
   
 
   useEffect(() => {
     fetchData();
-    
-  }, []); 
-  
+  }, []);
   
   const fetchData = async () => {
-    const lophocphans = await getAllLopHocPhans();
-    setData(lophocphans);
-    setFilteredData(lophocphans);
+    const nganhs = await getNganhs();
+    setData(nganhs);
+    const khoa = await getAllKhoas();
+    setKhoas(khoa);
   };
   
+  useEffect(() => {
+    // Only set filteredData once data has been loaded
+    setFilteredData(data);
+  }, [data]);
   
-
-  const handleSnackbarClose = () => {
-    setOpenSnackbar(false);
+  const filterData = (query) => {
+    if (!query.trim()) {
+      setFilteredData(data); // If search query is empty, show all data
+    } else {
+      const filtered = data.filter((row) =>
+        row.ten.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredData(filtered);
+    }
+  };
+  const handleSearchChange = (event) => {
+    const value = event.target.value;
+    setSearchQuery(value); 
+    filterData(value); 
   };
 
   const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -152,23 +183,85 @@ function TestPage()
     },
     '&:hover': {
     backgroundColor:"#D3F3FF", // Màu nền khi hover
-    cursor: 'pointer',
+    cursor: 'pointer', // Tùy chọn: Thêm hiệu ứng con trỏ
   },
   }));
 
+  const columns = [
+    { width: 50, label: "STT", dataKey: "index", align: "center" },
+    { width: 150, label: "Mã Ngành", dataKey: "maNganh", align: "center" },
+    {  label: "Tên Ngành", dataKey: "ten", align: "center" },
+    { width: 300, label: "Tên Khoa", dataKey: "tenKhoa", align: "center" },
+    { width: 150, label: "", dataKey: "actions", align: "center" },
+  ];
 
+  const VirtuosoTableComponents = {
+    Scroller: React.forwardRef((props, ref) => (
+      <TableContainer component={Paper} {...props} ref={ref} sx={{ height: "calc(100vh - 200px)" }} />
+    )),
+    
+    Table: (props) => (
+      <Table {...props} sx={{ borderCollapse: "separate", tableLayout: "fixed", backgroundColor: "white" }} />
+    ),
+    TableHead: React.forwardRef((props, ref) => <TableHead {...props} ref={ref} />),
+    TableRow: StyledTableRow, // Sử dụng StyledTableRow bạn đã định nghĩa
+    TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
+    TableCell: StyledTableCell, // Sử dụng StyledTableCell bạn đã định nghĩa
+  };
+  
+  
+  
+  function fixedHeaderContent() {
+    return (
+      <StyledTableRow>
+        {columns.map((column) => (
+          <StyledTableCell
+            key={column.dataKey}
+            variant="head"
+            align="center" // Cố định căn giữa
+            style={{ width: column.width, textAlign: "center" }} // Đảm bảo text ở giữa
+          >
+            {column.label}
+          </StyledTableCell>
+        ))}
+      </StyledTableRow>
+    );
+  }
+  
+  
+  
+  
+  function rowContent(index, row) {
+    return (
+      <>
+        <StyledTableCell align="center">{index + 1}</StyledTableCell> {/* STT */}
+        <StyledTableCell align="center">{row.maNganh}</StyledTableCell>
+        <StyledTableCell align="left">{row.ten}</StyledTableCell>
+        <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
+        <StyledTableCell align="center" width={150}>
+          <Tooltip title="Nối PLO-Học phần">
+            <IconButton onClick={() => handleOpenDialog(row.id)} >
+              <DatasetLinkedIcon />
+            </IconButton>
+          </Tooltip>
+        </StyledTableCell>
+      </>
+    );
+  }
+  
+  
 
   return (
     <Layout>
       <div style={styles.main}>
       <div style={styles.title}>
-        <span>Danh sách lớp học phần</span>
+        <span>Danh sách ngành học</span>
         <div style={styles.btnMore}>
           <IconButton aria-label="more actions"><MoreVertIcon/></IconButton>
         </div>
       </div>
       <div style={styles.tbActions}>
-      <div style={styles.ipSearch}>
+        <div style={styles.ipSearch}>
           <Box
             sx={{
               display: "flex",
@@ -187,7 +280,7 @@ function TestPage()
             <TextField
               fullWidth
               fontSize="10px"
-              placeholder="Tìm kiếm theo tên lớp học phần..."
+              placeholder="Tìm kiếm theo tên ngành..."
               variant="standard"
               autoComplete='off'
               InputProps={{
@@ -200,89 +293,43 @@ function TestPage()
                   </React.Fragment>
                 ),
               }}
-              // value={searchQuery} // Liên kết giá trị tìm kiếm với state
-              // onChange={handleSearchChange} // Gọi hàm xử lý khi thay đổi
+              value={searchQuery} // Liên kết giá trị tìm kiếm với state
+              onChange={handleSearchChange} // Gọi hàm xử lý khi thay đổi
             />
           </Box>
         </div>
         <div style={styles.cbKhoa}>
-          {/* <Autocomplete
+          <Autocomplete
             sx={{ width: "100%" }}
-            options={schoolYears}
-            getOptionLabel={(option) => option.label}
+            options={khoas}
+            getOptionLabel={(option) => option.ten || ""}
             required
-            value={selectedNamHocFilter}
-            onChange={handleNamHocChange}
+            value={selectedKhoaFilter}
+            onChange={handleKhoaChange}
             renderInput={(params) => (
-              <TextField {...params} label="Chọn năm học" size="small" />
+              <TextField {...params} label="Chọn khoa" size="small" />
             )}
-          /> */}
+          />
+
+
         </div>
         <div style={styles.btnCreate}>
-          <Button sx={{width:"100%"}} variant="contained">Tạo lớp học phần</Button>
-
+        
+          
         </div>
       </div>
       <div style={styles.table}>
-      
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 700 }} aria-label="customized table">
-          <TableHead sx={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: "#0071A6" }}>
-            <TableRow>
-              <StyledTableCell align="center">STT</StyledTableCell>
-              <StyledTableCell align="center">Mã lớp học phần</StyledTableCell>
-              <StyledTableCell align="center">Tên lớp học phần</StyledTableCell>
-              <StyledTableCell align="center">Giảng viên dạy</StyledTableCell>
-              <StyledTableCell align="center">Học kỳ</StyledTableCell>
-              <StyledTableCell align="center">Năm học</StyledTableCell>
-              <StyledTableCell align="center"></StyledTableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody sx={{ overflowY: "auto" }}>
-            {Array.isArray(filteredData) && filteredData.length > 0 ? (
-              filteredData.map((row, index) => (
-                <StyledTableRow key={row.maHocKy || index}>
-                  <StyledTableCell align="center" width={50}>{index + 1}</StyledTableCell>
-                  <StyledTableCell align="center" width={200}>{row.maLopHocPhan}</StyledTableCell>
-                  <StyledTableCell align="center">{row.ten}</StyledTableCell>
-                  <StyledTableCell align="center" width={250}>{row.tenGiangVien}</StyledTableCell>
-                  <StyledTableCell align="center" width={150}>{row.tenHocKy}</StyledTableCell>
-                  <StyledTableCell align="center" width={150}>{row.namHoc}</StyledTableCell>
-                  <StyledTableCell align="center" width={150}>
-                  <Tooltip title="Sửa thông tin lớp học phần">
-                    <IconButton
-        
-                    ><EditIcon /></IconButton>
-                  </Tooltip>
-                  <Tooltip title="Danh sách sinh viên">
-                    <IconButton
-        
-                    ><FormatListBulletedIcon/></IconButton>
-                  </Tooltip>
-                  </StyledTableCell>
-                </StyledTableRow>
-              ))
-            ) : (
-              <StyledTableRow>
-                <StyledTableCell align="center" colSpan={4}>
-                  Không có dữ liệu
-                </StyledTableCell>
-              </StyledTableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <Paper style={{ height: "100vh", width: "100%" }}>
 
-     <Snackbar 
-        open={openSnackbar} 
-        autoHideDuration={3000} 
-        onClose={handleSnackbarClose} 
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} 
-      >
-        <MuiAlert variant='filled' onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
-          {snackbarMessage}
-        </MuiAlert>
-      </Snackbar>
+  <TableVirtuoso style={{ width: "100%", height: "100%" }} // Đảm bảo full height
+    data={filteredData}
+    components={VirtuosoTableComponents}
+    fixedHeaderContent={fixedHeaderContent}
+    itemContent={rowContent}
+  />
+  <DialogPLOHocPhan nganhId={nganhId} open={openDialog} onClose={handleCloseDialog} />
+</Paper>
+
       
       </div>
     </div>
@@ -290,4 +337,4 @@ function TestPage()
   );
 };
 
-export default TestPage;
+export default NganhPage;
