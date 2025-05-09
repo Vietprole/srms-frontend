@@ -53,6 +53,7 @@ export default function DataTable({
   comboBoxItems,
   addItemsToParent,
   hasCreateButton = true,
+  showSearch = true,
   role,
 }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -108,18 +109,20 @@ export default function DataTable({
       {/* <h1>This is {entity} Page</h1> */}
       <div className="w-full">
         <div className="flex items-center py-4">
-          <Input
-            placeholder={`Tìm kiếm theo ${columnToBeFiltered}...`}
-            value={
-              table.getColumn(`${columnToBeFiltered}`)?.getFilterValue() ?? ""
-            }
-            onChange={(event) =>
-              table
-                .getColumn(`${columnToBeFiltered}`)
-                ?.setFilterValue(event.target.value)
-            }
-            className="max-w-sm"
-          />
+          {showSearch && columnToBeFiltered && (
+            <Input
+              placeholder={`Tìm kiếm theo ${columnToBeFiltered}...`}
+              value={
+                table.getColumn(`${columnToBeFiltered}`)?.getFilterValue() ?? ""
+              }
+              onChange={(event) =>
+                table
+                  .getColumn(`${columnToBeFiltered}`)
+                  ?.setFilterValue(event.target.value)
+              }
+              className="max-w-sm"
+            />
+          )}
           {hasAddButton && (
             <>
               <p>Thêm {entity} vào {parentEntity} </p>
