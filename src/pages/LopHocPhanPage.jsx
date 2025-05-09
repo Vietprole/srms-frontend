@@ -216,10 +216,7 @@ export default function LopHocPhanPage() {
       setData(lopHocPhanData);
       setFilteredData(lopHocPhanData);
       
-      setHocPhanItems(hocPhanData.map(hp => ({ 
-        label: hp.ten, 
-        value: hp.id 
-      })));
+      setHocPhanItems(hocPhanData);
       
       setHocKyItems(hocKyData.map(hk => ({ 
         label: hk.tenHienThi, 
@@ -688,7 +685,7 @@ export default function LopHocPhanPage() {
           </div>
 
           <div style={styles.filters}>
-            <Autocomplete
+            {/* <Autocomplete
               options={hocPhanItems}
               getOptionLabel={(option) => option.label || ""}
               value={selectedHocPhan}
@@ -696,7 +693,16 @@ export default function LopHocPhanPage() {
               renderInput={(params) => (
                 <TextField {...params} label="Chọn học phần" size="small" />
               )}
-            />
+            /> */}
+            <VirtualizedAutocomplete
+  options={hocPhanItems}
+  getOptionLabel={(option) => `${option.maHocPhan || ""} - ${option.ten || ""}`}
+  variant="outlined"
+  value={selectedHocPhan}
+  label="Chọn học phần"
+  onChange={handleHocPhanChange}
+/>
+
           </div>
 
           <div style={styles.filters}>
@@ -821,7 +827,7 @@ export default function LopHocPhanPage() {
               options={hocPhanItems}
               value={selectedHocPhanAdd}
               onChange={(e, newVal) => setSelectedHocPhanAdd(newVal)}
-              getOptionLabel={(option) => ` ${option.label}`}
+              getOptionLabel={(option) => ` ${option.ten}`}
               label="Chọn học phần"
               noOptionsText="Không tìm thấy học phần"  // Thông báo nếu không có kết quả
             />

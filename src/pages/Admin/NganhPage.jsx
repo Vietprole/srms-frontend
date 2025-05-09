@@ -606,14 +606,14 @@ function TestPage()
       </Snackbar>
       
       </div>
-      <Stack spacing={2} sx={{ padding: "20px 0", display: "flex", alignItems: "center" }}>
+      {/* <Stack spacing={2} sx={{ padding: "20px 0", display: "flex", alignItems: "center" }}>
         <Pagination 
           count={pageCount} 
           page={page} 
           onChange={handlePageChange}
           color="primary"
         />
-      </Stack>
+      </Stack> */}
     </div>
     </Layout>
   );

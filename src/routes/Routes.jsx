@@ -31,7 +31,7 @@ import QuanLyTaiKhoanPage from "@/pages/QuanLyTaiKhoanPage";
 import TestPage from "@/pages/TestPage";
 import HocKiPage from "@/pages/Admin/HocKyPage";
 import QuanLyCLO from "@/pages/chuandaura/QuanLyCLO";
-
+import MapPLOCLO from "@/pages/chuandaura/MapPLOCLO";
 const role = getRole();
 const RoleBasedRoute = ({ giangVienElement, defaultElement }) => {
   return role === "GiangVien" ? giangVienElement : defaultElement;
@@ -82,6 +82,10 @@ const routes = [
   {
     path: "/congthucdiem",
     element: <CongThucDiemPage />,
+  },
+  {
+    path: "/mapclopo",
+    element: <MapPLOCLO />,
   },
   {
     path: "/nhapdiem",
