@@ -30,6 +30,8 @@ import DiemDinhChinhPage from "@/pages/DiemDinhChinhPage";
 import QuanLyTaiKhoanPage from "@/pages/QuanLyTaiKhoanPage";
 import TestPage from "@/pages/TestPage";
 import HocKiPage from "@/pages/Admin/HocKyPage";
+import QuanLyCLO from "@/pages/chuandaura/QuanLyCLO";
+
 const role = getRole();
 const RoleBasedRoute = ({ giangVienElement, defaultElement }) => {
   return role === "GiangVien" ? giangVienElement : defaultElement;
@@ -94,6 +96,12 @@ const routes = [
       { path: ":lopHocPhanId/diem-pk", element: <DiemPk /> },
       { path: ":lopHocPhanId/tong-ket-clo", element: <TongKetCLO /> },
       { path: ":lopHocPhanId/bao-cao-clo", element: <BaoCaoCLO /> },
+    ],
+  },
+  {
+    path: "/chuandaura",
+    children: [
+      { path: "quan-ly-clo", element: <QuanLyCLO /> },
     ],
   },
   {

@@ -19,43 +19,45 @@ import { useParams } from "react-router-dom";
 
 const formSchema = z.object({
   ten: z.string().min(2, {
-    message: "Ten must be at least 2 characters.",
+    message: "Tên CLO phải có ít nhất 2 ký tự.",
   }),
   moTa: z.string().min(2, {
-    message: "MoTa must be at least 2 characters.",
+    message: "Mô tả CLO phải có ít nhất 2 ký tự.",
   }),
-  lopHocPhanId: z.coerce.number(
-    {
-      message: "Lop Hoc Phan Id must be a number",
-    }
-  ).min(1, {
-    message: "Lop Hoc Phan Id must be at least 1 characters.",
+  lopHocPhanId: z.coerce.number({
+    required_error: "Vui lòng chọn lớp học phần",
+    invalid_type_error: "Lớp học phần không hợp lệ",
   }),
 });
 
-export function CLOForm({ cLO, handleAdd, handleEdit, setIsDialogOpen }) {
-  const { lopHocPhanId } = useParams();
+export function CLOForm({ cLO, handleAdd, handleEdit, setIsDialogOpen, lopHocPhanId: propLopHocPhanId }) {
+  const { lopHocPhanId: paramLopHocPhanId } = useParams();
+  const effectiveLopHocPhanId = propLopHocPhanId || paramLopHocPhanId;
+
   // 1. Define your form.
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: cLO || {
       ten: "",
-      moTa:"",
-      lopHocPhanId: lopHocPhanId,
+      moTa: "",
+      lopHocPhanId: effectiveLopHocPhanId,
     },
   });
 
   // 2. Define a submit handler.
   async function onSubmit(values) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    if (cLO) {
-      const data = await updateCLO(cLO.id, values);
-      handleEdit(data);
-    } else {
-      const data = await addCLO(values);
-      handleAdd(data);
-      setIsDialogOpen(false);
+    try {
+      if (cLO) {
+        const data = await updateCLO(cLO.id, values);
+        handleEdit(data);
+      } else {
+        const data = await addCLO(values);
+        handleAdd(data);
+        setIsDialogOpen(false);
+      }
+    } catch (error) {
+      console.error("Error submitting CLO:", error);
+      // You might want to show an error message to the user here
     }
   }
 
@@ -112,23 +114,8 @@ export function CLOForm({ cLO, handleAdd, handleEdit, setIsDialogOpen }) {
             </FormItem>
           )}
         />
-        {/* <FormField
-          control={form.control}
-          name="lopHocPhanId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Lớp Học Phần Id</FormLabel>
-              <FormControl>
-                <Input placeholder="1" {...field} />
-              </FormControl>
-              <FormDescription>
-                This is your public display name.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        /> */}
-        <Button type="submit">Submit</Button>
+        <input type="hidden" {...form.register("lopHocPhanId")} />
+        <Button type="submit">Lưu</Button>
       </form>
     </Form>
   );
