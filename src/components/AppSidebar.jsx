@@ -15,7 +15,7 @@ import {
 import React, { useState, useEffect } from "react";
 import "@/utils/storage"
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
-import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { FiChevronDown, FiChevronUp, FiDatabase, FiTarget, FiEdit3 } from 'react-icons/fi';
 import { useLocation } from "react-router-dom";
 
 // Import PNG icons
@@ -120,69 +120,78 @@ const sinhVienItem = [
 
 const adminItem = [
   {
-    title: "Khoa",
-    url: "/khoa",
-    icon: KhoaIcon,
+    title: "Quản lý đào tạo",
+    icon: <FiDatabase className="w-6 h-6" />,
+    subItems: [
+      {
+        title: "Khoa",
+        url: "/khoa"
+      },
+      {
+        title: "Ngành",
+        url: "/nganh"
+      },
+      {
+        title: "Học kỳ",
+        url: "/hocki"
+      },
+      {
+        title: "Học phần",
+        url: "/hocphan"
+      },
+      {
+        title: "Lớp học phần",
+        url: "/lophocphan"
+      },
+      {
+        title: "Giảng viên",
+        url: "/giangvien"
+      },
+      {
+        title: "Sinh viên",
+        url: "/sinhvien"
+      }
+    ]
   },
   {
-    title: "Học kỳ",
-    url: "/hocki",
-    icon: HocKiIcon,
+    title: "Chuẩn đầu ra",
+    icon: <FiTarget className="w-6 h-6" />,
+    subItems: [
+      {
+        title: "PLO",
+        url: "/plo"
+      },
+      {
+        title: "Quản lý CLO",
+        url: "/chuandaura/quan-ly-clo"
+      },
+      {
+        title: "Nối học phần - PLO",
+        url: "/maphocphanplo"
+      },
+      {
+        title: "Nối CLO - PLO",
+        url: "/mapclopo"
+      }
+    ]
   },
   {
-    title: "Ngành",
-    url: "/nganh",
-    icon: NganhIcon,
-  },
-  {
-    title: "Học phần",
-    url: "/hocphan",
-    icon: HocPhanIcon,
-  },
-  {
-    title: "PLO",
-    url: "/plo",
-    icon: PLOIcon,
-  },
-  {
-    title: "Nối Học Phần - PLO",
-    url: "/maphocphanplo",
-    icon: NoiHocPhanPLOIcon,
-  },
-  {
-    title: "Nối PLO-CLO",
-    url: "/noi-plo-clo",
-    icon: NoiHocPhanPLOIcon,
-  },
-  {
-    title: "Giảng viên",
-    url: "/giangvien",
-    icon: GiangVienIcon,
-  },
-  {
-    title: "Sinh viên",
-    url: "/sinhvien",
-    icon: SinhVienIcon,
-  },
-  {
-    title: "Lớp học phần",
-    url: "/lophocphan",
-    icon: LopHocPhanIcon,
-  },
-  {
-    title: "Công thức điểm",
-    url: "/congthucdiem",
-    icon: CongThucDiemIcon,
-  },
-  {
-    title: "Nhập điểm",
-    url: "/nhapdiem",
-    icon: NhapDiemIcon,
-  },
-  {
-    title: "Điểm Đính Chính",
-    url: "/diemdinhchinh",
-    icon: DiemDinhChinhIcon,
+    title: "Quản lý điểm",
+    icon: <FiEdit3 className="w-6 h-6" />,
+    subItems: [
+      {
+        title: "Công thức điểm",
+        url: "/congthucdiem"
+      },
+      {
+        title: "Nhập điểm",
+        url: "/nhapdiem"
+      },
+      {
+        title: "Đính chính điểm",
+        url: "/diemdinhchinh"
+      }
+    ]
   },
   {
     title: "Xét chuẩn đầu ra",
@@ -203,8 +212,8 @@ const adminItem = [
     title: "Đăng xuất",
     url: "/",
     icon: DangXuatIcon,
-  },
-]
+  }
+];
 
 const phongDaoTaoItem = [
   {
@@ -284,53 +293,83 @@ const phongDaoTaoItem = [
   },
 ]
 
-export function AppSidebar() {
-  const role = getRole(); // Hàm getRole() cần được định nghĩa để lấy vai trò người dùng
-  let items = [];
-  const location = useLocation();
-  const [openItem, setOpenItem] = useState(null); // Trạng thái để mở menu cha
-  const [activeSubItem, setActiveSubItem] = useState(location.pathname); // Lưu trữ URL đang hoạt động
-
-  switch (role) {
-    case 'TruongKhoa':
-      items = truongKhoaItem;
-      break;
-    case 'GiangVien':
-      items = giangVienItem;
-      break;
-    case 'SinhVien':
-      items = sinhVienItem;
-      break;
-    case 'Admin':
-      items = adminItem;
-      break;
-    case 'PhongDaoTao':
-      items = phongDaoTaoItem;
-      break;
-    default:
-      console.warn('Vai trò không hợp lệ hoặc chưa được xác định.');
-      break;
+const nguoiPhuTrachCTDTItems = [
+  {
+    title: "Khoa",
+    url: "/khoa",
+    icon: KhoaIcon,
+  },
+  {
+    title: "Ngành",
+    url: "/nganh",
+    icon: NganhIcon,
+  },
+  
+  {
+    title: "Hồ sơ cá nhân",
+    url: "/hosocanhan",
+    icon: HoSoCaNhanIcon,
+  },
+  {
+    title: "Đăng xuất",
+    url: "/",
+    icon: DangXuatIcon,
   }
-  // items = adminItem;
+];
+
+export function AppSidebar() {
+  const location = useLocation();
+  const [items, setItems] = useState([]);
+  const [openItem, setOpenItem] = useState("");
+  const [activeSubItem, setActiveSubItem] = useState("");
+  const role = getRole();
 
   useEffect(() => {
-    const currentItem = items.find((item) =>
-      item.subItems?.some((subItem) => subItem.url === location.pathname)
-    );
-    if (currentItem) {
-      setOpenItem(currentItem.title);
-    } else {
-      setOpenItem(null);
+    switch (role) {
+      case "Admin":
+        setItems(adminItem);
+        break;
+      case "GiangVien":
+        setItems(giangVienItem);
+        break;
+      case "SinhVien":
+        setItems(sinhVienItem);
+        break;
+      case "TruongKhoa":
+        setItems(truongKhoaItem);
+        break;
+      case "PhongDaoTao":
+        setItems(phongDaoTaoItem);
+        break;
+      case "NguoiPhuTrachCTĐT":
+        setItems(nguoiPhuTrachCTDTItems);
+        break;
+      default:
+        setItems([]);
     }
+  }, [role]);
+
+  // Thêm useEffect để theo dõi pathname và giữ menu mở
+  useEffect(() => {
+    // Tìm item cha chứa submenu có URL khớp với pathname hiện tại
+    const parentItem = items.find(item => 
+      item.subItems?.some(subItem => subItem.url === location.pathname)
+    );
+    
+    // Nếu tìm thấy item cha, set openItem để giữ menu mở
+    if (parentItem) {
+      setOpenItem(parentItem.title);
+    }
+    
+    // Set active submenu
     setActiveSubItem(location.pathname);
   }, [location.pathname, items]);
 
   const toggleItem = (title, e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    // Toggle trạng thái menu cha
-    setOpenItem(openItem === title ? null : title);
+    if (e) {
+      e.preventDefault();
+    }
+    setOpenItem(openItem === title ? "" : title);
   };
 
   return (
@@ -348,31 +387,37 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
-                <Collapsible key={item.title} open={openItem === item.title} className="group/collapsible">
+                <Collapsible key={item.title} open={openItem === item.title} className="w-full">
                   <SidebarMenuItem>
                     <CollapsibleTrigger asChild>
-                      <SidebarMenuButton asChild>
-                        <a
-                          href={item.url}
-                          onClick={(e) => item.subItems && toggleItem(item.title, e)}
-                          className={`flex items-center p-2 rounded-lg ${
-                            location.pathname === item.url
-                              ? "bg-blue-100 text-blue-600"
-                              : "hover:bg-gray-100"
-                          }`}
-                        >
-                          <img
-                            src={item.icon}
-                            alt={`${item.title} icon`}
-                            className="w-6 h-6 mr-2"
-                          />
-                          <span>{item.title}</span>
-                          {item.subItems && (
-                            <span className="ml-auto">
-                              {openItem === item.title ? <FiChevronUp /> : <FiChevronDown />}
-                            </span>
+                      <SidebarMenuButton
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (item.subItems) {
+                            toggleItem(item.title, e);
+                          } else if (item.url) {
+                            window.location.href = item.url;
+                          }
+                        }}
+                        className={`w-full flex items-center justify-between p-2 rounded-lg ${
+                          location.pathname === item.url
+                            ? "bg-blue-100 text-blue-600"
+                            : "hover:bg-gray-100"
+                        }`}
+                      >
+                        <div className="flex items-center">
+                          {typeof item.icon === 'string' ? (
+                            <img src={item.icon} alt={`${item.title} icon`} className="w-6 h-6 mr-2" />
+                          ) : (
+                            <span className="mr-2">{item.icon}</span>
                           )}
-                        </a>
+                          <span>{item.title}</span>
+                        </div>
+                        {item.subItems && (
+                          <span className="ml-auto">
+                            {openItem === item.title ? <FiChevronUp /> : <FiChevronDown />}
+                          </span>
+                        )}
                       </SidebarMenuButton>
                     </CollapsibleTrigger>
                     {item.subItems && (
@@ -384,7 +429,10 @@ export function AppSidebar() {
                                 href={subItem.url}
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setActiveSubItem(subItem.url); // Cập nhật URL hoạt động
+                                  setActiveSubItem(subItem.url);
+                                  if (subItem.url) {
+                                    window.location.href = subItem.url;
+                                  }
                                 }}
                                 className={`flex items-center p-2 rounded-lg ${
                                   activeSubItem === subItem.url

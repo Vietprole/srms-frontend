@@ -30,6 +30,7 @@ import MuiAlert from '@mui/material/Alert';
 import { removeHocPhanFromNganh } from "@/api/api-nganh";
 import SaveIcon from '@mui/icons-material/Save';
 import { getHocPhansByNganhId,updateHocPhanCotLois } from "@/api/api-nganh";
+import { getRole } from "@/utils/storage";
 function DialogHocPhan({ nganhId, open, onClose }) {
   const styles = {
     main: {
@@ -91,10 +92,13 @@ function DialogHocPhan({ nganhId, open, onClose }) {
   const [searchQuery, setSearchQuery] = useState(""); // Lưu giá trị tìm kiếm
   const [filteredData, setFilteredData] = useState(hocPhanDaChon); // Lưu dữ liệu đã lọc
   const [originalData, setOriginalData] = useState([]);
+  const [userRole, setUserRole] = useState('');
   useEffect(() => {
     if (open && nganhId) {
       fetchData();
     }
+    const role = getRole();
+    setUserRole(role);
   }, [nganhId, open]);
 
   const fetchData = async () => {
@@ -195,6 +199,12 @@ function DialogHocPhan({ nganhId, open, onClose }) {
   };
   
   const handleSubmitAddHocPhan = async () => {
+    if (!hasPermission()) {
+      setSnackbarSeverity("error");
+      setSnackbarMessage("Bạn không có quyền thực hiện thao tác này!");
+      setOpenSnackbar(true);
+      return;
+    }
     try {
       const response = await addHocPhansToNganh(nganhId, selectedHocPhans);
       if (response.status === 200) {
@@ -226,6 +236,12 @@ function DialogHocPhan({ nganhId, open, onClose }) {
   };
 
   const handleDeleteHocPhan = async () => {
+    if (!hasPermission()) {
+      setSnackbarSeverity("error");
+      setSnackbarMessage("Bạn không có quyền thực hiện thao tác này!");
+      setOpenSnackbar(true);
+      return;
+    }
     let successCount = 0;
     let failureCount = 0;
   
@@ -277,6 +293,12 @@ function DialogHocPhan({ nganhId, open, onClose }) {
   };
   
   const handleSaveCotLoi = async () => {
+    if (!hasPermission()) {
+      setSnackbarSeverity("error");
+      setSnackbarMessage("Bạn không có quyền thực hiện thao tác này!");
+      setOpenSnackbar(true);
+      return;
+    }
     const updatedHocPhans = filteredData.map((hp) => ({
       HocPhanId: hp.id,
       LaCotLoi: hp.laCotLoi
@@ -306,6 +328,16 @@ function DialogHocPhan({ nganhId, open, onClose }) {
   };
   const hasChanges = () => {
     return JSON.stringify(originalData) !== JSON.stringify(filteredData);
+  };
+  
+  const hasPermission = () => {
+    return userRole === 'Admin' || userRole === 'NguoiPhuTrachCTĐT';
+  };
+  
+  const handleUnauthorizedAction = () => {
+    setSnackbarSeverity("error");
+    setSnackbarMessage("Bạn không có quyền thực hiện thao tác này!");
+    setOpenSnackbar(true);
   };
   
   return (
@@ -380,7 +412,16 @@ function DialogHocPhan({ nganhId, open, onClose }) {
               </Box>
               </div>
               <div style={styles.btnDelete}>
-                  <Button sx={{width:"100%"}} variant="outlined" color="error" startIcon={<DeleteIcon/>} onClick={()=>{handleOpenAlertDialog()}} disabled={selectedDeleteHocPhan.length===0}>Xóa học phần</Button>
+                  <Button 
+                    sx={{width:"100%"}} 
+                    variant="outlined" 
+                    color="error" 
+                    startIcon={<DeleteIcon/>} 
+                    onClick={handleOpenAlertDialog} 
+                    disabled={!hasPermission() || selectedDeleteHocPhan.length === 0}
+                  >
+                    Xóa học phần
+                  </Button>
                   <Dialog 
                     open={openAlertDialog} 
                     onClose={handleCloseAlertDialog} 
@@ -401,7 +442,15 @@ function DialogHocPhan({ nganhId, open, onClose }) {
                   </Dialog>
               </div>
               <div style={styles.btnAdd}>
-                <Button sx={{width:"100%"}} variant="contained" endIcon={<AddIcon/>} onClick={openDialogAdd}>Thêm học phần</Button>
+                <Button 
+                  sx={{width:"100%"}} 
+                  variant="contained" 
+                  endIcon={<AddIcon/>} 
+                  onClick={openDialogAdd}
+                  disabled={!hasPermission()}
+                >
+                  Thêm học phần
+                </Button>
                 <Dialog fullWidth maxWidth={"md"} open={openAddDialog} onClose={handleCloseDialogAdd} 
                 
                 >
@@ -475,7 +524,15 @@ function DialogHocPhan({ nganhId, open, onClose }) {
                 </Dialog>
               </div>
               <div style={styles.btnSave}>
-                <Button sx={{width:"100%"}} variant="contained" startIcon={<SaveIcon/>}  disabled={!hasChanges()} onClick={handleSaveCotLoi}>Lưu</Button>
+                <Button 
+                  sx={{width:"100%"}} 
+                  variant="contained" 
+                  startIcon={<SaveIcon/>}  
+                  disabled={!hasPermission() || !hasChanges()} 
+                  onClick={handleSaveCotLoi}
+                >
+                  Lưu
+                </Button>
               </div>
               
             </div>
