@@ -4,9 +4,9 @@ import { getAccessToken } from "../utils/storage";
 
 const API_CLO = `${API_BASE_URL}/api/clo`;
 
-export const getCLOsByLopHocPhanId = async (lopHocPhanId) => {
+export const getCLOsByHocPhanId = async (hocPhanId) => {
   try {
-    const response = await axios.get(`${API_CLO}?hocPhanId=${lopHocPhanId}`, {
+    const response = await axios.get(`${API_CLO}?hocPhanId=${hocPhanId}`, {
       headers: { Authorization: getAccessToken() }
     });
     return response.data;

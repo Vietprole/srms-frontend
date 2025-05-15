@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { getCLOsByLopHocPhanId } from '@/api/api-clo';
+import { getCLOsByHocPhanId } from '@/api/api-clo';
 import { getCauHoisByBaiKiemTraId, getCLOsByCauHoiId, updateCLOsToCauHoi } from '@/api/api-cauhoi';
 import { getBaiKiemTrasByLopHocPhanId } from '@/api/api-baikiemtra';
 import MappingTable from '@/components/MappingTable';
@@ -17,7 +17,7 @@ export default function NoiCauHoiCLO() {
     try {
       const baiKiemTrasData = await getBaiKiemTrasByLopHocPhanId(lopHocPhanId);
       const [cLOsData] = await Promise.all([
-        getCLOsByLopHocPhanId(lopHocPhanId),
+        getCLOsByHocPhanId(lopHocPhanId),
       ]);
   
       const cauHoisPromises = baiKiemTrasData.map(baiKiemTra =>

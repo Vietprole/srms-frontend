@@ -3,7 +3,7 @@ import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   deleteCLO,
-  getCLOsByLopHocPhanId,
+  getCLOsByHocPhanId,
   addCLO,
   updateCLO,
 } from "@/api/api-clo";
@@ -27,9 +27,10 @@ import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ComboBox } from "@/components/ComboBox";
-import { getAllLopHocPhans } from "@/api/api-lophocphan";
+import { getAllHocPhans } from "@/api/api-hocphan";
 import { CLOForm } from "@/components/CLOForm";
 import Layout from "@/pages/Layout";
+import { useCallback } from "react";
 
 const createColumns = (handleEdit, handleDelete) => [
   {
@@ -96,7 +97,7 @@ const createColumns = (handleEdit, handleDelete) => [
                 <CLOForm
                   cLO={clo}
                   handleEdit={handleEdit}
-                  lopHocPhanId={clo.lopHocPhanId}
+                  hocPhanId={clo.hocPhanId}
                 />
               </DialogContent>
             </Dialog>
@@ -133,15 +134,15 @@ const createColumns = (handleEdit, handleDelete) => [
 export default function QuanLyCLO() {
   const [data, setData] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [lopHocPhans, setLopHocPhans] = useState([]);
-  const [selectedLopHocPhanId, setSelectedLopHocPhanId] = useState(null);
+  const [hocPhans, setHocPhans] = useState([]);
+  const [selectedHocPhanId, setSelectedHocPhanId] = useState(null);
 
-  const fetchData = async () => {
-    if (selectedLopHocPhanId) {
-      const clos = await getCLOsByLopHocPhanId(selectedLopHocPhanId);
+  const fetchData = useCallback(async () => {
+    if (selectedHocPhanId) {
+      const clos = await getCLOsByHocPhanId(selectedHocPhanId);
       setData(clos);
     }
-  };
+  }, [selectedHocPhanId]);
 
   const handleAdd = async (values) => {
     try {
@@ -172,20 +173,20 @@ export default function QuanLyCLO() {
   };
 
   useEffect(() => {
-    const fetchLopHocPhans = async () => {
-      const data = await getAllLopHocPhans();
-      const mappedComboBoxItems = data.map(lopHocPhan => ({ label: lopHocPhan.ten, value: lopHocPhan.id }));
-      setLopHocPhans(mappedComboBoxItems);
+    const fetchHocPhans = async () => {
+      const data = await getAllHocPhans();
+      const mappedComboBoxItems = data.map(hocPhan => ({ label: hocPhan.ten, value: hocPhan.id }));
+      setHocPhans(mappedComboBoxItems);
     };
-    fetchLopHocPhans();
+    fetchHocPhans();
   }, []);
 
   useEffect(() => {
     fetchData();
-  }, [selectedLopHocPhanId]);
+  }, [fetchData, selectedHocPhanId]);
 
   const renderCLOForm = (props) => (
-    <CLOForm {...props} lopHocPhanId={selectedLopHocPhanId} />
+    <CLOForm {...props} hocPhanId={selectedHocPhanId} />
   );
 
   return (
@@ -194,14 +195,14 @@ export default function QuanLyCLO() {
         <div className="flex flex-col gap-2 mb-6">
           <Label>Chọn lớp học phần:</Label>
           <ComboBox 
-            items={lopHocPhans} 
-            setItemId={setSelectedLopHocPhanId} 
+            items={hocPhans} 
+            setItemId={setSelectedHocPhanId} 
             placeholder="Chọn lớp học phần..."
           />
         </div>
 
         <div className="mt-4">
-          {selectedLopHocPhanId && (
+          {selectedHocPhanId && (
             <DataTable
               entity="CLO"
               createColumns={createColumns}

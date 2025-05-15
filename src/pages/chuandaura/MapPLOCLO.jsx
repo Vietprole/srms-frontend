@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { getCLOsByPLOId, updateCLOsToPLO,getPLOsByNganhId } from '@/api/api-plo';
-import { getCLOsByLopHocPhanId } from '@/api/api-clo';
+import { getCLOsByHocPhanId } from '@/api/api-clo';
 // import { getLopHocPhanById } from "../../api/api-lophocphan";
 import { styled } from "@mui/material/styles";
 import { TableCell, tableCellClasses } from "@mui/material";
@@ -153,7 +153,7 @@ export default function NoiCLOPLO() {
     setSelectedHocPhan(newValue);
     if (newValue && selectedNganhFilter) {
       const plos= await getPLOsByNganhId(selectedNganhFilter.id);
-      const cloData = await getCLOsByLopHocPhanId(newValue.id);
+      const cloData = await getCLOsByHocPhanId(newValue.id);
       setPLOs(plos);
       setCLOs(cloData);
       const toggledData = {};
@@ -199,7 +199,7 @@ export default function NoiCLOPLO() {
       setNganhs(nganhs);
       // setLopHocPhanData(lopHocPhanData);
       // const [cLOsData, pLOsData] = await Promise.all([
-      //   getCLOsByLopHocPhanId(lopHocPhanData.hocPhanId),
+      //   getCLOsByHocPhanId(lopHocPhanData.hocPhanId),
       //   getPLOsByLopHocPhanId(lopHocPhanId),
       // ]);
       // setCLOs(cLOsData);
