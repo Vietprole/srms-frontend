@@ -38,6 +38,7 @@ import Layout from '../Layout';
 import TestDialog from '@/components/DialogHocPhan';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
+import {getTaiKhoans} from '@/api/api-taikhoan';
 function TestPage() 
 {
   const styles = {
@@ -79,7 +80,7 @@ function TestPage()
     },
     ipSearch:
     {
-      width: '25%',
+      width: '30%',
       height: '100%',
       justifyContent: 'flex-start',
       borderRadius: '5px',
@@ -132,7 +133,8 @@ function TestPage()
   const [selectedKhoaFilter, setSelectedKhoaFilter] = useState(null);
   const [page, setPage] = useState(1);
   const rowsPerPage = 10; // Số dòng mỗi trang
-  
+  const [taikhoans, setTaiKhoans] = useState([]);
+  const [selectedTaiKhoan, setSelectedTaiKhoan] = useState(null);
   // Tính toán số trang
   const pageCount = Math.ceil(filteredData.length / rowsPerPage);
   
@@ -167,17 +169,22 @@ function TestPage()
 
   const handleClickOpenEdit = async (id) => {
     const nganh = await getNganhById(id);
+    const taikhoans = await getTaiKhoans(6); // Đợi API trả về dữ liệu
+    setTaiKhoans(taikhoans);
     setTenNganh(nganh.ten);
     setMaNganh(nganh.maNganh);
     setSelectedKhoa(nganh.tenKhoa);
     inputRef.current = nganh.ten;
     setOpenEditNganh(true);
     setNganhId(id);
+    setSelectedTaiKhoan(nganh.nguoiQuanLyId);
   }
 
   const handleAddNganhs = async() => {
     const khoas = await getAllKhoas(); // Đợi API trả về dữ liệu
     setKhoas(khoas);
+    const taikhoans = await getTaiKhoans(6); // Đợi API trả về dữ liệu
+    setTaiKhoans(taikhoans);
     setOpenAddNganh(true);
   };
 
@@ -188,12 +195,15 @@ function TestPage()
     setTenNganh("");
     setMaNganh("");
     setNganhId("");
+    setTaiKhoans([]);
   }
 
   const handleCloseNganhs = () => {
     setOpenAddNganh(false);
     setErrorTenNganh(false);
     setSelectedKhoa(null);
+    setSelectedTaiKhoan(null);
+    setTaiKhoans([]);
   };
   const handleSubmit =async  () => {
     if (tenNganh.trim() === "") {
@@ -210,9 +220,18 @@ function TestPage()
       setOpenSnackbar(true);
       return;
     }
+    if(selectedTaiKhoan === null)
+      {
+        setSnackbarMessage("Vui lòng chọn người quản lý");
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
+        return;
+      }
     const nganhData = {
       ten: tenNganh.trim(),
-      khoaId: selectedKhoa.id
+      khoaId: selectedKhoa.id,
+      nguoiQuanLyId: selectedTaiKhoan.id,
+      
     };
     
     try {
@@ -285,8 +304,16 @@ function TestPage()
       setErrorTenNganh(true);
       return;
     }
+    if(selectedTaiKhoan === null)
+    {
+      setSnackbarMessage("Vui lòng chọn người quản lý");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+      return;
+    }
     const nganhData = {
       ten: inputRef.current.trim(),
+      nguoiQuanLyId: selectedTaiKhoan,
     };
     try {
       const response = await updateNganh(nganhId,nganhData);
@@ -350,7 +377,7 @@ function TestPage()
     <Layout>
       <div style={styles.main}>
       <div style={styles.title}>
-        <span>Danh sách ngành học</span>
+        <span>Danh sách chương trình đào tạo</span>
         <div style={styles.btnMore}>
           <IconButton aria-label="more actions"><MoreVertIcon/></IconButton>
         </div>
@@ -375,7 +402,7 @@ function TestPage()
             <TextField
               fullWidth
               fontSize="10px"
-              placeholder="Tìm kiếm theo tên ngành..."
+              placeholder="Tìm kiếm theo tên chương trình đào tạo..."
               variant="standard"
               autoComplete='off'
               InputProps={{
@@ -440,6 +467,19 @@ function TestPage()
                             <TextField {...params} label="Chọn khoa" variant="standard" />
                           )}
                         />
+                        <Autocomplete
+                          options={taikhoans}
+                          getOptionLabel={(option) => option.ten || ''}
+                          noOptionsText="Không tìm thấy tài khoản"
+                          required
+                          id="disable-clearable"
+                          disableClearable
+                          sx={{ marginTop: "10px" }}
+                          onChange={(event, newValue) => setSelectedTaiKhoan(newValue)} // Cập nhật state khi chọn khoa
+                          renderInput={(params) => (
+                            <TextField {...params} label="Chọn người quản lý" variant="standard" />
+                          )}
+                        />
                       </DialogContent>
                       <DialogActions>
                         <Button onClick={handleCloseNganhs}>Hủy</Button>
@@ -463,6 +503,7 @@ function TestPage()
             <StyledTableCell align="center">Mã Ngành</StyledTableCell>
             <StyledTableCell align="center">Tên Ngành</StyledTableCell>
             <StyledTableCell align="center">Tên Khoa</StyledTableCell>
+            <StyledTableCell align="center">Người quản lí</StyledTableCell>
             <StyledTableCell align="center"></StyledTableCell>
           </TableRow>
 
@@ -477,6 +518,7 @@ function TestPage()
                 <StyledTableCell align="center" width={150}>{row.maNganh}</StyledTableCell>
                 <StyledTableCell align="left">{row.ten}</StyledTableCell>
                 <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
+                <StyledTableCell align="center">{row.tenNguoiQuanLy}</StyledTableCell>
                 <StyledTableCell align="center" width={150}>
                   <Tooltip title="Sửa ngành">
                     <IconButton
@@ -540,6 +582,20 @@ function TestPage()
                 focused={false}
                 autoComplete='off'
               />
+             <Autocomplete
+              options={taikhoans}
+              getOptionLabel={(option) => option.ten || ''}
+              noOptionsText="Không tìm thấy tài khoản"
+              required
+              id="disable-clearable"
+              disableClearable
+              value={taikhoans.find(tk => tk.id === selectedTaiKhoan) || null} // <- Ghim selected
+              onChange={(event, newValue) => setSelectedTaiKhoan(newValue?.id || null)}
+              renderInput={(params) => (
+                <TextField {...params} label="Chọn người quản lý" variant="standard" />
+              )}
+            />
+
             </DialogContent>
             <DialogActions>
               <Button onClick={handleCloseEditNganh}>Hủy</Button>

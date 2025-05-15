@@ -229,6 +229,7 @@ export default function LopHocPhanPage() {
       })));
 
     } catch (error) {
+      console.error(error);
       setSnackbarMessage("Lỗi khi tải dữ liệu");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
@@ -301,6 +302,7 @@ export default function LopHocPhanPage() {
       handleCloseDeleteDialog();
       fetchData();
     } catch (error) {
+      console.error(error);
       setSnackbarMessage("Xóa lớp học phần thất bại");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
@@ -415,6 +417,7 @@ export default function LopHocPhanPage() {
       setEditSelectedGiangVien(comboBoxGiangViens.find(gv => gv.value === lopHocPhan.giangVienId));
       setOpenEditDialog(true);
     } catch (error) {
+      console.log(error);
       setSnackbarMessage("Lỗi khi lấy thông tin lớp học phần");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
@@ -490,6 +493,7 @@ export default function LopHocPhanPage() {
       setDSSinhVien(sinhViens);
       setDSSinhVienDaChon(sinhVienDaChon);
     } catch (error) {
+      console.log(error);
       setSnackbarMessage("Lỗi khi tải danh sách sinh viên");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
@@ -506,6 +510,7 @@ export default function LopHocPhanPage() {
       setOpenSinhVienDialog(true);
       await loadSinhVienData(lopHocPhanId);
     } catch (error) {
+      console.log(error);
       setSnackbarMessage("Lỗi khi tải thông tin lớp học phần");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
@@ -524,6 +529,7 @@ export default function LopHocPhanPage() {
       setSnackbarSeverity("success");
       setOpenSnackbar(true);
     } catch (error) {
+      console.log(error);
       setSnackbarMessage("Thêm sinh viên thất bại");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
@@ -546,6 +552,7 @@ export default function LopHocPhanPage() {
       setSnackbarSeverity("success");
       setOpenSnackbar(true);
     } catch (error) {
+      console.log(error);
       setSnackbarMessage("Xóa sinh viên thất bại");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
@@ -579,14 +586,17 @@ export default function LopHocPhanPage() {
   ];
   
   const VirtuosoTableComponents = {
+    // eslint-disable-next-line react/display-name
     Scroller: React.forwardRef((props, ref) => (
       <TableContainer component={Paper} {...props} ref={ref} sx={{ height: "calc(100vh - 200px)" }} />
     )),
     Table: (props) => (
       <Table {...props} sx={{ borderCollapse: "separate", tableLayout: "fixed", backgroundColor: "white" }} />
     ),
+    // eslint-disable-next-line react/display-name
     TableHead: React.forwardRef((props, ref) => <TableHead {...props} ref={ref} />),
     TableRow: StyledTableRow,
+    // eslint-disable-next-line react/display-name
     TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
     TableCell: StyledTableCell,
   };
