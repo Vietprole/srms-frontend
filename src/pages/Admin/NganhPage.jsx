@@ -1,4 +1,3 @@
-/* eslint-disable react/display-name */
 import * as React from 'react';
 import { styled } from '@mui/material/styles';
 import Table from '@mui/material/Table';
@@ -37,8 +36,9 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import Layout from '../Layout';
 import TestDialog from '@/components/DialogHocPhan';
-import { TableVirtuoso } from "react-virtuoso";
-function NganhPage() 
+import Pagination from '@mui/material/Pagination';
+import Stack from '@mui/material/Stack';
+function TestPage() 
 {
   const styles = {
     main:
@@ -99,7 +99,7 @@ function NganhPage()
     table:
     {
       width: '100%',
-      height: '100vb',
+      height: '98%',
       display: 'flex',
       flexDirection: 'column',
       paddingTop: '10px',
@@ -130,17 +130,22 @@ function NganhPage()
   const [nganhId, setNganhId] = useState("");
   const inputRef = useRef("");
   const [selectedKhoaFilter, setSelectedKhoaFilter] = useState(null);
-  const [userRole, setUserRole] = useState('');
-
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    setUserRole(user?.role || '');
-  }, []);
-
-  const isAdmin = userRole === 'Admin';
-  const isQLCDT = userRole === 'NguoiPhuTrachCTDT';
-  const canCreateNganh = isAdmin;
-  const canEditNganh = isAdmin;
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 10; // Số dòng mỗi trang
+  
+  // Tính toán số trang
+  const pageCount = Math.ceil(filteredData.length / rowsPerPage);
+  
+  // Xử lý khi thay đổi trang
+  const handlePageChange = (event, newPage) => {
+    setPage(newPage);
+  };
+  
+  // Lấy dữ liệu cho trang hiện tại
+  const paginatedData = filteredData.slice(
+    (page - 1) * rowsPerPage,
+    page * rowsPerPage
+  );
 
   const handleKhoaChange = (event, newValue) => {
     setSelectedKhoaFilter(newValue);
@@ -152,8 +157,6 @@ function NganhPage()
     }
   };
   
-
-
   const handleOpenDialog = (id) => {
     setNganhId(id);
     setOpenDialog(true);
@@ -186,8 +189,6 @@ function NganhPage()
     setMaNganh("");
     setNganhId("");
   }
-
-
 
   const handleCloseNganhs = () => {
     setOpenAddNganh(false);
@@ -245,7 +246,6 @@ function NganhPage()
     }
   };
   
-
   useEffect(() => {
     fetchData();
   }, []);
@@ -316,7 +316,6 @@ function NganhPage()
     }
   }
 
-  
   const handleSearchChange = (event) => {
     const value = event.target.value;
     setSearchQuery(value); 
@@ -346,75 +345,6 @@ function NganhPage()
     cursor: 'pointer', // Tùy chọn: Thêm hiệu ứng con trỏ
   },
   }));
-
-  const columns = [
-    { width: 50, label: "STT", dataKey: "index", align: "center" },
-    { width: 150, label: "Mã Ngành", dataKey: "maNganh", align: "center" },
-    {  label: "Tên Ngành", dataKey: "ten", align: "center" },
-    { width: 300, label: "Tên Khoa", dataKey: "tenKhoa", align: "center" },
-    { width: 150, label: "", dataKey: "actions", align: "center" },
-  ];
-
-  const VirtuosoTableComponents = {
-    Scroller: React.forwardRef((props, ref) => (
-      <TableContainer component={Paper} {...props} ref={ref} sx={{ height: "calc(100vh - 200px)" }} />
-    )),
-    
-    Table: (props) => (
-      <Table {...props} sx={{ borderCollapse: "separate", tableLayout: "fixed", backgroundColor: "white" }} />
-    ),
-    TableHead: React.forwardRef((props, ref) => <TableHead {...props} ref={ref} />),
-    TableRow: StyledTableRow, // Sử dụng StyledTableRow bạn đã định nghĩa
-    TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
-    TableCell: StyledTableCell, // Sử dụng StyledTableCell bạn đã định nghĩa
-  };
-  
-  
-  
-  function fixedHeaderContent() {
-    return (
-      <StyledTableRow>
-        {columns.map((column) => (
-          <StyledTableCell
-            key={column.dataKey}
-            variant="head"
-            align="center" // Cố định căn giữa
-            style={{ width: column.width, textAlign: "center" }} // Đảm bảo text ở giữa
-          >
-            {column.label}
-          </StyledTableCell>
-        ))}
-      </StyledTableRow>
-    );
-  }
-  
-  
-  
-  
-  function rowContent(index, row) {
-    return (
-      <>
-        <StyledTableCell align="center">{index + 1}</StyledTableCell> {/* STT */}
-        <StyledTableCell align="center">{row.maNganh}</StyledTableCell>
-        <StyledTableCell align="left">{row.ten}</StyledTableCell>
-        <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
-        <StyledTableCell align="center" width={150}>
-          <Tooltip title="Sửa ngành">
-            <IconButton onClick={() => handleClickOpenEdit(row.id)}>
-              <EditIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Xem danh sách học phần">
-            <IconButton onClick={() => handleOpenDialog(row.id)}>
-              <FormatListBulletedIcon />
-            </IconButton>
-          </Tooltip>
-        </StyledTableCell>
-      </>
-    );
-  }
-  
-  
 
   return (
     <Layout>
@@ -475,70 +405,97 @@ function NganhPage()
               <TextField {...params} label="Chọn khoa" size="small" />
             )}
           />
-
-
         </div>
-        {canCreateNganh && (
-          <div style={styles.btnCreate}>
-            <Button sx={{width:"100%"}} variant="contained" onClick={handleAddNganhs}>Tạo ngành</Button>
-                      <Dialog id='addNganh' fullWidth open={openAddNganh} onClose={handleCloseNganhs}>
-                        <DialogTitle>Tạo ngành mới:</DialogTitle>
-                        <DialogContent >
-                          <DialogContentText>
-                            Thêm ngành mới vào hệ thống
-                          </DialogContentText>
-                          <TextField
-                            autoFocus
-                            required
-                            id='tenNganh'
-                            margin="dense"
-                            label="Tên ngành"
-                            fullWidth
-                            variant="standard"
-                            onBlur={(e) => setTenNganh(e.target.value.trim())}
-                            error={errorTenNganh}
-                            onInput={(e) => setErrorTenNganh(e.target.value.trim() === "")}
-                            helperText="Vui lòng nhập tên ngành"
-                            autoComplete='off'
-                          />
-                         <Autocomplete
-                            options={khoas}
-                            getOptionLabel={(option) => option.ten || ''}
-                            noOptionsText="Không tìm thấy khoa"
-                            required
-                            id="disable-clearable"
-                            disableClearable
-                            onChange={(event, newValue) => setSelectedKhoa(newValue)} // Cập nhật state khi chọn khoa
-                            renderInput={(params) => (
-                              <TextField {...params} label="Chọn khoa" variant="standard" />
-                            )}
-                          />
-                        </DialogContent>
-                        <DialogActions>
-                          <Button onClick={handleCloseNganhs}>Hủy</Button>
-                          <Button
-                            onClick={handleSubmit}
-                          >
-                            Lưu
-                          </Button>
-                        </DialogActions>
-                      </Dialog>
-            
-          </div>
-        )}
+        <div style={styles.btnCreate}>
+          <Button sx={{width:"100%"}} variant="contained" onClick={handleAddNganhs}>Tạo ngành</Button>
+                    <Dialog id='addNganh' fullWidth open={openAddNganh} onClose={handleCloseNganhs}>
+                      <DialogTitle>Tạo ngành mới:</DialogTitle>
+                      <DialogContent >
+                        <DialogContentText>
+                          Thêm ngành mới vào hệ thống
+                        </DialogContentText>
+                        <TextField
+                          autoFocus
+                          required
+                          id='tenNganh'
+                          margin="dense"
+                          label="Tên ngành"
+                          fullWidth
+                          variant="standard"
+                          onBlur={(e) => setTenNganh(e.target.value.trim())}
+                          error={errorTenNganh}
+                          onInput={(e) => setErrorTenNganh(e.target.value.trim() === "")}
+                          helperText="Vui lòng nhập tên ngành"
+                          autoComplete='off'
+                        />
+                       <Autocomplete
+                          options={khoas}
+                          getOptionLabel={(option) => option.ten || ''}
+                          noOptionsText="Không tìm thấy khoa"
+                          required
+                          id="disable-clearable"
+                          disableClearable
+                          onChange={(event, newValue) => setSelectedKhoa(newValue)} // Cập nhật state khi chọn khoa
+                          renderInput={(params) => (
+                            <TextField {...params} label="Chọn khoa" variant="standard" />
+                          )}
+                        />
+                      </DialogContent>
+                      <DialogActions>
+                        <Button onClick={handleCloseNganhs}>Hủy</Button>
+                        <Button
+                          onClick={handleSubmit}
+                        >
+                          Lưu
+                        </Button>
+                      </DialogActions>
+                    </Dialog>
+          
+        </div>
       </div>
       <div style={styles.table}>
-      <Paper style={{ height: "100vh", width: "100%" }}>
+      
+       <TableContainer component={Paper}>
+       <Table sx={{ minWidth: 700 }} aria-label="customized table">
+         <TableHead sx={{position: 'sticky',top: 0,  zIndex: 1,backgroundColor: "#0071A6",}}>
+          <TableRow>
+            <StyledTableCell align="center">STT</StyledTableCell>
+            <StyledTableCell align="center">Mã Ngành</StyledTableCell>
+            <StyledTableCell align="center">Tên Ngành</StyledTableCell>
+            <StyledTableCell align="center">Tên Khoa</StyledTableCell>
+            <StyledTableCell align="center"></StyledTableCell>
+          </TableRow>
 
-  <TableVirtuoso style={{ width: "100%", height: "100%" }} // Đảm bảo full height
-    data={filteredData}
-    components={VirtuosoTableComponents}
-    fixedHeaderContent={fixedHeaderContent}
-    itemContent={rowContent}
-  />
-</Paper>
-<TestDialog nganhId={nganhId} open={openDialog} onClose={handleCloseDialog} />
-
+         </TableHead>
+         <TableBody sx={{ overflowY: "auto" }}>
+            {paginatedData.map((row, index) => (
+              <StyledTableRow key={row.maNganh + row.ten}>
+                
+                <StyledTableCell align="center" width={50}>
+                  {(page - 1) * rowsPerPage + index + 1}
+                </StyledTableCell>
+                <StyledTableCell align="center" width={150}>{row.maNganh}</StyledTableCell>
+                <StyledTableCell align="left">{row.ten}</StyledTableCell>
+                <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
+                <StyledTableCell align="center" width={150}>
+                  <Tooltip title="Sửa ngành">
+                    <IconButton
+                      onClick={() => handleClickOpenEdit(row.id)}
+                    ><EditIcon /></IconButton>
+                  </Tooltip>
+                  <Tooltip title="Xem danh sách học phần">
+                    <IconButton onClick={()=>handleOpenDialog(row.id)}><FormatListBulletedIcon /></IconButton>
+                    
+                    
+                  </Tooltip>
+                </StyledTableCell>
+              </StyledTableRow>
+              
+            ))}
+            <TestDialog nganhId={nganhId} open={openDialog} onClose={handleCloseDialog}></TestDialog>
+        </TableBody>
+       </Table>
+     </TableContainer>
           <Dialog id='editNganh' fullWidth open={openEditNganh} onClose={handleCloseEditNganh} TransitionComponent={Fade} >
             <DialogTitle>Sửa ngành:</DialogTitle>
             <DialogContent>
@@ -606,17 +563,17 @@ function NganhPage()
       </Snackbar>
       
       </div>
-      {/* <Stack spacing={2} sx={{ padding: "20px 0", display: "flex", alignItems: "center" }}>
+      <Stack spacing={2} sx={{ padding: "20px 0", display: "flex", alignItems: "center" }}>
         <Pagination 
           count={pageCount} 
           page={page} 
           onChange={handlePageChange}
           color="primary"
         />
-      </Stack> */}
+      </Stack>
     </div>
     </Layout>
   );
 };
 
-export default NganhPage;
+export default TestPage;

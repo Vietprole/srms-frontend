@@ -42,6 +42,7 @@ import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
 const styles = {
   main: {
@@ -668,6 +669,11 @@ export default function QuanLyTaiKhoanPage() {
                                   <EditIcon />
                                 </IconButton>
                               </Tooltip>
+                              <Tooltip title="Đặt lại mật khẩu mặc định">
+                                <IconButton onClick={() => handleReset(row.id)}>
+                                  <RestartAltIcon />
+                                </IconButton>
+                              </Tooltip>
                               <Tooltip title="Xóa tài khoản">
                                 <IconButton onClick={() => handleOpenDeleteDialog(row)}>
                                   <DeleteIcon />
@@ -689,6 +695,11 @@ export default function QuanLyTaiKhoanPage() {
                           <Tooltip title="Sửa tài khoản">
                             <IconButton onClick={() => handleOpenEditDialog(row)}>
                               <EditIcon />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Đặt lại mật khẩu mặc định">
+                            <IconButton onClick={() => handleReset(row.id)}>
+                              <RestartAltIcon />
                             </IconButton>
                           </Tooltip>
                           <Tooltip title="Xóa tài khoản">
