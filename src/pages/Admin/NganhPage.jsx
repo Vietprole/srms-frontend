@@ -38,7 +38,6 @@ import Layout from '../Layout';
 import TestDialog from '@/components/DialogHocPhan';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
-
 function TestPage() 
 {
   const styles = {
@@ -131,17 +130,22 @@ function TestPage()
   const [nganhId, setNganhId] = useState("");
   const inputRef = useRef("");
   const [selectedKhoaFilter, setSelectedKhoaFilter] = useState(null);
-  const [userRole, setUserRole] = useState('');
-
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    setUserRole(user?.role || '');
-  }, []);
-
-  const isAdmin = userRole === 'Admin';
-  const isQLCDT = userRole === 'NguoiPhuTrachCTDT';
-  const canCreateNganh = isAdmin;
-  const canEditNganh = isAdmin;
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 10; // Số dòng mỗi trang
+  
+  // Tính toán số trang
+  const pageCount = Math.ceil(filteredData.length / rowsPerPage);
+  
+  // Xử lý khi thay đổi trang
+  const handlePageChange = (event, newPage) => {
+    setPage(newPage);
+  };
+  
+  // Lấy dữ liệu cho trang hiện tại
+  const paginatedData = filteredData.slice(
+    (page - 1) * rowsPerPage,
+    page * rowsPerPage
+  );
 
   const handleKhoaChange = (event, newValue) => {
     setSelectedKhoaFilter(newValue);
@@ -153,8 +157,6 @@ function TestPage()
     }
   };
   
-
-
   const handleOpenDialog = (id) => {
     setNganhId(id);
     setOpenDialog(true);
@@ -187,8 +189,6 @@ function TestPage()
     setMaNganh("");
     setNganhId("");
   }
-
-
 
   const handleCloseNganhs = () => {
     setOpenAddNganh(false);
@@ -246,7 +246,6 @@ function TestPage()
     }
   };
   
-
   useEffect(() => {
     fetchData();
   }, []);
@@ -317,7 +316,6 @@ function TestPage()
     }
   }
 
-  
   const handleSearchChange = (event) => {
     const value = event.target.value;
     setSearchQuery(value); 
@@ -347,24 +345,6 @@ function TestPage()
     cursor: 'pointer', // Tùy chọn: Thêm hiệu ứng con trỏ
   },
   }));
-
-  // Thêm state cho phân trang
-  const [page, setPage] = useState(1);
-  const rowsPerPage = 10; // Số dòng mỗi trang
-  
-  // Tính toán số trang
-  const pageCount = Math.ceil(filteredData.length / rowsPerPage);
-  
-  // Xử lý khi thay đổi trang
-  const handlePageChange = (event, newPage) => {
-    setPage(newPage);
-  };
-  
-  // Lấy dữ liệu cho trang hiện tại
-  const paginatedData = filteredData.slice(
-    (page - 1) * rowsPerPage,
-    page * rowsPerPage
-  );
 
   return (
     <Layout>
@@ -425,57 +405,53 @@ function TestPage()
               <TextField {...params} label="Chọn khoa" size="small" />
             )}
           />
-
-
         </div>
-        {canCreateNganh && (
-          <div style={styles.btnCreate}>
-            <Button sx={{width:"100%"}} variant="contained" onClick={handleAddNganhs}>Tạo ngành</Button>
-                      <Dialog id='addNganh' fullWidth open={openAddNganh} onClose={handleCloseNganhs}>
-                        <DialogTitle>Tạo ngành mới:</DialogTitle>
-                        <DialogContent >
-                          <DialogContentText>
-                            Thêm ngành mới vào hệ thống
-                          </DialogContentText>
-                          <TextField
-                            autoFocus
-                            required
-                            id='tenNganh'
-                            margin="dense"
-                            label="Tên ngành"
-                            fullWidth
-                            variant="standard"
-                            onBlur={(e) => setTenNganh(e.target.value.trim())}
-                            error={errorTenNganh}
-                            onInput={(e) => setErrorTenNganh(e.target.value.trim() === "")}
-                            helperText="Vui lòng nhập tên ngành"
-                            autoComplete='off'
-                          />
-                         <Autocomplete
-                            options={khoas}
-                            getOptionLabel={(option) => option.ten || ''}
-                            noOptionsText="Không tìm thấy khoa"
-                            required
-                            id="disable-clearable"
-                            disableClearable
-                            onChange={(event, newValue) => setSelectedKhoa(newValue)} // Cập nhật state khi chọn khoa
-                            renderInput={(params) => (
-                              <TextField {...params} label="Chọn khoa" variant="standard" />
-                            )}
-                          />
-                        </DialogContent>
-                        <DialogActions>
-                          <Button onClick={handleCloseNganhs}>Hủy</Button>
-                          <Button
-                            onClick={handleSubmit}
-                          >
-                            Lưu
-                          </Button>
-                        </DialogActions>
-                      </Dialog>
-            
-          </div>
-        )}
+        <div style={styles.btnCreate}>
+          <Button sx={{width:"100%"}} variant="contained" onClick={handleAddNganhs}>Tạo ngành</Button>
+                    <Dialog id='addNganh' fullWidth open={openAddNganh} onClose={handleCloseNganhs}>
+                      <DialogTitle>Tạo ngành mới:</DialogTitle>
+                      <DialogContent >
+                        <DialogContentText>
+                          Thêm ngành mới vào hệ thống
+                        </DialogContentText>
+                        <TextField
+                          autoFocus
+                          required
+                          id='tenNganh'
+                          margin="dense"
+                          label="Tên ngành"
+                          fullWidth
+                          variant="standard"
+                          onBlur={(e) => setTenNganh(e.target.value.trim())}
+                          error={errorTenNganh}
+                          onInput={(e) => setErrorTenNganh(e.target.value.trim() === "")}
+                          helperText="Vui lòng nhập tên ngành"
+                          autoComplete='off'
+                        />
+                       <Autocomplete
+                          options={khoas}
+                          getOptionLabel={(option) => option.ten || ''}
+                          noOptionsText="Không tìm thấy khoa"
+                          required
+                          id="disable-clearable"
+                          disableClearable
+                          onChange={(event, newValue) => setSelectedKhoa(newValue)} // Cập nhật state khi chọn khoa
+                          renderInput={(params) => (
+                            <TextField {...params} label="Chọn khoa" variant="standard" />
+                          )}
+                        />
+                      </DialogContent>
+                      <DialogActions>
+                        <Button onClick={handleCloseNganhs}>Hủy</Button>
+                        <Button
+                          onClick={handleSubmit}
+                        >
+                          Lưu
+                        </Button>
+                      </DialogActions>
+                    </Dialog>
+          
+        </div>
       </div>
       <div style={styles.table}>
       
@@ -494,6 +470,7 @@ function TestPage()
          <TableBody sx={{ overflowY: "auto" }}>
             {paginatedData.map((row, index) => (
               <StyledTableRow key={row.maNganh + row.ten}>
+                
                 <StyledTableCell align="center" width={50}>
                   {(page - 1) * rowsPerPage + index + 1}
                 </StyledTableCell>
@@ -501,13 +478,11 @@ function TestPage()
                 <StyledTableCell align="left">{row.ten}</StyledTableCell>
                 <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
                 <StyledTableCell align="center" width={150}>
-                  {canEditNganh && (
-                    <Tooltip title="Sửa ngành">
-                      <IconButton
-                        onClick={() => handleClickOpenEdit(row.id)}
-                      ><EditIcon /></IconButton>
-                    </Tooltip>
-                  )}
+                  <Tooltip title="Sửa ngành">
+                    <IconButton
+                      onClick={() => handleClickOpenEdit(row.id)}
+                    ><EditIcon /></IconButton>
+                  </Tooltip>
                   <Tooltip title="Xem danh sách học phần">
                     <IconButton onClick={()=>handleOpenDialog(row.id)}><FormatListBulletedIcon /></IconButton>
                     
