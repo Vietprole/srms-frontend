@@ -91,7 +91,7 @@ export default function NoiCLOPLO() {
     },
     cbKhoa:
     {
-      width: '22%',
+      width: '28%',
       height: '80%',
       marginLeft: '10px',
       marginBottom: '10px',

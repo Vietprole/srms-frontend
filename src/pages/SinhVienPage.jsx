@@ -39,7 +39,7 @@ import { getAllNganhs } from "@/api/api-nganh";
 import { getAllLopHocPhans, getLopHocPhans } from "@/api/api-lophocphan";
 import { getGiangVienId, getRole } from "@/utils/storage";
 import { getNganhsByKhoaId } from "@/api/api-nganh"; 
-
+import { TableVirtuoso } from 'react-virtuoso';
 const role = getRole();
 const giangVienId = getGiangVienId();
 
@@ -95,7 +95,7 @@ const styles = {
   },
   table: {
     width: '100%',
-    height: '98%',
+    height: '100%',
     display: 'flex',
     flexDirection: 'column',
     paddingTop: '10px',
@@ -397,6 +397,77 @@ export default function SinhVienPage() {
     }
   };
 
+  const columns = [
+    { width: 50, label: "STT", dataKey: "index", align: "center" },
+    { width: 150, label: "Mã sinh viên", dataKey: "maSinhVien", align: "center" },
+    { label: "Tên sinh viên", dataKey: "ten", align: "left" },
+    { width: 200, label: "Khoa", dataKey: "tenKhoa", align: "center" },
+    { width: 250, label: "Ngành", dataKey: "tenNganh", align: "center" },
+    { width: 120, label: "Năm nhập học", dataKey: "namNhapHoc", align: "center" },
+    { width: 150, label: "Thao tác", dataKey: "actions", align: "center" }, // nếu Admin hoặc Phòng Đào Tạo
+  ];
+  function fixedHeaderContent() {
+    return (
+      <StyledTableRow>
+        {columns.map((column) => (
+          <StyledTableCell
+            key={column.dataKey}
+            variant="head"
+            align={column.align}
+            style={{ width: column.width, textAlign: column.align }}
+          >
+            {column.label}
+          </StyledTableCell>
+        ))}
+      </StyledTableRow>
+    );
+  }
+  function rowContent(index, row) {
+    return (
+      <>
+        <StyledTableCell align="center">{index + 1}</StyledTableCell>
+        <StyledTableCell align="center">{row.maSinhVien}</StyledTableCell>
+        <StyledTableCell align="left">{row.ten}</StyledTableCell>
+        <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
+        <StyledTableCell align="center">{row.tenNganh}</StyledTableCell>
+        <StyledTableCell align="center">{row.namNhapHoc}</StyledTableCell>
+        {(role === "Admin" || role === "PhongDaoTao") ? (
+          <StyledTableCell align="center">
+            <Tooltip title="Sửa sinh viên">
+              <IconButton onClick={() => handleOpenEditDialog(row.id)}>
+                <EditIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Xóa sinh viên">
+              <IconButton onClick={() => handleOpenDeleteDialog(row.id)}>
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
+          </StyledTableCell>
+        ) : (
+          <StyledTableCell />
+        )}
+      </>
+    );
+  }
+  const VirtuosoTableComponents = {
+    // eslint-disable-next-line react/display-name
+    Scroller: React.forwardRef((props, ref) => (
+      <TableContainer component={Paper} {...props} ref={ref} sx={{ height: "calc(100vh - 200px)", overflowY: "auto" }} />
+    )),
+    Table: (props) => (
+      <Table {...props} sx={{ borderCollapse: "separate", tableLayout: "fixed", backgroundColor: "white" }} />
+    ),
+    // eslint-disable-next-line react/display-name
+    TableHead: React.forwardRef((props, ref) => (
+      <TableHead {...props} ref={ref} sx={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#0071A6" }} />
+    )),
+    TableRow: StyledTableRow,
+    // eslint-disable-next-line react/display-name
+    TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
+    TableCell: StyledTableCell,
+  };  
+
   return (
     <Layout>
       <div style={styles.main}>
@@ -484,7 +555,15 @@ export default function SinhVienPage() {
         </div>
 
         <div style={styles.table}>
-          <TableContainer component={Paper}>
+        <TableVirtuoso
+  data={filteredData}
+  components={VirtuosoTableComponents}
+  fixedHeaderContent={fixedHeaderContent}
+  itemContent={rowContent}
+  style={{ width: "100%", height: "calc(100vh - 250px)" }}
+/>
+
+          {/* <TableContainer component={Paper}>
             <Table sx={{ minWidth: 700 }} aria-label="customized table">
               <TableHead sx={{position: 'sticky', top: 0, zIndex: 1, backgroundColor: "#0071A6"}}>
                 <TableRow>
@@ -526,7 +605,7 @@ export default function SinhVienPage() {
                 ))}
               </TableBody>
             </Table>
-          </TableContainer>
+          </TableContainer> */}
         </div>
 
         <Dialog open={openAddDialog} onClose={handleCloseAddDialog} fullWidth>

@@ -23,6 +23,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import { getHocPhansByNganhId } from "@/api/api-nganh";
 import { getPLOsByNganhId, getHocPhansByPLOId, updateHocPhansToPLO } from '@/api/api-plo';
 import React from "react";
+import { useRef } from "react";
 import { useCallback, useMemo } from "react";
 
 import { TableVirtuoso } from "react-virtuoso";
@@ -105,7 +106,9 @@ function DialogPLOHocPhan({ nganhId, open, onClose }) {
   const [tongSoTinChi, setTongSoTinChi] = useState(0);
   const [hocPhanTheoPLO, setHocPhanTheoPLO] = useState({}); // Biến tạm lưu trạng thái checkbox
   const [originalHocPhanTheoPLO, setOriginalHocPhanTheoPLO] = useState({});
-  
+  const virtuosoRef = useRef(null);
+const [scrollIndex, setScrollIndex] = useState(0);
+
   
   useEffect(() => {
     if (open && nganhId) {
@@ -386,6 +389,7 @@ const handleSavePLOs = async () => {
             </div>
             <div style={styles.mainContent}>
             <TableVirtuoso
+  ref={virtuosoRef}
   style={{ height: '100%' }}
   data={hocPhanDaChon}
   components={VirtuosoTableComponents}
@@ -393,9 +397,12 @@ const handleSavePLOs = async () => {
     const row = hocPhanDaChon[index];
     return rowContent(index, row);
   }}
-  
   fixedHeaderContent={fixedHeaderContent}
+  firstItemIndex={0}
+  initialTopMostItemIndex={scrollIndex}
+  rangeChanged={(range) => setScrollIndex(range.startIndex)}
 />
+
 
 
               

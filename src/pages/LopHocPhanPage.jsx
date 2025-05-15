@@ -254,7 +254,9 @@ export default function LopHocPhanPage() {
   };
 
   const handleHocPhanChange = async (event, newValue) => {
-    setSelectedHocPhan(newValue);
+    setSelectedHocPhan(newValue); // Cập nhật state (sẽ có hiệu lực sau)
+  
+    // Dùng ngay newValue và selectedHocKy để lọc
     if (newValue || selectedHocKy) {
       const filtered = await getLopHocPhans(
         newValue?.value || null,
@@ -267,6 +269,7 @@ export default function LopHocPhanPage() {
       setFilteredData(data);
     }
   };
+  
 
   const handleHocKyChange = async (event, newValue) => {
     setSelectedHocKy(newValue);
@@ -705,13 +708,13 @@ export default function LopHocPhanPage() {
               )}
             /> */}
             <VirtualizedAutocomplete
-  options={hocPhanItems}
-  getOptionLabel={(option) => `${option.maHocPhan || ""} - ${option.ten || ""}`}
-  variant="outlined"
-  value={selectedHocPhan}
-  label="Chọn học phần"
-  onChange={handleHocPhanChange}
-/>
+              options={hocPhanItems}
+              getOptionLabel={(option) => `${option.maHocPhan || ""} - ${option.ten || ""}`}
+              variant="outlined"
+              value={selectedHocPhan}
+              label="Chọn học phần"
+              onChange={handleHocPhanChange}
+            />
 
           </div>
 
