@@ -171,7 +171,7 @@ const adminItem = [
       },
       {
         title: "Nối CLO - PLO",
-        url: "/mapclopo"
+        url: "/mapcloplo"
       }
     ]
   },

@@ -4,9 +4,10 @@ import Layout from "./Layout";
 import { getAllLopHocPhans, getLopHocPhans } from "../api/api-lophocphan";
 import { Button } from "@/components/ui/button";
 import { getRole, getGiangVienId } from "@/utils/storage";
-import Autocomplete from "@mui/material/Autocomplete";
-import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
+import VirtualizedAutocomplete from "../components/VirtualizedAutocomplete";
+import TextField from "@mui/material/TextField";
+
 const routes = [
   { value: "quan-ly-cau-hoi", label: "Quản lý Câu hỏi" },
   { label: "Bảng Điểm", value: "bang-diem" },
@@ -44,7 +45,7 @@ export default function NhapDiemPage() {
         data = await getAllLopHocPhans();
       }
 
-      const mapped = data.map(lhp => ({ label: lhp.ten, value: lhp.id }));
+      const mapped = data.map(lhp => ({ label: `${lhp.maLopHocPhan} - ${lhp.ten}`, value: lhp.id }));
       setLopHocPhans(mapped);
       const existing = mapped.find(item => item.value === Number(lopHocPhanIdParam));
       if (existing) setSelectedLopHocPhan(existing);
@@ -62,20 +63,20 @@ export default function NhapDiemPage() {
   return (
 <Layout>
   <div className="flex space-x-4 items-end">
-    <div>
+    <div className="w-[30%] h-[80%] ml-[10px] mb-[10px]">
       <Typography variant="h6" sx={{ mb: "5px" }}>
         Chọn lớp học phần:
       </Typography>
-      <Autocomplete
+      <VirtualizedAutocomplete
         options={lopHocPhans}
         value={selectedLopHocPhan}
         onChange={(event, newValue) => {
           setSelectedLopHocPhan(newValue);
           setLopHocPhanId(newValue?.value || null);
         }}
-        renderInput={(params) => <TextField {...params} label="Tên lớp học phần" />}
-        fullWidth
-        sx={{ minWidth: 250 }}
+        getOptionLabel={(option) => option.label || ""}
+        label="Tên lớp học phần"
+        variant="outlined"
       />
     </div>
 
@@ -83,16 +84,17 @@ export default function NhapDiemPage() {
       <Typography variant="h6" sx={{ mb: "5px" }}>
         Chọn hành động:
       </Typography>
-      <Autocomplete
+      <VirtualizedAutocomplete
         options={routes}
         value={routes.find(item => item.value === itemId) || null}
         onChange={(event, newValue) => {
           setItemId(newValue?.value || null);
           setSelectedAction(newValue);
         }}
-        renderInput={(params) => <TextField {...params} label="Tên hành động" />}
-        fullWidth
-        sx={{ minWidth: 250 }}
+        getOptionLabel={(option) => option.label || ""}
+        label="Tên hành động"
+        variant="outlined"
+        size="small"
       />
     </div>
 
