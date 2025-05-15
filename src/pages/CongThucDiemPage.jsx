@@ -21,12 +21,10 @@ import {
   Tooltip,
   Autocomplete,
   Snackbar,
-  Typography,
   Backdrop,
   CircularProgress
 } from '@mui/material';
 import MuiAlert from '@mui/material/Alert';
-import SearchIcon from '@mui/icons-material/Search';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -40,7 +38,7 @@ import {
   deleteBaiKiemTra,
   updateBaiKiemTra 
 } from "@/api/api-baikiemtra";
-
+import VirtualizedAutocomplete from "../components/VirtualizedAutocomplete";
 // Styled components
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -125,8 +123,6 @@ export default function CongThucDiemPage() {
   const [lophocphanItems, setLopHocPhanItems] = useState([]);
   const [lopHocPhanId, setLopHocPhanId] = useState(lopHocPhanIdParam);
   const [comboBoxLopHocPhanId, setComboBoxLopHocPhanId] = useState(lopHocPhanIdParam);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [maxId, setMaxId] = useState(0);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
@@ -176,11 +172,7 @@ export default function CongThucDiemPage() {
   const fetchData = useCallback(async () => {
     try {
     const dataLopHocPhan = await getAllLopHocPhans();
-    const mappedComboBoxItems = dataLopHocPhan.map((lophocphan) => ({
-      label: lophocphan.ten,
-      value: lophocphan.id,
-    }));
-    setLopHocPhanItems(mappedComboBoxItems);
+    setLopHocPhanItems(dataLopHocPhan);
       
       let baiKiemTraData = [];
     if (lopHocPhanId === null) {
@@ -189,12 +181,9 @@ export default function CongThucDiemPage() {
         baiKiemTraData = await getBaiKiemTrasByLopHocPhanId(lopHocPhanId);
     }
       
-      const maxId = baiKiemTraData.length > 0 
-        ? Math.max(...baiKiemTraData.map(item => item.id))
-    : 0;
       setData(baiKiemTraData);
-    setMaxId(maxId);
     } catch (error) {
+      console.error("Error fetching data:", error);
       setSnackbarMessage("Lỗi khi tải dữ liệu");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
@@ -244,6 +233,7 @@ export default function CongThucDiemPage() {
       setOpenSnackbar(true);
       await fetchData();
     } catch (error) {
+      console.log(error);
       setSnackbarMessage("Lỗi khi lưu công thức điểm");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
@@ -490,7 +480,7 @@ export default function CongThucDiemPage() {
 
         <div style={styles.tbActions}>
           <Box sx={{ display: 'flex', gap: 2, width: '100%', alignItems: 'center' }}>
-            <Autocomplete
+            {/* <Autocomplete
               options={lophocphanItems}
               getOptionLabel={(option) => option.label || ""}
               value={lophocphanItems.find(item => item.value === comboBoxLopHocPhanId) || null}
@@ -503,7 +493,21 @@ export default function CongThucDiemPage() {
                   sx={{ width: '300px' }}
                 />
               )}
-            />
+            /> */}
+            <Box sx={{ width: 400,fontSize:"14" }}>
+                <VirtualizedAutocomplete
+                  options={lophocphanItems}
+                  getOptionLabel={(option) => `${option.maLopHocPhan} - ${option.ten}`}
+                  value={lophocphanItems.find(item => item.value === comboBoxLopHocPhanId) || null}
+                  onChange={(event, newValue) => setComboBoxLopHocPhanId(newValue?.value || null)}
+                  label="Chọn lớp học phần"
+                  noOptionsText={"Không tìm thấy lớp học phần"}
+                  variant="outlined"
+                  size="small"
+                />
+              </Box>
+
+         
             
             <Button 
               variant="contained" 

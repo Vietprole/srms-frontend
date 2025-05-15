@@ -80,7 +80,9 @@ export default function VirtualizedAutocomplete({
   onChange,
   getOptionLabel,
   label,
-  noOptionsText, // Tham số mới
+  noOptionsText,
+  variant = "standard", // mặc định
+  size = "small",      // thêm size mặc định
 }) {
   return (
     <Autocomplete
@@ -89,10 +91,12 @@ export default function VirtualizedAutocomplete({
       value={value}
       onChange={onChange}
       getOptionLabel={getOptionLabel}
-      renderInput={(params) => <TextField {...params} label={label} variant="standard" />}
+      renderInput={(params) => (
+        <TextField {...params} label={label} variant={variant} size={size} sx={{ fontSize: 12 }} />
+      )}
       PopperComponent={StyledPopper}
       ListboxComponent={ListboxComponent}
-      noOptionsText={noOptionsText}  // Sử dụng tham số noOptionsText
+      noOptionsText={noOptionsText}
     />
   );
 }

@@ -128,7 +128,7 @@ const adminItem = [
         url: "/khoa"
       },
       {
-        title: "Ngành",
+        title: "Chương trình đào tạo",
         url: "/nganh"
       },
       {
@@ -222,7 +222,7 @@ const phongDaoTaoItem = [
     icon: KhoaIcon,
   },
   {
-    title: "Ngành",
+    title: "Chương trình đào tạo",
     url: "/nganh",
     icon: NganhIcon,
   },
@@ -300,7 +300,7 @@ const nguoiPhuTrachCTDTItems = [
     icon: KhoaIcon,
   },
   {
-    title: "Ngành",
+    title: "Chương trình đào tạo",
     url: "/nganh",
     icon: NganhIcon,
   },

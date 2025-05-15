@@ -38,7 +38,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import Layout from '../Layout';
 import TestDialog from '@/components/DialogHocPhan';
 import { TableVirtuoso } from "react-virtuoso";
-function TestPage() 
+function NganhPage() 
 {
   const styles = {
     main:
@@ -619,4 +619,4 @@ function TestPage()
   );
 };
 
-export default TestPage;
+export default NganhPage;

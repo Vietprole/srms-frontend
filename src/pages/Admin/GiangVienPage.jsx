@@ -30,6 +30,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Layout from '../Layout';
 import {getAllGiangViens,addGiangVien,getGiangVienById,updateGiangVien,deleteGiangVien} from "@/api/api-giangvien";
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import { TableVirtuoso } from 'react-virtuoso';
 function GiangVienPage() 
 {
   const styles = {
@@ -324,8 +326,67 @@ function GiangVienPage()
       setSnackbarMessage("Xóa giảng viên thất bại");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
+      console.log(error);
     }
   };
+  const columns = [
+    { width: 150, label: "STT", dataKey: "index", align: "center" },
+    { width: 300, label: "Mã Giảng Viên", dataKey: "maGV", align: "center" },
+    { width: 400, label: "Tên Giảng Viên", dataKey: "ten", align: "center" },
+    { label: "Tên Khoa", dataKey: "tenKhoa", align: "center" },
+    { width: 150, label: "", dataKey: "actions", align: "center" },
+  ];
+  
+  const VirtuosoTableComponents = {
+    Scroller: React.forwardRef((props, ref) => (
+      <TableContainer component={Paper} {...props} ref={ref} sx={{ height: "calc(100vh - 200px)" }} />
+    )),
+    
+    Table: (props) => (
+      <Table {...props} sx={{ borderCollapse: "separate", tableLayout: "fixed", backgroundColor: "white" }} />
+    ),
+    
+    TableHead: React.forwardRef((props, ref) => <TableHead {...props} ref={ref} />),
+    TableRow: StyledTableRow, // Sử dụng StyledTableRow bạn đã định nghĩa
+    TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
+    TableCell: StyledTableCell, // Sử dụng StyledTableCell bạn đã định nghĩa
+  };
+  
+  const fixedHeaderContent = () => (
+    <StyledTableRow>
+      {columns.map((column) => (
+        <StyledTableCell
+          key={column.dataKey}
+          variant="head"
+          align={column.align}
+          style={{ width: column.width, textAlign: column.align }} // Đảm bảo text ở giữa
+        >
+          {column.label}
+        </StyledTableCell>
+      ))}
+    </StyledTableRow>
+  );
+  
+  const rowContent = (index, row) => (
+    <>
+      <StyledTableCell align="center">{index + 1}</StyledTableCell> {/* STT */}
+      <StyledTableCell align="center">{row.maGiangVien}</StyledTableCell> {/* STT */}
+      <StyledTableCell align="center">{row.ten}</StyledTableCell>
+      <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
+      <StyledTableCell align="center">
+        <Tooltip title="Sửa giảng viên">
+          <IconButton onClick={() => handleOpenEditDialog(row.id)}>
+            <EditIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Xóa giảng viên">
+          <IconButton onClick={() => handleOpenDeleteDialog(row.id)}>
+            <DeleteIcon />
+          </IconButton>
+        </Tooltip>
+      </StyledTableCell>
+    </>
+  );
 
   return (
     <Layout>
@@ -437,8 +498,14 @@ function GiangVienPage()
         </div>
       </div>
       <div style={styles.table}>
-      
-       <TableContainer component={Paper}>
+      <TableVirtuoso
+      style={{ width: "100%", height: "100%" }} // Đảm bảo full height
+      data={filteredData}
+      components={VirtuosoTableComponents}
+      fixedHeaderContent={fixedHeaderContent}
+      itemContent={rowContent}
+    />
+       {/* <TableContainer component={Paper}>
        <Table sx={{ minWidth: 700 }} aria-label="customized table">
          <TableHead sx={{position: 'sticky',top: 0,  zIndex: 1,backgroundColor: "#0071A6",}}>
           <TableRow>
@@ -470,7 +537,11 @@ function GiangVienPage()
               </StyledTableRow>
               
             ))}
-            <Dialog id='suaGiangVien' fullWidth open={openEditDialog} onClose={handleCloseEditDialog}>
+            
+        </TableBody>
+       </Table>
+     </TableContainer> */}
+     <Dialog id='suaGiangVien' fullWidth open={openEditDialog} onClose={handleCloseEditDialog}>
                       <DialogTitle>Sửa thông tin giảng viên:</DialogTitle>
                       <DialogContent >
                         <DialogContentText>
@@ -529,9 +600,6 @@ function GiangVienPage()
                 <Button onClick={handleDeleteGiangVien}>Xóa</Button>
               </DialogActions>
             </Dialog>
-        </TableBody>
-       </Table>
-     </TableContainer>
      <Snackbar 
         open={openSnackbar} 
         autoHideDuration={3000} 
