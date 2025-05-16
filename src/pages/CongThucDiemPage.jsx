@@ -57,7 +57,8 @@ export default function CongThucDiemPage() {
   const ItemForm = BaiKiemTraForm;
   const [maxId, setMaxId] = useState(0);
 
-  const fetchData = useCallback(async () => {
+  // Separate function to fetch LopHocPhan data
+  const fetchLopHocPhanData = useCallback(async () => {
     const dataLopHocPhan = await getAllLopHocPhans();
     // Map lophocphan items to be used in ComboBox
     const mappedComboBoxItems = dataLopHocPhan.map((lophocphan) => ({
@@ -65,6 +66,10 @@ export default function CongThucDiemPage() {
       value: lophocphan.id,
     }));
     setLopHocPhanItems(mappedComboBoxItems);
+  }, []);
+
+  // Function to fetch BaiKiemTra data based on lopHocPhanId
+  const fetchBaiKiemTraData = useCallback(async () => {
     let data = [];
     if (lopHocPhanId === null) {
       data = await getAllBaiKiemTras();
@@ -72,15 +77,21 @@ export default function CongThucDiemPage() {
       data = await getBaiKiemTrasByLopHocPhanId(lopHocPhanId);
     }
     const maxId = data.length > 0 
-    ? Math.max(...data.map(item => item.id))
-    : 0;
+      ? Math.max(...data.map(item => item.id))
+      : 0;
     setData(data);
     setMaxId(maxId);
   }, [lopHocPhanId]);
 
+  // Fetch LopHocPhan data only once when component mounts
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchLopHocPhanData();
+  }, [fetchLopHocPhanData]);
+
+  // Fetch BaiKiemTra data whenever lopHocPhanId changes
+  useEffect(() => {
+    fetchBaiKiemTraData();
+  }, [fetchBaiKiemTraData]);
 
   const handleGoClick = () => {
     setLopHocPhanId(comboBoxLopHocPhanId);
@@ -366,7 +377,7 @@ export default function CongThucDiemPage() {
       description: "Công thức điểm đã được lưu",
       variant: "success",
     })
-    await fetchData();
+    await fetchBaiKiemTraData(); // Use the specific fetch function
   };
   
   const columns = createBaiKiemTraColumns(handleEdit, handleDelete);

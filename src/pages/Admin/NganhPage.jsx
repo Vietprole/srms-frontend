@@ -203,7 +203,7 @@ function TestPage() {
   };
   const handleSubmit = async () => {
     if (tenNganh.trim() === "") {
-      setSnackbarMessage("Tên ngành không được để trống");
+      setSnackbarMessage("Tên ctđt không được để trống");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       setErrorTenNganh(true);
@@ -230,24 +230,24 @@ function TestPage() {
     try {
       const response = await addNganh(nganhData);
       if (response.status === 201) {
-        setSnackbarMessage("Thêm ngành thành công");
+        setSnackbarMessage("Thêm ctđt thành công");
         setSnackbarSeverity("success");
         setOpenSnackbar(true);
         fetchData();
         handleCloseNganhs();
       } else if (response.status === 409) {
-        setSnackbarMessage("Ngành đã tồn tại");
+        setSnackbarMessage("CTĐT đã tồn tại");
         setSnackbarSeverity("error");
         setOpenSnackbar(true);
       } else {
-        setSnackbarMessage("Lỗi: Không thể thêm ngành");
+        setSnackbarMessage("Lỗi: Không thể thêm ctđt");
         setSnackbarSeverity("error");
         setOpenSnackbar(true);
       }
     } catch (error) {
       // Xử lý lỗi khi gọi API
       console.log("error: ", error);
-      setSnackbarMessage("Lỗi: Không thể thêm ngành");
+      setSnackbarMessage("Lỗi: Không thể thêm ctđt");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     }
@@ -291,7 +291,7 @@ function TestPage() {
 
   const handleEditSubmit = async (nganhId) => {
     if (inputRef.current.trim() === "") {
-      setSnackbarMessage("Tên ngành không được để trống");
+      setSnackbarMessage("Tên ctđt không được để trống");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       setErrorTenNganh(true);
@@ -310,24 +310,24 @@ function TestPage() {
     try {
       const response = await updateNganh(nganhId, nganhData);
       if (response.status === 200) {
-        setSnackbarMessage("Sửa tên ngành thành công");
+        setSnackbarMessage("Sửa tên ctđt thành công");
         setSnackbarSeverity("success");
         setOpenSnackbar(true);
         fetchData();
         handleCloseEditNganh();
       } else if (response.status === 404) {
-        setSnackbarMessage("Ngành không tồn tại");
+        setSnackbarMessage("CTĐT không tồn tại");
         setSnackbarSeverity("error");
         setOpenSnackbar(true);
       } else {
-        setSnackbarMessage("Lỗi: Sửa tên ngành không thành công");
+        setSnackbarMessage("Lỗi: Sửa tên ctđt không thành công");
         setSnackbarSeverity("error");
         setOpenSnackbar(true);
       }
     } catch (error) {
       // Xử lý lỗi khi gọi API
       console.log("error: ", error);
-      setSnackbarMessage("Lỗi: Không thể sửa ngành");
+      setSnackbarMessage("Lỗi: Không thể sửa ctđt");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     }
@@ -431,7 +431,7 @@ function TestPage() {
                 variant="contained"
                 onClick={handleAddNganhs}
               >
-                Tạo ngành
+                Tạo ctđt
               </Button>
             )}
             <Dialog
@@ -440,17 +440,17 @@ function TestPage() {
               open={openAddNganh}
               onClose={handleCloseNganhs}
             >
-              <DialogTitle>Tạo ngành mới:</DialogTitle>
+              <DialogTitle>Tạo ctđt mới:</DialogTitle>
               <DialogContent>
                 <DialogContentText>
-                  Thêm ngành mới vào hệ thống
+                  Thêm ctđt mới vào hệ thống
                 </DialogContentText>
                 <TextField
                   autoFocus
                   required
                   id="tenNganh"
                   margin="dense"
-                  label="Tên ngành"
+                  label="Tên ctđt"
                   fullWidth
                   variant="standard"
                   onBlur={(e) => setTenNganh(e.target.value.trim())}
@@ -458,7 +458,7 @@ function TestPage() {
                   onInput={(e) =>
                     setErrorTenNganh(e.target.value.trim() === "")
                   }
-                  helperText="Vui lòng nhập tên ngành"
+                  helperText="Vui lòng nhập tên ctđt"
                   autoComplete="off"
                 />
                 <Autocomplete
@@ -515,8 +515,8 @@ function TestPage() {
               >
                 <TableRow>
                   <StyledTableCell align="center">STT</StyledTableCell>
-                  <StyledTableCell align="center">Mã Ngành</StyledTableCell>
-                  <StyledTableCell align="center">Tên Ngành</StyledTableCell>
+                  <StyledTableCell align="center">Mã CTĐT</StyledTableCell>
+                  <StyledTableCell align="center">Tên CTĐT</StyledTableCell>
                   <StyledTableCell align="center">Tên Khoa</StyledTableCell>
                   <StyledTableCell align="center">
                     Người quản lí
@@ -541,7 +541,7 @@ function TestPage() {
                       {row.tenNguoiQuanLy}
                     </StyledTableCell>
                     <StyledTableCell align="center" width={150}>
-                      <Tooltip title="Sửa ngành">
+                      <Tooltip title="Sửa ctđt">
                         <IconButton onClick={() => handleClickOpenEdit(row.id)}>
                           <EditIcon />
                         </IconButton>
@@ -569,26 +569,26 @@ function TestPage() {
             onClose={handleCloseEditNganh}
             TransitionComponent={Fade}
           >
-            <DialogTitle>Sửa ngành:</DialogTitle>
+            <DialogTitle>Sửa ctđt:</DialogTitle>
             <DialogContent>
-              <DialogContentText>Sửa thông tin ngành</DialogContentText>
-              {/* Mã ngành: Chỉ đọc */}
+              <DialogContentText>Sửa thông tin ctđt</DialogContentText>
+              {/* Mã ctđt: Chỉ đọc */}
               <TextField
                 required
                 margin="dense"
-                label="Mã ngành"
+                label="Mã ctđt"
                 fullWidth
                 variant="standard"
                 InputProps={{ readOnly: true }}
                 focused={false}
                 value={maNganh}
                 autoComplete="off"
-                helperText="Mã ngành không thể thay đổi"
+                helperText="Mã ctđt không thể thay đổi"
               />
               <TextField
                 required
                 margin="dense"
-                label="Tên ngành"
+                label="Tên ctđt"
                 fullWidth
                 variant="standard"
                 defaultValue={tenNganh}
@@ -596,7 +596,7 @@ function TestPage() {
                 onChange={(e) => (inputRef.current = e.target.value)} // Lưu vào ref, không setState
                 onBlur={(e) => setErrorTenNganh(e.target.value.trim() === "")}
                 helperText={
-                  errorTenNganh ? "Tên ngành không được để trống" : ""
+                  errorTenNganh ? "Tên ctđt không được để trống" : ""
                 }
                 autoComplete="off"
               />

@@ -172,12 +172,12 @@ const adminItem = [
         url: "/plo",
       },
       {
-        title: "Quản lý CLO",
-        url: "/chuandaura/quan-ly-clo",
-      },
-      {
         title: "Nối học phần - PLO",
         url: "/maphocphanplo",
+      },
+      {
+        title: "Quản lý CLO",
+        url: "/chuandaura/quan-ly-clo",
       },
       {
         title: "Nối CLO - PLO",
