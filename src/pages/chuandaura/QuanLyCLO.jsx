@@ -193,11 +193,11 @@ export default function QuanLyCLO() {
     <Layout>
       <div className="p-6">
         <div className="flex flex-col gap-2 mb-6">
-          <Label>Chọn lớp học phần:</Label>
+          <Label>Chọn học phần:</Label>
           <ComboBox 
             items={hocPhans} 
             setItemId={setSelectedHocPhanId} 
-            placeholder="Chọn lớp học phần..."
+            placeholder="Chọn học phần..."
           />
         </div>
 

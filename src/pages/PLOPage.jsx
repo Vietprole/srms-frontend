@@ -1,108 +1,107 @@
-import * as React from 'react';
-import { styled } from '@mui/material/styles';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell, { tableCellClasses } from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import TextField from '@mui/material/TextField';
-import SearchIcon from '@mui/icons-material/Search';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import {Tooltip } from '@mui/material';
-import Box from '@mui/material/Box';
-import { useState, useEffect,useRef } from "react";
-import Autocomplete from '@mui/material/Autocomplete';
-import Snackbar from '@mui/material/Snackbar';
-import MuiAlert from '@mui/material/Alert';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import Layout from './Layout';
+import * as React from "react";
+import { styled } from "@mui/material/styles";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell, { tableCellClasses } from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
+import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+import TextField from "@mui/material/TextField";
+import SearchIcon from "@mui/icons-material/Search";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import { Tooltip } from "@mui/material";
+import Box from "@mui/material/Box";
+import { useState, useEffect, useRef } from "react";
+import Autocomplete from "@mui/material/Autocomplete";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import Layout from "./Layout";
 import { getAllNganhs } from "@/api/api-nganh";
 import { TableVirtuoso } from "react-virtuoso";
-import {getAllPLOs,addPLO,updatePLO,getPLOById,deletePLO} from "@/api/api-plo";
+import {
+  getAllPLOs,
+  addPLO,
+  updatePLO,
+  getPLOById,
+  deletePLO,
+} from "@/api/api-plo";
+import { getRole, getNguoiQuanLyCTDTId } from "@/utils/storage";
+import { getNganhsByNguoiQuanLyId } from "@/api/api-nganh";
 
-function PLOPage() 
-{
+function PLOPage() {
   const styles = {
-    main:
-    {
-      width: '100%',
-      height: '91vh',
-      display: 'flex',
-      flexDirection: 'column',
-      overflowY: 'hidden',
+    main: {
+      width: "100%",
+      height: "91vh",
+      display: "flex",
+      flexDirection: "column",
+      overflowY: "hidden",
       padding: "10px",
     },
-    title:
-    {
-      width: '100%',
-      height: '6%',
-      fontSize: '1.2em',
-      fontFamily: 'Roboto',
-      fontWeight: 'bold',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'flex-start',
-      flexDirection: 'row',
+    title: {
+      width: "100%",
+      height: "6%",
+      fontSize: "1.2em",
+      fontFamily: "Roboto",
+      fontWeight: "bold",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "flex-start",
+      flexDirection: "row",
     },
-    btnMore:
-    {
-      display: 'flex',
-      justifyContent: 'flex-end',
-      marginLeft: 'auto',
+    btnMore: {
+      display: "flex",
+      justifyContent: "flex-end",
+      marginLeft: "auto",
     },
-    tbActions:
-    {
-      width: '100%',
-      height: '6%',
-      display: 'flex',
-      justifyContent: 'flex-start',
-      alignItems: 'center',
-      flexDirection: 'row',
+    tbActions: {
+      width: "100%",
+      height: "6%",
+      display: "flex",
+      justifyContent: "flex-start",
+      alignItems: "center",
+      flexDirection: "row",
     },
-    ipSearch:
-    {
-      width: '25%',
-      height: '100%',
-      justifyContent: 'flex-start',
-      borderRadius: '5px',
+    ipSearch: {
+      width: "25%",
+      height: "100%",
+      justifyContent: "flex-start",
+      borderRadius: "5px",
     },
-    btnCreate:
-    {
-      width: '15%',
-      height: '100%',
-      display: 'flex',
-      marginLeft: 'auto',
-      justifyContent: 'center',
-      alignItems: 'center',
-      borderRadius: '5px',
-      color: 'white',
-      cursor: 'pointer',
+    btnCreate: {
+      width: "15%",
+      height: "100%",
+      display: "flex",
+      marginLeft: "auto",
+      justifyContent: "center",
+      alignItems: "center",
+      borderRadius: "5px",
+      color: "white",
+      cursor: "pointer",
     },
-    table:
-    {
-      width: '100%',
-      height: '98%',
-      display: 'flex',
-      flexDirection: 'column',
-      paddingTop: '10px',
-      overflowY: 'auto',
+    table: {
+      width: "100%",
+      height: "98%",
+      display: "flex",
+      flexDirection: "column",
+      paddingTop: "10px",
+      overflowY: "auto",
     },
-    cbKhoa:
-    {
-      width: '22%',
-      height: '80%',
-      marginLeft: '10px',
-      marginBottom: '10px',
+    cbKhoa: {
+      width: "22%",
+      height: "80%",
+      marginLeft: "10px",
+      marginBottom: "10px",
     },
   };
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -123,20 +122,27 @@ function PLOPage()
   const [ploID, setPloID] = useState("");
   const tenPLORef = useRef("");
   const moTaPLORef = useRef("");
+  const role = getRole();
+  const nguoiQuanLyCTDTId = getNguoiQuanLyCTDTId();
 
   const handleOpenEditDialog = async (ploID) => {
     const plo = await getPLOById(ploID);
-    const nganh = await getAllNganhs();
-    setNganhs(nganh);
-  
+    if (role === "NguoiPhuTrachCTĐT" && nguoiQuanLyCTDTId !== 0) {
+      const nganhData = await getNganhsByNguoiQuanLyId(nguoiQuanLyCTDTId);
+      setData(nganhData);
+    } else {
+      const nganhData = await getAllNganhs();
+      setData(nganhData);
+    }
+
     if (plo.status === 200) {
       setTenPLO(plo.data.ten);
       setMoTaPLO(plo.data.moTa);
-  
+
       // Tìm ngành phù hợp trong danh sách
       const matchedNganh = nganh.find((item) => item.ten === plo.data.tenNganh);
       setSelectedNganh(matchedNganh || null);
-  
+
       tenPLORef.current = plo.data.ten;
       moTaPLORef.current = plo.data.moTa;
       setPloID(ploID);
@@ -151,7 +157,6 @@ function PLOPage()
       setOpenSnackbar(true);
     }
   };
-  
 
   const handleCloseDialogEdit = () => {
     setOpenEditDialog(false);
@@ -166,7 +171,7 @@ function PLOPage()
     setNganhs([]);
   };
 
-  const handleOpenAddDialog = async() => {
+  const handleOpenAddDialog = async () => {
     const nganh = await getAllNganhs();
     setNganhs(nganh);
     setOpenAddDialog(true);
@@ -181,12 +186,10 @@ function PLOPage()
     setOpenAddDialog(false);
   };
 
-
   useEffect(() => {
     fetchData();
-  }, []); 
-  
-  
+  }, []);
+
   const fetchData = async () => {
     try {
       const plos = await getAllPLOs();
@@ -200,10 +203,7 @@ function PLOPage()
       setOpenSnackbar(true);
     }
   };
-  
-  
 
-  
   const filterData = (query) => {
     if (!query.trim()) {
       setFilteredData(data); // If search query is empty, show all data
@@ -219,48 +219,44 @@ function PLOPage()
     setOpenSnackbar(false);
   };
 
-  
   const handleSearchChange = (event) => {
     const value = event.target.value;
-    setSearchQuery(value); 
-    filterData(value); 
+    setSearchQuery(value);
+    filterData(value);
   };
 
   const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
       backgroundColor: "#0071A6",
       color: theme.palette.common.white,
-      borderRight: '1px solid #ddd', // Đường phân cách dọc
-
+      borderRight: "1px solid #ddd", // Đường phân cách dọc
     },
     [`&.${tableCellClasses.body}`]: {
       fontSize: 14,
-      padding: '5px 10px', // Thêm padding cho các hàng
-      borderRight: '1px solid #ddd', // Đường phân cách dọc
+      padding: "5px 10px", // Thêm padding cho các hàng
+      borderRight: "1px solid #ddd", // Đường phân cách dọc
     },
   }));
-  
+
   const StyledTableRow = styled(TableRow)(({ theme }) => ({
-    '&:nth-of-type(odd)': {
+    "&:nth-of-type(odd)": {
       backgroundColor: theme.palette.action.hover,
     },
-    '&:hover': {
-    backgroundColor:"#D3F3FF", // Màu nền khi hover
-    cursor: 'pointer', // Tùy chọn: Thêm hiệu ứng con trỏ
-  },
+    "&:hover": {
+      backgroundColor: "#D3F3FF", // Màu nền khi hover
+      cursor: "pointer", // Tùy chọn: Thêm hiệu ứng con trỏ
+    },
   }));
 
   const handleAddSubmit = async () => {
     if (tenPLO.trim() === "") {
-      
       setErrorTenPLO(true);
       setSnackbarMessage("Vui lòng nhập tên PLO");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       return;
     }
-    if(moTaPLO.trim() === "")
-    {
+    if (moTaPLO.trim() === "") {
       setErrorMoTaPLO(true);
       setSnackbarMessage("Vui lòng nhập mô tả cho PLO");
       setSnackbarSeverity("error");
@@ -279,17 +275,14 @@ function PLOPage()
       nganhId: selectedNganh.id,
     };
     try {
-      const rp =await addPLO(ploData);
-      if(rp.status===201)
-      {
+      const rp = await addPLO(ploData);
+      if (rp.status === 201) {
         setSnackbarMessage("Thêm PLO thành công");
         setSnackbarSeverity("success");
         setOpenSnackbar(true);
         handleCloseDialogAdd();
         fetchData();
-      }
-      else
-      {
+      } else {
         setSnackbarMessage("Thêm PLO thất bại");
         setSnackbarSeverity("error");
         setOpenSnackbar(true);
@@ -302,7 +295,7 @@ function PLOPage()
   };
   const handleSubmitEdit = async () => {
     // Kiểm tra giá trị của soTinChiRef.current
-  
+
     if (tenPLORef.current.trim() === "") {
       setErrorTenPLO(true);
       setSnackbarMessage("Vui lòng nhập tên PLO");
@@ -328,9 +321,9 @@ function PLOPage()
     const ploData = {
       ten: tenPLORef.current,
       moTa: moTaPLORef.current,
-      nganhId: selectedNganh.id
+      nganhId: selectedNganh.id,
     };
-  
+
     try {
       const response = await updatePLO(ploID, ploData);
       if (response.status === 200) {
@@ -350,7 +343,6 @@ function PLOPage()
       setOpenSnackbar(true);
     }
   };
-  
 
   const handleOpenDeleteDialog = (idPLO) => {
     setPloID(idPLO);
@@ -362,14 +354,10 @@ function PLOPage()
     setPloID(null);
   };
 
-
-
-
-
   const handleDeleteHocPhan = async () => {
     try {
-      const rp =await deletePLO(ploID);
-      if(rp.status !== 204) {
+      const rp = await deletePLO(ploID);
+      if (rp.status !== 204) {
         throw new Error("Xóa PLO thất bại");
       }
       setSnackbarMessage("Xóa PLO thành công");
@@ -378,13 +366,11 @@ function PLOPage()
       handleCloseDeleteDialog();
       fetchData(); // Refresh data
     } catch (error) {
-
-        setSnackbarMessage("Xóa PLO thất bại");
-        setSnackbarSeverity("error");
-        setOpenSnackbar(true);
-        handleCloseDeleteDialog();
-        console.log(error);
-
+      setSnackbarMessage("Xóa PLO thất bại");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+      handleCloseDeleteDialog();
+      console.log(error);
     }
   };
   const columns = [
@@ -394,25 +380,48 @@ function PLOPage()
     { width: 300, label: "Thuộc ngành", dataKey: "tenKhoa", align: "center" },
     { width: 150, label: "", dataKey: "actions", align: "center" },
   ];
-  
+
   const VirtuosoTableComponents = {
     // eslint-disable-next-line react/display-name
     Scroller: React.forwardRef((props, ref) => (
-      <TableContainer component={Paper} {...props} ref={ref} sx={{ height: "calc(100vh - 200px)", overflowY: "auto" }} />
+      <TableContainer
+        component={Paper}
+        {...props}
+        ref={ref}
+        sx={{ height: "calc(100vh - 200px)", overflowY: "auto" }}
+      />
     )),
     Table: (props) => (
-      <Table {...props} sx={{ borderCollapse: "separate", tableLayout: "fixed", backgroundColor: "white" }} />
+      <Table
+        {...props}
+        sx={{
+          borderCollapse: "separate",
+          tableLayout: "fixed",
+          backgroundColor: "white",
+        }}
+      />
     ),
     // eslint-disable-next-line react/display-name
     TableHead: React.forwardRef((props, ref) => (
-      <TableHead {...props} ref={ref} sx={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#0071A6" }} />
+      <TableHead
+        {...props}
+        ref={ref}
+        sx={{
+          position: "sticky",
+          top: 0,
+          zIndex: 1,
+          backgroundColor: "#0071A6",
+        }}
+      />
     )),
     TableRow: StyledTableRow,
     // eslint-disable-next-line react/display-name
-    TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
+    TableBody: React.forwardRef((props, ref) => (
+      <TableBody {...props} ref={ref} />
+    )),
     TableCell: StyledTableCell,
   };
-  
+
   function fixedHeaderContent() {
     return (
       <StyledTableRow>
@@ -429,7 +438,7 @@ function PLOPage()
       </StyledTableRow>
     );
   }
-  
+
   function rowContent(index, row) {
     return (
       <>
@@ -439,16 +448,12 @@ function PLOPage()
         <StyledTableCell align="center">{row.tenNganh}</StyledTableCell>
         <StyledTableCell align="center" width={150}>
           <Tooltip title="Sửa thông tin PLO">
-          <IconButton
-                      onClick={() => handleOpenEditDialog(row.id)}
-                    >
+            <IconButton onClick={() => handleOpenEditDialog(row.id)}>
               <EditIcon />
             </IconButton>
           </Tooltip>
           <Tooltip title="Xóa PLO">
-              <IconButton
-                  onClick={() => handleOpenDeleteDialog(row.id)}
-              >
+            <IconButton onClick={() => handleOpenDeleteDialog(row.id)}>
               <DeleteIcon />
             </IconButton>
           </Tooltip>
@@ -456,216 +461,249 @@ function PLOPage()
       </>
     );
   }
-  
-  
 
   return (
     <Layout>
       <div style={styles.main}>
-      <div style={styles.title}>
-        <span>Danh sách PLO</span>
-        <div style={styles.btnMore}>
-          <IconButton aria-label="more actions"><MoreVertIcon/></IconButton>
+        <div style={styles.title}>
+          <span>Danh sách PLO</span>
+          <div style={styles.btnMore}>
+            <IconButton aria-label="more actions">
+              <MoreVertIcon />
+            </IconButton>
+          </div>
         </div>
-      </div>
-      <div style={styles.tbActions}>
-        <div style={styles.ipSearch}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              border: "2px solid #ccc", // Viền ngoài
-              borderRadius: "20px", // Bo tròn góc
-              padding: "4px 8px", // Khoảng cách nội dung
-              width: "100%", // Chiều rộng toàn khung tìm kiếm
-              maxWidth: "100%", // Đảm bảo full width
-              "&:focus-within": {
-                border: "2px solid #337AB7", // Đổi màu viền khi focus
-              },
-              height: "100%",
-            }}
-          >
-            <TextField
-              fullWidth
-              fontSize="10px"
-              placeholder="Tìm kiếm theo tên PLO..."
-              variant="standard"
-              autoComplete='off'
-              InputProps={{
-                disableUnderline: true,
-                startAdornment: (
-                  <React.Fragment>
-                    <IconButton aria-label="more actions">
-                      <SearchIcon sx={{ color: "#888" }} />
-                    </IconButton>
-                  </React.Fragment>
-                ),
+        <div style={styles.tbActions}>
+          <div style={styles.ipSearch}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                border: "2px solid #ccc", // Viền ngoài
+                borderRadius: "20px", // Bo tròn góc
+                padding: "4px 8px", // Khoảng cách nội dung
+                width: "100%", // Chiều rộng toàn khung tìm kiếm
+                maxWidth: "100%", // Đảm bảo full width
+                "&:focus-within": {
+                  border: "2px solid #337AB7", // Đổi màu viền khi focus
+                },
+                height: "100%",
               }}
-              value={searchQuery} // Liên kết giá trị tìm kiếm với state
-              onChange={handleSearchChange} // Gọi hàm xử lý khi thay đổi
-            />
-          </Box>
-        </div>
-        <div style={styles.btnCreate}>
-          <Button sx={{width:"100%"}} variant="contained" onClick={()=>{handleOpenAddDialog()}} >Tạo PLO</Button>
-          <Dialog id='themPLO' fullWidth open={openAddDialog} onClose={handleCloseDialogAdd}>
-                      <DialogTitle>Tạo PLO mới:</DialogTitle>
-                      <DialogContent >  
-                        <DialogContentText>
-                          Thêm PLO mới vào hệ thống
-                        </DialogContentText>
-                        <TextField
-                          autoFocus
-                          required
-                          id='tenPLO'
-                          margin="dense"
-                          label="Tên PLO"
-                          fullWidth
-                          variant="standard"
-                          onBlur={(e) => setTenPLO(e.target.value.trim())}
-                          error={errorTenPLO}
-                          onInput={(e) => setErrorTenPLO(e.target.value.trim() === "")}
-                          helperText="Vui lòng nhập tên PLO"
-                          autoComplete='off'
-                        />
-                        <TextField
-                          autoFocus
-                          required
-                          id='moTaPLO'
-                          margin="dense"
-                          label="Mô tả PLO"
-                          fullWidth
-                          variant="standard"
-                          onBlur={(e) => setMoTaPLO(e.target.value.trim())}
-                          error={errorMoTaPLO}
-                          onInput={(e) => setErrorMoTaPLO(e.target.value.trim() === "")}
-                          helperText="Vui lòng nhập mô tả PLO"
-                          autoComplete='off'/>
-                          <Autocomplete
-                            options={nganhs}
-                            getOptionLabel={(option) => option.ten || ''}
-                            noOptionsText="Không tìm thấy ngành"
-                            required
-                            id="disable-clearable"
-                            disableClearable
-                            onChange={(event, newValue) => setSelectedNganh(newValue)} // Cập nhật state khi chọn nganh
-                            renderInput={(params) => (
-                              <TextField {...params} label="Chọn ngành" variant="standard" />
-                            )}
-                            renderOption={(props, option) => (
-                              <li {...props} key={option.id}>{option.ten}</li>
-                            )}
-                          />
-                      </DialogContent>
-                      <DialogActions>
-                        <Button onClick={handleCloseDialogAdd}>Hủy</Button>
-                        <Button
-                          onClick={()=>{handleAddSubmit()}}
-                        >
-                          Lưu
-                        </Button>
-                      </DialogActions>
-                    </Dialog>
-        </div>
-      </div>
-      <div style={styles.table}>
-     <TableVirtuoso
-      data={filteredData}
-      components={VirtuosoTableComponents}
-      fixedHeaderContent={fixedHeaderContent}
-      itemContent={rowContent}
-    />
-     <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
-              <DialogTitle>Xóa Học Phần</DialogTitle>
+            >
+              <TextField
+                fullWidth
+                fontSize="10px"
+                placeholder="Tìm kiếm theo tên PLO..."
+                variant="standard"
+                autoComplete="off"
+                InputProps={{
+                  disableUnderline: true,
+                  startAdornment: (
+                    <React.Fragment>
+                      <IconButton aria-label="more actions">
+                        <SearchIcon sx={{ color: "#888" }} />
+                      </IconButton>
+                    </React.Fragment>
+                  ),
+                }}
+                value={searchQuery} // Liên kết giá trị tìm kiếm với state
+                onChange={handleSearchChange} // Gọi hàm xử lý khi thay đổi
+              />
+            </Box>
+          </div>
+          <div style={styles.btnCreate}>
+            <Button
+              sx={{ width: "100%" }}
+              variant="contained"
+              onClick={() => {
+                handleOpenAddDialog();
+              }}
+            >
+              Tạo PLO
+            </Button>
+            <Dialog
+              id="themPLO"
+              fullWidth
+              open={openAddDialog}
+              onClose={handleCloseDialogAdd}
+            >
+              <DialogTitle>Tạo PLO mới:</DialogTitle>
               <DialogContent>
-                <DialogContentText>
-                  Bạn có chắc chắn muốn xóa PLO này không?
-                </DialogContentText>
+                <DialogContentText>Thêm PLO mới vào hệ thống</DialogContentText>
+                <TextField
+                  autoFocus
+                  required
+                  id="tenPLO"
+                  margin="dense"
+                  label="Tên PLO"
+                  fullWidth
+                  variant="standard"
+                  onBlur={(e) => setTenPLO(e.target.value.trim())}
+                  error={errorTenPLO}
+                  onInput={(e) => setErrorTenPLO(e.target.value.trim() === "")}
+                  helperText="Vui lòng nhập tên PLO"
+                  autoComplete="off"
+                />
+                <TextField
+                  autoFocus
+                  required
+                  id="moTaPLO"
+                  margin="dense"
+                  label="Mô tả PLO"
+                  fullWidth
+                  variant="standard"
+                  onBlur={(e) => setMoTaPLO(e.target.value.trim())}
+                  error={errorMoTaPLO}
+                  onInput={(e) => setErrorMoTaPLO(e.target.value.trim() === "")}
+                  helperText="Vui lòng nhập mô tả PLO"
+                  autoComplete="off"
+                />
+                <Autocomplete
+                  options={nganhs}
+                  getOptionLabel={(option) => option.ten || ""}
+                  noOptionsText="Không tìm thấy ngành"
+                  required
+                  id="disable-clearable"
+                  disableClearable
+                  onChange={(event, newValue) => setSelectedNganh(newValue)} // Cập nhật state khi chọn nganh
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Chọn ngành"
+                      variant="standard"
+                    />
+                  )}
+                  renderOption={(props, option) => (
+                    <li {...props} key={option.id}>
+                      {option.ten}
+                    </li>
+                  )}
+                />
               </DialogContent>
               <DialogActions>
-                <Button onClick={handleCloseDeleteDialog}>Hủy</Button>
-                <Button onClick={handleDeleteHocPhan} color="error">
-                  Xóa
+                <Button onClick={handleCloseDialogAdd}>Hủy</Button>
+                <Button
+                  onClick={() => {
+                    handleAddSubmit();
+                  }}
+                >
+                  Lưu
                 </Button>
               </DialogActions>
             </Dialog>
-     <Dialog id='suaPLO' fullWidth open={openEditDialog} onClose={handleCloseDialogEdit}>
-                      <DialogTitle>Sửa thông tin PLO:</DialogTitle>
-                      <DialogContent>
-                        <DialogContentText>
-                          Sửa thông tin PLO
-                        </DialogContentText>
-                        <TextField
-                          autoFocus
-                          required
-                          id='suatenPLO'
-                          margin="dense"
-                          label="Tên PLO"
-                          fullWidth
-                          variant="standard"
-                          defaultValue={tenPLO}
-                          onChange={(e) => {
-                            tenPLORef.current = e.target.value;
-                            setErrorTenPLO(e.target.value.trim() === "");
-                          }}
-                          error={errorTenPLO}
-                          helperText={errorTenPLO ? "Vui lòng nhập tên PLO" : ""}
-                          autoComplete='off'
-                        />
-                        <TextField
-                          autoFocus
-                          required
-                          id="suaMoTaPLO"
-                          margin="dense"
-                          label="Mô tả cho PLO"
-                          variant="standard"
-                          fullWidth
-                          defaultValue={moTaPLO}
-                          onChange={(e) => {
-                            moTaPLORef.current = e.target.value;
-                            setErrorMoTaPLO(e.target.value.trim() === "");
-                          }}
-                          error={errorMoTaPLO}
-                          helperText={errorMoTaPLO ? "Vui lòng nhập mô tả cho PLO" : ""}
-                          autoComplete='off'
-                        />
-                         <Autocomplete
-                            options={nganhs}
-                            getOptionLabel={(option) => option.ten || ''}
-                            noOptionsText="Không tìm thấy ngành"
-                            required
-                            id="disable-clearable"
-                            disableClearable
-                            value={selectedNganh}
-                            onChange={(event, newValue) => setSelectedNganh(newValue)} // Cập nhật state khi chọn nganh
-                            renderInput={(params) => (
-                              <TextField {...params} label="Chọn ngành" variant="standard" />
-                            )}
-                            renderOption={(props, option) => (
-                              <li {...props} key={option.id}>{option.ten}</li>
-                            )}
-                          />
-                      </DialogContent>
-                      <DialogActions>
-                        <Button onClick={handleCloseDialogEdit}>HỦY</Button>
-                        <Button onClick={handleSubmitEdit}>LƯU</Button>
-                      </DialogActions>
-                    </Dialog>
-     <Snackbar 
-        open={openSnackbar} 
-        autoHideDuration={3000} 
-        onClose={handleSnackbarClose} 
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} 
-      >
-        <MuiAlert variant='filled' onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
-          {snackbarMessage}
-        </MuiAlert>
-      </Snackbar>
-      
+          </div>
+        </div>
+        <div style={styles.table}>
+          <TableVirtuoso
+            data={filteredData}
+            components={VirtuosoTableComponents}
+            fixedHeaderContent={fixedHeaderContent}
+            itemContent={rowContent}
+          />
+          <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
+            <DialogTitle>Xóa Học Phần</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                Bạn có chắc chắn muốn xóa PLO này không?
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseDeleteDialog}>Hủy</Button>
+              <Button onClick={handleDeleteHocPhan} color="error">
+                Xóa
+              </Button>
+            </DialogActions>
+          </Dialog>
+          <Dialog
+            id="suaPLO"
+            fullWidth
+            open={openEditDialog}
+            onClose={handleCloseDialogEdit}
+          >
+            <DialogTitle>Sửa thông tin PLO:</DialogTitle>
+            <DialogContent>
+              <DialogContentText>Sửa thông tin PLO</DialogContentText>
+              <TextField
+                autoFocus
+                required
+                id="suatenPLO"
+                margin="dense"
+                label="Tên PLO"
+                fullWidth
+                variant="standard"
+                defaultValue={tenPLO}
+                onChange={(e) => {
+                  tenPLORef.current = e.target.value;
+                  setErrorTenPLO(e.target.value.trim() === "");
+                }}
+                error={errorTenPLO}
+                helperText={errorTenPLO ? "Vui lòng nhập tên PLO" : ""}
+                autoComplete="off"
+              />
+              <TextField
+                autoFocus
+                required
+                id="suaMoTaPLO"
+                margin="dense"
+                label="Mô tả cho PLO"
+                variant="standard"
+                fullWidth
+                defaultValue={moTaPLO}
+                onChange={(e) => {
+                  moTaPLORef.current = e.target.value;
+                  setErrorMoTaPLO(e.target.value.trim() === "");
+                }}
+                error={errorMoTaPLO}
+                helperText={errorMoTaPLO ? "Vui lòng nhập mô tả cho PLO" : ""}
+                autoComplete="off"
+              />
+              <Autocomplete
+                options={nganhs}
+                getOptionLabel={(option) => option.ten || ""}
+                noOptionsText="Không tìm thấy ngành"
+                required
+                id="disable-clearable"
+                disableClearable
+                value={selectedNganh}
+                onChange={(event, newValue) => setSelectedNganh(newValue)} // Cập nhật state khi chọn nganh
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Chọn ngành"
+                    variant="standard"
+                  />
+                )}
+                renderOption={(props, option) => (
+                  <li {...props} key={option.id}>
+                    {option.ten}
+                  </li>
+                )}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseDialogEdit}>HỦY</Button>
+              <Button onClick={handleSubmitEdit}>LƯU</Button>
+            </DialogActions>
+          </Dialog>
+          <Snackbar
+            open={openSnackbar}
+            autoHideDuration={3000}
+            onClose={handleSnackbarClose}
+            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          >
+            <MuiAlert
+              variant="filled"
+              onClose={handleSnackbarClose}
+              severity={snackbarSeverity}
+              sx={{ width: "100%" }}
+            >
+              {snackbarMessage}
+            </MuiAlert>
+          </Snackbar>
+        </div>
       </div>
-    </div>
     </Layout>
   );
-};
+}
 
 export default PLOPage;

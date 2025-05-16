@@ -63,7 +63,7 @@ export default function NhapDiemPage() {
   return (
 <Layout>
   <div className="flex space-x-4 items-end">
-    <div className="w-[30%] h-[80%] ml-[10px] mb-[10px]">
+    <div className="w-[40%] h-[80%] ml-[10px] mb-[10px]">
       <Typography variant="h6" sx={{ mb: "5px" }}>
         Chọn lớp học phần:
       </Typography>
