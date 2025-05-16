@@ -133,7 +133,7 @@ const routes = [
     element: <CaiDatPage />,
   },
   {
-    path: "/mapclopo",
+    path: "/mapcloplo",
     element: <MapPLOCLO />,
   },
   {
