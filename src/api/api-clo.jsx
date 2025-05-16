@@ -4,9 +4,9 @@ import { getAccessToken } from "../utils/storage";
 
 const API_CLO = `${API_BASE_URL}/api/clo`;
 
-export const getCLOsByLopHocPhanId = async (lopHocPhanId) => {
+export const getCLOsByHocPhanId = async (hocPhanId) => {
   try {
-    const response = await axios.get(`${API_CLO}?lopHocPhanId=${lopHocPhanId}`, {
+    const response = await axios.get(`${API_CLO}?hocPhanId=${hocPhanId}`, {
       headers: { Authorization: getAccessToken() }
     });
     return response.data;
@@ -45,7 +45,7 @@ export const addCLO = async (newData) => {
     const response = await axios.post(API_CLO, newData, {
       headers: { Authorization: getAccessToken() }
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.log("error message: ", error.message);
     throw new Error(error.response?.data || "Lỗi bất định");

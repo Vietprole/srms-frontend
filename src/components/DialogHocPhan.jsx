@@ -30,6 +30,11 @@ import MuiAlert from '@mui/material/Alert';
 import { removeHocPhanFromNganh } from "@/api/api-nganh";
 import SaveIcon from '@mui/icons-material/Save';
 import { getHocPhansByNganhId,updateHocPhanCotLois } from "@/api/api-nganh";
+import { getRole } from "@/utils/storage";
+import { TableVirtuoso } from "react-virtuoso";
+import { useRef } from "react";
+import { useCallback } from "react";
+import React from "react";
 function DialogHocPhan({ nganhId, open, onClose }) {
   const styles = {
     main: {
@@ -76,6 +81,8 @@ function DialogHocPhan({ nganhId, open, onClose }) {
       
     },
   };
+  const virtuosoRef = useRef(null);
+  const [scrollIndex, setScrollIndex] = useState(0);
 
   const [nganh, setNganh] = useState(null);
   const [hocPhanDaChon, setHocPhanDaChon] = useState([]);
@@ -91,10 +98,13 @@ function DialogHocPhan({ nganhId, open, onClose }) {
   const [searchQuery, setSearchQuery] = useState(""); // Lưu giá trị tìm kiếm
   const [filteredData, setFilteredData] = useState(hocPhanDaChon); // Lưu dữ liệu đã lọc
   const [originalData, setOriginalData] = useState([]);
+  const [userRole, setUserRole] = useState('');
   useEffect(() => {
     if (open && nganhId) {
       fetchData();
     }
+    const role = getRole();
+    setUserRole(role);
   }, [nganhId, open]);
 
   const fetchData = async () => {
@@ -195,6 +205,12 @@ function DialogHocPhan({ nganhId, open, onClose }) {
   };
   
   const handleSubmitAddHocPhan = async () => {
+    if (!hasPermission()) {
+      setSnackbarSeverity("error");
+      setSnackbarMessage("Bạn không có quyền thực hiện thao tác này!");
+      setOpenSnackbar(true);
+      return;
+    }
     try {
       const response = await addHocPhansToNganh(nganhId, selectedHocPhans);
       if (response.status === 200) {
@@ -226,6 +242,12 @@ function DialogHocPhan({ nganhId, open, onClose }) {
   };
 
   const handleDeleteHocPhan = async () => {
+    if (!hasPermission()) {
+      setSnackbarSeverity("error");
+      setSnackbarMessage("Bạn không có quyền thực hiện thao tác này!");
+      setOpenSnackbar(true);
+      return;
+    }
     let successCount = 0;
     let failureCount = 0;
   
@@ -277,6 +299,12 @@ function DialogHocPhan({ nganhId, open, onClose }) {
   };
   
   const handleSaveCotLoi = async () => {
+    if (!hasPermission()) {
+      setSnackbarSeverity("error");
+      setSnackbarMessage("Bạn không có quyền thực hiện thao tác này!");
+      setOpenSnackbar(true);
+      return;
+    }
     const updatedHocPhans = filteredData.map((hp) => ({
       HocPhanId: hp.id,
       LaCotLoi: hp.laCotLoi
@@ -308,6 +336,91 @@ function DialogHocPhan({ nganhId, open, onClose }) {
     return JSON.stringify(originalData) !== JSON.stringify(filteredData);
   };
   
+  const hasPermission = () => {
+    return userRole === 'Admin' || userRole === 'NguoiPhuTrachCTĐT';
+  };
+  
+  const handleUnauthorizedAction = () => {
+    setSnackbarSeverity("error");
+    setSnackbarMessage("Bạn không có quyền thực hiện thao tác này!");
+    setOpenSnackbar(true);
+  };
+
+  const columns = [
+  { width: 60, label: "", dataKey: "select", align: "center" },
+  { width: 50, label: "STT", dataKey: "index", align: "center" },
+  { width: 150, label: "Mã học phần", dataKey: "maHocPhan", align: "center" },
+  { width: 250, label: "Tên học phần", dataKey: "ten", align: "left" },
+  { width: 100, label: "Số tín chỉ", dataKey: "soTinChi", align: "center" },
+];
+function fixedHeaderContent() {
+  return (
+    <StyledTableRow>
+      {columns.map((column) => (
+        <StyledTableCell
+          key={column.dataKey}
+          align={column.align}
+          style={{ width: column.width, padding: "6px 8px", backgroundColor: "#0071A6", color: "white" }}
+        >
+          {column.dataKey === "select" ? (
+            <Checkbox
+              sx={{ color: "#fff", padding: "5px" }}
+              indeterminate={
+                selectedHocPhans.length > 0 &&
+                selectedHocPhans.length < hocPhanChuaChon.length
+              }
+              checked={
+                hocPhanChuaChon.length > 0 &&
+                selectedHocPhans.length === hocPhanChuaChon.length
+              }
+              onChange={(e) => {
+                if (e.target.checked) {
+                  setSelectedHocPhans(hocPhanChuaChon.map((row) => row.id));
+                } else {
+                  setSelectedHocPhans([]);
+                }
+              }}
+            />
+          ) : (
+            column.label
+          )}
+        </StyledTableCell>
+      ))}
+    </StyledTableRow>
+  );
+}
+function rowContent(index, row) {
+  return (
+    <>
+      <StyledTableCell align="center">
+        <Checkbox
+          checked={selectedHocPhans.includes(row.id)}
+          onChange={() => handleSelectHocPhan(row.id)}
+        />
+      </StyledTableCell>
+      <StyledTableCell align="center">{index + 1}</StyledTableCell>
+      <StyledTableCell align="center">{row.maHocPhan}</StyledTableCell>
+      <StyledTableCell align="left">{row.ten}</StyledTableCell>
+      <StyledTableCell align="center">{row.soTinChi}</StyledTableCell>
+    </>
+  );
+}
+const VirtuosoTableComponents = {
+  // eslint-disable-next-line react/display-name
+  Scroller: React.forwardRef((props, ref) => (
+    <TableContainer component={Paper} {...props} ref={ref} sx={{ height: "calc(100vh - 200px)" }} />
+  )),
+  Table: (props) => (
+    <Table {...props} sx={{ borderCollapse: "separate", tableLayout: "fixed", backgroundColor: "white" }} />
+  ),
+  // eslint-disable-next-line react/display-name
+  TableHead: React.forwardRef((props, ref) => <TableHead {...props} ref={ref} />),
+  TableRow: StyledTableRow,
+  // eslint-disable-next-line react/display-name
+  TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
+  TableCell: StyledTableCell,
+};
+
   return (
     <Dialog
       maxWidth="lg"
@@ -380,7 +493,16 @@ function DialogHocPhan({ nganhId, open, onClose }) {
               </Box>
               </div>
               <div style={styles.btnDelete}>
-                  <Button sx={{width:"100%"}} variant="outlined" color="error" startIcon={<DeleteIcon/>} onClick={()=>{handleOpenAlertDialog()}} disabled={selectedDeleteHocPhan.length===0}>Xóa học phần</Button>
+                  <Button 
+                    sx={{width:"100%"}} 
+                    variant="outlined" 
+                    color="error" 
+                    startIcon={<DeleteIcon/>} 
+                    onClick={handleOpenAlertDialog} 
+                    disabled={!hasPermission() || selectedDeleteHocPhan.length === 0}
+                  >
+                    Xóa học phần
+                  </Button>
                   <Dialog 
                     open={openAlertDialog} 
                     onClose={handleCloseAlertDialog} 
@@ -401,73 +523,33 @@ function DialogHocPhan({ nganhId, open, onClose }) {
                   </Dialog>
               </div>
               <div style={styles.btnAdd}>
-                <Button sx={{width:"100%"}} variant="contained" endIcon={<AddIcon/>} onClick={openDialogAdd}>Thêm học phần</Button>
+                <Button 
+                  sx={{width:"100%"}} 
+                  variant="contained" 
+                  endIcon={<AddIcon/>} 
+                  onClick={openDialogAdd}
+                  disabled={!hasPermission()}
+                >
+                  Thêm học phần
+                </Button>
                 <Dialog fullWidth maxWidth={"md"} open={openAddDialog} onClose={handleCloseDialogAdd} 
                 
                 >
                   <DialogTitle>Thêm học phần vào ngành</DialogTitle>
-                  <DialogContent>
-                    <TableContainer component={Paper} sx={{ maxHeight: "350px", overflowY: "auto" }}>
-                      <Table sx={{ minWidth: 700 }} aria-label="customized table">
-                        <TableHead sx={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#0071A6" }}>
-                          <TableRow>
-                            <StyledTableCell align="center" width={"60pxpx"}> {/* Giảm padding ở đây */}
-                            <Checkbox
-                              sx={{ color: "#fff", padding: "5px" }} // Reduced padding of checkbox
-                              indeterminate={selectedHocPhans.length > 0 && selectedHocPhans.length < hocPhanChuaChon.length}
-                              checked={selectedHocPhans.length === hocPhanChuaChon.length}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setSelectedHocPhans(hocPhanChuaChon.map((row) => row.id)); // Select all
-                                } else {
-                                  setSelectedHocPhans([]); // Deselect all
-                                }
-                              }}
-                            />
+                  <DialogContent style={{ height: "400px", padding: 10 }}>
+                  <TableVirtuoso
+  // ref={virtuosoRef}
+  data={hocPhanChuaChon}
+  components={VirtuosoTableComponents}
+  fixedHeaderContent={fixedHeaderContent}
+  itemContent={rowContent}
+  // firstItemIndex={0}
+  // initialTopMostItemIndex={scrollIndex}
+  // rangeChanged={(range) => setScrollIndex(range.startIndex)}
+/>
 
-                            </StyledTableCell>
-                            <StyledTableCell align="center" sx={{ padding: "6px 8px" }}width={"50px"}>STT</StyledTableCell>
-                            <StyledTableCell align="center" sx={{ padding: "6px 8px" }}>Mã học phần</StyledTableCell>
-                            <StyledTableCell align="center" sx={{ padding: "6px 8px" }}>Tên học phần</StyledTableCell>
-                            <StyledTableCell align="center" sx={{ padding: "6px 8px" }}>Số tín chỉ</StyledTableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {(hocPhanChuaChon && Array.isArray(hocPhanChuaChon) && hocPhanChuaChon.length > 0) ? (
-                            hocPhanChuaChon.map((row, index) => (
-                              <StyledTableRow key={row.id} sx={{ height: "30px" }}>
-                                <StyledTableCell align="center" sx={{ padding: "4px 8px" }}>
-                                  <Checkbox
-                                    checked={selectedHocPhans.includes(row.id)}  // Using row.id here
-                                    onChange={() => handleSelectHocPhan(row.id)} // Pass row.id to handle selection
-                                  />
-                                </StyledTableCell>
-                                <StyledTableCell align="center" width={50} sx={{ padding: "4px 8px" }}>
-                                  {index + 1}
-                                </StyledTableCell>
-                                <StyledTableCell align="center" width={150} sx={{ padding: "4px 8px" }}>
-                                  {row.maHocPhan}  {/* If you want to keep showing 'maHocPhan', leave it as is */}
-                                </StyledTableCell>
-                                <StyledTableCell align="left" sx={{ padding: "4px 8px" }}>
-                                  {row.ten}
-                                </StyledTableCell>
-                                <StyledTableCell align="center" sx={{ padding: "4px 8px" }}>
-                                  {row.soTinChi}
-                                </StyledTableCell>
-                              </StyledTableRow>
-                            ))
-                          ) : (
-                            <TableRow>
-                              <TableCell colSpan={5} align="center">
-                                Không có học phần nào để hiển thị
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
+  </DialogContent>
 
-                    </DialogContent>
                     <DialogActions>
                       <Button onClick={() => setOpenAddDialog(false)}>Hủy</Button>
                       <Button variant="contained" color="primary" onClick={()=>{handleSubmitAddHocPhan()}} disabled={hocPhanChuaChon.length === 0}>Thêm</Button>
@@ -475,7 +557,15 @@ function DialogHocPhan({ nganhId, open, onClose }) {
                 </Dialog>
               </div>
               <div style={styles.btnSave}>
-                <Button sx={{width:"100%"}} variant="contained" startIcon={<SaveIcon/>}  disabled={!hasChanges()} onClick={handleSaveCotLoi}>Lưu</Button>
+                <Button 
+                  sx={{width:"100%"}} 
+                  variant="contained" 
+                  startIcon={<SaveIcon/>}  
+                  disabled={!hasPermission() || !hasChanges()} 
+                  onClick={handleSaveCotLoi}
+                >
+                  Lưu
+                </Button>
               </div>
               
             </div>

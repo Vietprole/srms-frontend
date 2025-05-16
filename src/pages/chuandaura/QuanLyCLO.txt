@@ -32,10 +32,10 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogActions from "@mui/material/DialogActions";
 import {getAllHocKys} from "@/api/api-hocky";
-import { getLopHocPhanById } from "../../api/api-lophocphan";
+import { getHocPhanById } from "../../api/api-hocphan";
 
 export default function CLOPage() {
-  const { lopHocPhanId } = useParams();
+  const { hocPhanId } = useParams();
   const [data, setData] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -48,7 +48,7 @@ export default function CLOPage() {
   const [errorTenCLO, setErrorTenCLO] = useState(false);
   const [errorMoTa, setErrorMoTa] = useState(false);
   const [hocKy, setHocKy] = useState([]);
-  const [lopHocPhanData, setLopHocPhanData] = useState(null);
+  const [hocPhanData, setHocPhanData] = useState(null);
   const handleOpenAddDialog = async() => {
     const hocKyData = await getAllHocKys();
     setHocKy(hocKyData);
@@ -200,7 +200,7 @@ export default function CLOPage() {
     const CLOData = {
       ten: tenCLO,
       moTa: moTa,
-      hocPhanId: lopHocPhanData.hocPhanId,
+      hocPhanId: hocPhanData.hocPhanId,
       hocKyId: selectedHocKi.id,
     };
     console.log("CLOData: ", CLOData);
@@ -265,14 +265,14 @@ export default function CLOPage() {
 
   useEffect(() => {
     fetchData();
-  }, [lopHocPhanId]);
+  }, [hocPhanId]);
 
 
   const fetchData = async () => {
    
-    const lopHocPhanData = await getLopHocPhanById(lopHocPhanId);
-    const clos = await getCLOsByHocPhanId(lopHocPhanData.hocPhanId);
-    setLopHocPhanData(lopHocPhanData);
+    const hocPhanData = await getHocPhanById(hocPhanId);
+    const clos = await getCLOsByHocPhanId(hocPhanData.hocPhanId);
+    setHocPhanData(hocPhanData);
     setData(clos);
   };
   const VirtuosoTableComponents = {

@@ -33,6 +33,7 @@ import {
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import EditIcon from '@mui/icons-material/Edit';
+
 function KhoaPage() 
 {
   const [khoaEditId, setKhoaEditId] = useState(""); // Lưu giá trị ID khoa cần sửa
@@ -347,6 +348,19 @@ function KhoaPage()
     setAnchorEl(null);
   };
 
+  // Thêm state để lưu thông tin user
+  const [userRole, setUserRole] = useState('');
+
+  // Thêm useEffect để lấy thông tin user từ localStorage khi component mount
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    setUserRole(user?.role || '');
+  }, []);
+  
+  // Sửa lại phần kiểm tra role
+  const isAdmin = userRole === 'Admin';
+  const canManageKhoa = isAdmin;
+
   return (
     <Layout>
       <div style={styles.main}>
@@ -393,60 +407,17 @@ function KhoaPage()
             />
           </Box>
         </div>
-        <div style={styles.btnCreate}>
-          <Button sx={{width:"100%"}} variant="contained" onClick={handleClickOpen}>Tạo khoa</Button>
-          <Dialog id='addKhoa' open={open} onClose={handleClose} fullWidth>
-                      <DialogTitle>Tạo khoa mới:</DialogTitle>
-                      <DialogContent>
-                        <DialogContentText>
-                          Thêm khoa mới vào hệ thống
-                        </DialogContentText>
-                        <TextField
-                          autoFocus
-                          required
-                          id='tenKhoa'
-                          margin="dense"
-                          label="Tên khoa"
-                          fullWidth
-                          variant="standard"
-                          onInput={(e) => handleInputChange("tenKhoa", e.target.value)} // Sử dụng onInput để kiểm tra tính hợp lệ ngay khi nhập liệu
-                          onBlur={(e) => handleBlur("tenKhoa", e.target.value)} // Sử dụng onBlur để kiểm tra tính hợp lệ
-                          helperText="Tên khoa không được để trống và không được chứa các kí tự đặc biệt"
-                          error={errorTenKhoa}
-                          autoComplete='off'
-                        />
-                        <TextField
-                          autoFocus
-                          id='maKhoa'
-                          required
-                          margin="dense"
-                  
-                          label="Mã khoa"
-                          fullWidth
-                          variant="standard"
-                          onInput={(e) => handleInputChange("maKhoa", e.target.value)} // Sử dụng onInput để kiểm tra tính hợp lệ ngay khi nhập liệu
-                          onBlur={(e) => handleBlur("maKhoa", e.target.value)} // Sử dụng onBlur để kiểm tra tính hợp lệ
-                          helperText="Mã khoa chỉ gồm 3 kí tự số và không được chứa các kí tự chữ và các kí tự đặc biệt"
-                          error={errorMaKhoa}
-                          inputProps={{ maxLength: 3 }}
-                          autoComplete='off'
-                        />
-
-                      </DialogContent>
-                      <DialogActions>
-                        <Button onClick={handleClose}>Hủy</Button>
-                        <Button
-                          disabled={disabled}
-                          onClick={(event) => {
-                            event.preventDefault();
-                            handleSubmit();
-                          }}
-                        >
-                          Lưu
-                        </Button>
-                      </DialogActions>
-                    </Dialog>
-        </div>
+        {canManageKhoa && (
+          <div style={styles.btnCreate}>
+            <Button 
+              sx={{width:"100%"}} 
+              variant="contained" 
+              onClick={handleClickOpen}
+            >
+              Tạo khoa
+            </Button>
+          </div>
+        )}
       </div>
       <div style={styles.table}>
       
@@ -457,7 +428,9 @@ function KhoaPage()
             <StyledTableCell align="center" >STT</StyledTableCell>
              <StyledTableCell align="center" >Tên Khoa</StyledTableCell>
              <StyledTableCell align="center" >Mã Khoa</StyledTableCell>
-             <StyledTableCell align="center"></StyledTableCell>
+             {canManageKhoa && (
+               <StyledTableCell align="center"></StyledTableCell>
+             )}
 
            </TableRow>
          </TableHead>
@@ -471,25 +444,15 @@ function KhoaPage()
                 {row.ten}
               </StyledTableCell>
               <StyledTableCell align="center">{row.maKhoa}</StyledTableCell>
-              <StyledTableCell align="center" width={150}>
-                <Tooltip title="Sửa khoa">
-                <IconButton onClick={() => handleClickOpenEdit(row.id)}>
-                  <EditIcon />
-                </IconButton>
-              </Tooltip>
-
-                <IconButton
-                
-                id="demo-positioned-button"
-                aria-controls={menuopen ? 'demo-positioned-menu' : undefined}
-                aria-haspopup="true"
-                aria-expanded={menuopen ? 'true' : undefined}
-                onClick={handleClick}
-                >
-                  <MoreHorizIcon />
-                </IconButton>       
-                     
-              </StyledTableCell>
+              {canManageKhoa && (
+                <StyledTableCell align="center" width={150}>
+                  <Tooltip title="Sửa khoa">
+                    <IconButton onClick={() => handleClickOpenEdit(row.id)}>
+                      <EditIcon />
+                    </IconButton>
+                  </Tooltip>
+                </StyledTableCell>
+              )}
             </StyledTableRow>
             
           ))}
@@ -559,8 +522,6 @@ function KhoaPage()
                           variant="standard"
                           helperText="Mã khoa chỉ gồm 3 kí tự số và không được chứa các kí tự chữ và các kí tự đặc biệt"
                           value={maKhoaEdit} // k thể sửa mã khoa
-                          // onInput={(e) => handleInputChangeEdit("maKhoa", e.target.value)} // Sử dụng onInput để kiểm tra tính hợp lệ ngay khi nhập liệu
-                          // onBlur={(e) => handleBlurEdit("maKhoa", e.target.value)} // Sử dụng onBlur để kiểm tra tính hợp lệ
                           inputProps={{ maxLength: 3 }}
                           autoComplete='off'
                           error={errorMaKhoaEdit}

@@ -7,6 +7,7 @@ import GiangVienPage from "@/pages/Admin/GiangVienPage";
 import HocPhanPage from "@/pages/Admin/HocPhanPage";
 import PLOPage from "@/pages/PLOPage";
 import MapHocPhanPLOPage from "@/pages/MapHocPhanPLOPage";
+import NoiCLOPLO from "@/pages/chuandaura/MapPLOCLO";
 import LopHocPhanPage from "@/pages/LopHocPhanPage";
 import CongThucDiemPage from "@/pages/CongThucDiemPage";
 import NhapDiemPage from "@/pages/NhapDiemPage";
@@ -17,7 +18,7 @@ import CaiDatPage from "@/pages/CaiDatPage";
 import QuanLyCauHoi from "@/pages/nhapdiem/QuanLyCauHoi";
 import BangDiem from "@/pages/nhapdiem/BangDiem";
 import TaoCLO from "@/pages/nhapdiem/TaoCLO";
-import NoiCLOPLO from "@/pages/nhapdiem/NoiCLOPLO";
+// import NoiCLOPLO from "@/pages/nhapdiem/NoiCLOPLO";
 import NoiCauHoiCLO from "@/pages/nhapdiem/NoiCauHoiCLO";
 import DiemCLO from "@/pages/nhapdiem/DiemCLO";
 import DiemPk from "@/pages/nhapdiem/DiemPk";
@@ -30,12 +31,14 @@ import DiemDinhChinhPage from "@/pages/DiemDinhChinhPage";
 import QuanLyTaiKhoanPage from "@/pages/QuanLyTaiKhoanPage";
 import TestPage from "@/pages/TestPage";
 import HocKiPage from "@/pages/Admin/HocKyPage";
+import QuanLyCLO from "@/pages/chuandaura/QuanLyCLO";
+import MapPLOCLO from "@/pages/chuandaura/MapPLOCLO";
+import StudentInCoursePage from "../pages/StudentInCoursePage";
 const role = getRole();
 const RoleBasedRoute = ({ giangVienElement, defaultElement }) => {
   return role === "GiangVien" ? giangVienElement : defaultElement;
 };
 
-const lophocphans = []
 const routes = [
   {
     path: "/",
@@ -74,6 +77,10 @@ const routes = [
     element: <MapHocPhanPLOPage />,
   },
   {
+    path: "/mapcloplo",
+    element: <NoiCLOPLO />,
+  },
+  {
     path: "/lophocphan",
     element: <LopHocPhanPage />,
   },
@@ -94,6 +101,12 @@ const routes = [
       { path: ":lopHocPhanId/diem-pk", element: <DiemPk /> },
       { path: ":lopHocPhanId/tong-ket-clo", element: <TongKetCLO /> },
       { path: ":lopHocPhanId/bao-cao-clo", element: <BaoCaoCLO /> },
+    ],
+  },
+  {
+    path: "/chuandaura",
+    children: [
+      { path: "quan-ly-clo", element: <QuanLyCLO /> },
     ],
   },
   {
@@ -125,9 +138,17 @@ const routes = [
     element: <CaiDatPage />,
   },
   {
+    path: "/mapcloplo",
+    element: <MapPLOCLO />,
+  },
+  {
     path: "/test",
     element: <TestPage />,
-  }
+  },  
+  {
+    path: "/lophocphan/:courseId/sinhvien",
+    element: <StudentInCoursePage />,
+  },
 ]
 const router = createBrowserRouter(routes, {
   future: {

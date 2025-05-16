@@ -1,128 +1,108 @@
 import { useEffect, useState } from "react";
-import { useOutlet, useNavigate } from "react-router-dom";
+import { useOutlet, useNavigate, useParams, useLocation } from "react-router-dom";
 import Layout from "./Layout";
 import { getAllLopHocPhans, getLopHocPhans } from "../api/api-lophocphan";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
-// import DefaultComponent from "./nhapdiem/DefaultComponent";
 import { getRole, getGiangVienId } from "@/utils/storage";
-import { useParams } from "react-router-dom";
-import {ComboBox} from "@/components/ComboBox";
-import { useLocation } from "react-router-dom";
+import Typography from "@mui/material/Typography";
+import VirtualizedAutocomplete from "../components/VirtualizedAutocomplete";
+import TextField from "@mui/material/TextField";
 
 const routes = [
-  {
-    value: "quan-ly-cau-hoi",
-    label: "Quản lý Câu hỏi",
-  },
-  {
-    label: "Bảng Điểm",
-    value: "bang-diem",
-  },
-  {
-    label: "Tạo CLO",
-    value: "tao-clo",
-  },
-  {
-    label: "Nối PLO - CLO",
-    value: "noi-plo-clo",
-  },
-  {
-    label: "Nối Câu Hỏi - CLO",
-    value: "noi-cau-hoi-clo",
-  },
-  {
-    label: "Điểm CLO",
-    value: "diem-clo",
-  },
-  {
-    label: "Điểm Pk",
-    value: "diem-pk",
-  },
-  // {
-  //   label: "Tổng Kết CLO",
-  //   value: "tong-ket-clo",
-  // },
-  // {
-  //   label: "Báo Cáo CLO",
-  //   value: "bao-cao-clo",
-  // },
+  { value: "quan-ly-cau-hoi", label: "Quản lý Câu hỏi" },
+  { label: "Bảng Điểm", value: "bang-diem" },
+  { label: "Tạo CLO", value: "tao-clo" },
+  { label: "Nối PLO - CLO", value: "noi-plo-clo" },
+  { label: "Nối Câu Hỏi - CLO", value: "noi-cau-hoi-clo" },
+  { label: "Điểm CLO", value: "diem-clo" },
+  { label: "Điểm Pk", value: "diem-pk" },
 ];
 
 export default function NhapDiemPage() {
   const { lopHocPhanId: lopHocPhanIdParam } = useParams();
   const location = useLocation();
   const currentPath = location.pathname;
+
   const [lopHocPhans, setLopHocPhans] = useState([]);
-  const [itemId, setItemId] = useState(currentPath !== "/nhapdiem" ? currentPath.split("/")[3] : null);
-  console.log("currentPath", currentPath.split("/")[3], currentPath !== "/nhapdiem" ? currentPath : null)
   const [lopHocPhanId, setLopHocPhanId] = useState(lopHocPhanIdParam || null);
-  const [comboBoxLopHocPhanId, setComboBoxLopHocPhanId] = useState(lopHocPhanIdParam);
-  const [comboBoxItemId, setComboBoxItemId] = useState(null);
-  const [items, setItems] = useState(routes);
+  const [selectedLopHocPhan, setSelectedLopHocPhan] = useState(null);
+
+  const [itemId, setItemId] = useState(currentPath !== "/nhapdiem" ? currentPath.split("/")[3] : null);
+  const [selectedAction, setSelectedAction] = useState(null);
+
   const navigate = useNavigate();
   const outlet = useOutlet();
+
   const role = getRole();
   const giangVienId = getGiangVienId();
-  console.log("itemId", itemId);
 
   useEffect(() => {
     const fetchLopHocPhans = async () => {
-      if (role === "GiangVien" && giangVienId != 0) {
-        const data = await getLopHocPhans(null, null, giangVienId, null);
-        const mappedComboBoxItems = data.map(lopHocPhan => ({ label: lopHocPhan.ten, value: lopHocPhan.id }));
-        setLopHocPhans(mappedComboBoxItems);
-        return;
+      let data = [];
+      if (role === "GiangVien" && giangVienId !== 0) {
+        data = await getLopHocPhans(null, null, giangVienId, null);
+      } else {
+        data = await getAllLopHocPhans();
       }
-      const data = await getAllLopHocPhans();
-      const mappedComboBoxItems = data.map(lopHocPhan => ({ label: lopHocPhan.ten, value: lopHocPhan.id }));
-      setLopHocPhans(mappedComboBoxItems);
+
+      const mapped = data.map(lhp => ({ label: `${lhp.maLopHocPhan} - ${lhp.ten}`, value: lhp.id }));
+      setLopHocPhans(mapped);
+      const existing = mapped.find(item => item.value === Number(lopHocPhanIdParam));
+      if (existing) setSelectedLopHocPhan(existing);
     };
 
     fetchLopHocPhans();
-  }, [giangVienId, role]);
+  }, [giangVienId, role, lopHocPhanIdParam]);
 
   const handleRoute = () => {
-    // setLopHocPhanId(comboBoxLopHocPhanId);
-    // console.log("comboBoxLopHocPhanId", comboBoxLopHocPhanId);
-    console.log(`/nhapdiem/${lopHocPhanId}/${itemId}`)
     if (lopHocPhanId && itemId) {
       navigate(`/nhapdiem/${lopHocPhanId}/${itemId}`);
     }
   };
 
-  console.log("lopHocPhan", lopHocPhans);
-
   return (
-    <Layout>
-      <div className="flex space-x-4">
-        <div>
-          <h2>Chọn lớp học phần: </h2>
-          <ComboBox 
-            items={lopHocPhans} 
-            setItemId={setLopHocPhanId} 
-            initialItemId={lopHocPhanId} 
-            placeholder="Tên lớp học phần"
-          />
-        </div>
-        <div>
-          <h2>Chọn hành động: </h2>
-          <ComboBox 
-            items={items} 
-            setItemId={setItemId} 
-            initialItemId={itemId} 
-            placeholder="Tên hành động"
-          />
-        </div>
+<Layout>
+  <div className="flex space-x-4 items-end">
+    <div className="w-[40%] h-[80%] ml-[10px] mb-[10px]">
+      <Typography variant="h6" sx={{ mb: "5px" }}>
+        Chọn lớp học phần:
+      </Typography>
+      <VirtualizedAutocomplete
+        options={lopHocPhans}
+        value={selectedLopHocPhan}
+        onChange={(event, newValue) => {
+          setSelectedLopHocPhan(newValue);
+          setLopHocPhanId(newValue?.value || null);
+        }}
+        getOptionLabel={(option) => option.label || ""}
+        label="Tên lớp học phần"
+        variant="outlined"
+      />
+    </div>
 
-        <div className="flex items-end">
-          <Button onClick={handleRoute} disabled={!itemId}>
-            Go
-          </Button>
-        </div>
-      </div>
-      {outlet}
-    </Layout>
+    <div>
+      <Typography variant="h6" sx={{ mb: "5px" }}>
+        Chọn hành động:
+      </Typography>
+      <VirtualizedAutocomplete
+        options={routes}
+        value={routes.find(item => item.value === itemId) || null}
+        onChange={(event, newValue) => {
+          setItemId(newValue?.value || null);
+          setSelectedAction(newValue);
+        }}
+        getOptionLabel={(option) => option.label || ""}
+        label="Tên hành động"
+        variant="outlined"
+        size="small"
+      />
+    </div>
+
+    <Button onClick={handleRoute} disabled={!itemId || !lopHocPhanId}>
+      Go
+    </Button>
+  </div>
+  {outlet}
+</Layout>
   );
 }

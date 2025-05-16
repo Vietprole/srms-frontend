@@ -98,7 +98,7 @@ export const addSinhViensToLopHocPhan = async (lopHocPhanId, sinhVienIdsList) =>
     const response = await axios.post(`${API_LOPHOCPHAN}/${lopHocPhanId}/sinhvien`, sinhVienIdsList, {
       headers: { Authorization: getAccessToken() }
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.log("error message: ", error.message);
     throw new Error(error.response?.data || "Lỗi bất định");
@@ -110,7 +110,7 @@ export const removeSinhVienFromLopHocPhan = async (lopHocPhanId, sinhVienId) => 
     const response = await axios.delete(`${API_LOPHOCPHAN}/${lopHocPhanId}/sinhvien/${sinhVienId}`, {
       headers: { Authorization: getAccessToken() }
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.log("error message: ", error.message);
     throw new Error(error.response?.data || "Lỗi bất định");

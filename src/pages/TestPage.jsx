@@ -1,3 +1,5 @@
+/* eslint-disable react/display-name */
+import * as React from 'react';
 import { styled } from '@mui/material/styles';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -6,34 +8,25 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
+import SearchIcon from '@mui/icons-material/Search';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
+import {Tooltip } from '@mui/material';
+import Box from '@mui/material/Box';
 import { useState, useEffect } from "react";
 import Autocomplete from '@mui/material/Autocomplete';
-import { getAllHocPhans,getHocPhanById } from '@/api/api-hocphan';
-import { getAllKhoas } from '@/api/api-khoa';
-import Snackbar from '@mui/material/Snackbar';
-import MuiAlert from '@mui/material/Alert';
+import DatasetLinkedIcon from '@mui/icons-material/DatasetLinked';
+import {
+  getAllKhoas
+} from "@/api/api-khoa";
+import {
+  getNganhs,
+} from "@/api/api-nganh";
 import Layout from './Layout';
-import { getAllLopHocPhans } from '@/api/api-lophocphan';
-import { getAllHocKys } from '@/api/api-hocky';
-import SearchIcon from '@mui/icons-material/Search';
-import Box from '@mui/material/Box';
-import * as React from 'react';
-import EditIcon from '@mui/icons-material/Edit';
-import Tooltip from '@mui/material/Tooltip';
-import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import AttachmentIcon from '@mui/icons-material/Attachment';
-function TestPage() 
+import { TableVirtuoso } from "react-virtuoso";
+import DialogPLOHocPhan from '../components/DialogMappingPLO_Cource';
+function NganhPage() 
 {
   const styles = {
     main:
@@ -81,7 +74,7 @@ function TestPage()
     },
     btnCreate:
     {
-      width: '15%',
+      width: '10%',
       height: '100%',
       display: 'flex',
       marginLeft: 'auto',
@@ -94,7 +87,7 @@ function TestPage()
     table:
     {
       width: '100%',
-      height: '98%',
+      height: '100vb',
       display: 'flex',
       flexDirection: 'column',
       paddingTop: '10px',
@@ -104,97 +97,70 @@ function TestPage()
     {
       width: '22%',
       height: '80%',
+      marginLeft: '10px',
       marginBottom: '10px',
-    }
-  }
-  const [openAddDialog, setOpenAddDialog] = useState(false);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-  const [data, setData] = useState([]);
-  const [filteredData, setFilteredData] = useState(data); // Lưu dữ liệu đã lọc
-  const [tenLopHocPhan, setTenLopHocPhan] = useState("");
-  const [errorTenLopHocPhan, setErrorTenLopHocPhan] = useState(false);
-  const [selectedHocPhan, setSelectedHocPhan] = useState(null);
-  const [selectedHocKy, setSelectedHocKy] = useState(null);
-  const [selectedGiangVien, setSelectedGiangVien] = useState(null);
-  const [khoa, setKhoa] = useState("");
-  const [nhom, setNhom] = useState("");
-  const [allHocPhans, setAllHocPhans] = useState([]);
-  const [hocPhanFilter, setHocPhanFilter] = useState([]);
-  const [openDialogHocPhan, setOpenDialogHocPhan] = useState(false);
-  const [openDialogGiangVien, setOpenDialogGiangVien] = useState(false);
-  const [khoas, setKhoas] = useState([]);
-  const [selectedKhoa, setSelectedKhoa] = useState(null);
-  const [selectedKhoaFilter, setSelectedKhoaFilter] = useState(null);
-  const [allHocKy, setAllHocKy] = useState([]);
-
-  const handleSelectGiangVien = (event) => {
-    setSelectedGiangVien(event.target.value);
-  }
-
-  const handleSelectHocPhan = (event) => {
-    setSelectedHocPhan(event.target.value); 
+    },
   };
-
+  const [khoas, setKhoas] = useState([]);
+  const [data, setData] = useState([]);
+  const [searchQuery, setSearchQuery] = useState(""); // Lưu giá trị tìm kiếm
+  const [filteredData, setFilteredData] = useState(data); // Lưu dữ liệu đã lọc
+  const [selectedKhoaFilter, setSelectedKhoaFilter] = useState(null);
+  const [nganhId, setNganhId] = useState("");
+  const [openDialog, setOpenDialog] = React.useState(false);
   const handleKhoaChange = (event, newValue) => {
     setSelectedKhoaFilter(newValue);
     if (!newValue) {
-      setHocPhanFilter(allHocPhans); 
+      setFilteredData(data); // Nếu không chọn khoa nào, hiển thị toàn bộ dữ liệu
     } else {
-      const filtered = allHocPhans.filter((row) => row.tenKhoa === newValue.ten);
-      setHocPhanFilter(filtered);
+      const filtered = data.filter((row) => row.tenKhoa === newValue.ten);
+      setFilteredData(filtered);
     }
   };
-
-  const handleOpenAddDialog = async () => { 
-    const allHocKy = await getAllHocKys();
-    setAllHocKy(allHocKy);
-    setOpenAddDialog(true);
-  }
   
+  const handleOpenDialog = (id) => {
+    setNganhId(id);
+    setOpenDialog(true);
+  };
   const handleCloseDialog = () => {
-    setOpenAddDialog(false);
-    // setAllHocKy(null);
+    setOpenDialog(false);
   }
 
-  const handleOpenDialogHocPhan =async () => { // mở dialog chọn học phần
-    const hocphans = await getAllHocPhans();
-    setAllHocPhans(hocphans);
-    setHocPhanFilter(hocphans);
-    setOpenDialogHocPhan(true);
-  };
 
-  const handleCloseDialogHocPhan = () => { // đóng dialog chọn học phần
-    setOpenDialogHocPhan(false);
-    setSelectedKhoa(null);
-    setSelectedHocPhan(null);
-  }
-  const handleOpenDialogGiangVien =async () => { // mở dialog chọn giang vien
 
-    setOpenDialogGiangVien(true);
-  };
 
-  const handleCloseDialogGiangVien = () => { // đóng dialog chọn giang vien
-    setOpenDialogGiangVien(false);
-
-  }
+  
 
   useEffect(() => {
     fetchData();
-    
-  }, []); 
+  }, []);
   
   const fetchData = async () => {
-    const lophocphans = await getAllLopHocPhans();
-    const allKhoa= await getAllKhoas();
-    setKhoas(allKhoa);
-    setData(lophocphans);
-    setFilteredData(lophocphans);
+    const nganhs = await getNganhs();
+    setData(nganhs);
+    const khoa = await getAllKhoas();
+    setKhoas(khoa);
   };
-
-  const handleSnackbarClose = () => {
-    setOpenSnackbar(false);
+  
+  useEffect(() => {
+    // Only set filteredData once data has been loaded
+    setFilteredData(data);
+  }, [data]);
+  
+  const filterData = (query) => {
+    if (!query.trim()) {
+      setFilteredData(data); // If search query is empty, show all data
+    } else {
+      const filtered = data.filter((row) =>
+        row.ten.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredData(filtered);
+    }
+  };
+  const handleSearchChange = (event) => {
+    const value = event.target.value;
+    setSearchQuery(value); 
+    filterData(value); 
   };
 
   const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -217,38 +183,85 @@ function TestPage()
     },
     '&:hover': {
     backgroundColor:"#D3F3FF", // Màu nền khi hover
-    cursor: 'pointer',
+    cursor: 'pointer', // Tùy chọn: Thêm hiệu ứng con trỏ
   },
   }));
 
-  const submicSelectedHocPhan = async () => { // đã xong
-    if(selectedHocPhan ===null)
-    {
-      setSnackbarMessage("Bạn chưa chọn học phần!");
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
-      return;
-    }
-    else
-    {
-      setOpenDialogHocPhan(false);
-      const hocPhan = await getHocPhanById(selectedHocPhan);
-      setSelectedHocPhan(hocPhan.data);
-    }
-  };
+  const columns = [
+    { width: 50, label: "STT", dataKey: "index", align: "center" },
+    { width: 150, label: "Mã Ngành", dataKey: "maNganh", align: "center" },
+    {  label: "Tên Ngành", dataKey: "ten", align: "center" },
+    { width: 300, label: "Tên Khoa", dataKey: "tenKhoa", align: "center" },
+    { width: 150, label: "", dataKey: "actions", align: "center" },
+  ];
 
+  const VirtuosoTableComponents = {
+    Scroller: React.forwardRef((props, ref) => (
+      <TableContainer component={Paper} {...props} ref={ref} sx={{ height: "calc(100vh - 200px)" }} />
+    )),
+    
+    Table: (props) => (
+      <Table {...props} sx={{ borderCollapse: "separate", tableLayout: "fixed", backgroundColor: "white" }} />
+    ),
+    TableHead: React.forwardRef((props, ref) => <TableHead {...props} ref={ref} />),
+    TableRow: StyledTableRow, // Sử dụng StyledTableRow bạn đã định nghĩa
+    TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
+    TableCell: StyledTableCell, // Sử dụng StyledTableCell bạn đã định nghĩa
+  };
+  
+  
+  
+  function fixedHeaderContent() {
+    return (
+      <StyledTableRow>
+        {columns.map((column) => (
+          <StyledTableCell
+            key={column.dataKey}
+            variant="head"
+            align="center" // Cố định căn giữa
+            style={{ width: column.width, textAlign: "center" }} // Đảm bảo text ở giữa
+          >
+            {column.label}
+          </StyledTableCell>
+        ))}
+      </StyledTableRow>
+    );
+  }
+  
+  
+  
+  
+  function rowContent(index, row) {
+    return (
+      <>
+        <StyledTableCell align="center">{index + 1}</StyledTableCell> {/* STT */}
+        <StyledTableCell align="center">{row.maNganh}</StyledTableCell>
+        <StyledTableCell align="left">{row.ten}</StyledTableCell>
+        <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
+        <StyledTableCell align="center" width={150}>
+          <Tooltip title="Nối PLO-Học phần">
+            <IconButton onClick={() => handleOpenDialog(row.id)} >
+              <DatasetLinkedIcon />
+            </IconButton>
+          </Tooltip>
+        </StyledTableCell>
+      </>
+    );
+  }
+  
+  
 
   return (
     <Layout>
       <div style={styles.main}>
       <div style={styles.title}>
-        <span>Danh sách lớp học phần</span>
+        <span>Danh sách ngành học</span>
         <div style={styles.btnMore}>
           <IconButton aria-label="more actions"><MoreVertIcon/></IconButton>
         </div>
       </div>
       <div style={styles.tbActions}>
-      <div style={styles.ipSearch}>
+        <div style={styles.ipSearch}>
           <Box
             sx={{
               display: "flex",
@@ -267,7 +280,7 @@ function TestPage()
             <TextField
               fullWidth
               fontSize="10px"
-              placeholder="Tìm kiếm theo tên lớp học phần..."
+              placeholder="Tìm kiếm theo tên ngành..."
               variant="standard"
               autoComplete='off'
               InputProps={{
@@ -280,318 +293,48 @@ function TestPage()
                   </React.Fragment>
                 ),
               }}
-              // value={searchQuery} // Liên kết giá trị tìm kiếm với state
-              // onChange={handleSearchChange} // Gọi hàm xử lý khi thay đổi
+              value={searchQuery} // Liên kết giá trị tìm kiếm với state
+              onChange={handleSearchChange} // Gọi hàm xử lý khi thay đổi
             />
           </Box>
         </div>
         <div style={styles.cbKhoa}>
+          <Autocomplete
+            sx={{ width: "100%" }}
+            options={khoas}
+            getOptionLabel={(option) => option.ten || ""}
+            required
+            value={selectedKhoaFilter}
+            onChange={handleKhoaChange}
+            renderInput={(params) => (
+              <TextField {...params} label="Chọn khoa" size="small" />
+            )}
+          />
+
+
         </div>
         <div style={styles.btnCreate}>
-          <Button sx={{width:"100%"}} variant="contained" onClick={handleOpenAddDialog}>Tạo lớp học phần</Button>
-
-              <Dialog id='taoLopHocPhan' fullWidth open={openAddDialog} onClose={handleCloseDialog} maxWidth={"md"} >
-              <DialogTitle>Tạo lớp học phần mới:</DialogTitle>
-                      <DialogContent >
-                        <DialogContentText>
-                          Thêm lớp học phần mới vào hệ thống
-                        </DialogContentText>
-                        <Autocomplete
-                            options={allHocKy}
-                            getOptionLabel={(option) => option.tenHienThi || ''}
-                            noOptionsText="Không tìm thấy khoa"
-                            required
-                            id="disable-clearable"
-                            disableClearable
-                            onChange={(event, newValue) => setSelectedHocKy(newValue)}
-                            renderInput={(params) => (
-                              <TextField {...params} label="Thuộc học kỳ" variant="standard" />
-                            )}
-                          />
-                        <TextField
-                          autoFocus
-                          required
-                          id='tenLopHocPhan'
-                          margin="dense"
-                          label="Tên lớp học phần"
-                          fullWidth
-                          variant="standard"
-                          
-                          helperText="Vui lòng nhập tên lớp học phần"
-                          autoComplete='off'
-                        />
-                        <Box display="flex" alignItems="center" sx={{paddingBottom:"5px"}}>
-                          <DialogContentText>Chọn học phần:</DialogContentText>
-                          <Button variant="contained" sx={{marginLeft:"auto"}} onClick={handleOpenDialogHocPhan}><AttachmentIcon></AttachmentIcon> </Button>
-                        </Box>
-                        
-                        <TableContainer component={Paper} sx={{ maxHeight: "400px", overflowY: "auto", border: "1px solid #ddd" }}>
-                          <Table stickyHeader sx={{ minWidth: 700 }}>
-                            <TableHead sx={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#0071A6", height: "40px" }}>
-                              <TableRow sx={{ height: "40px" }}>
-                                <StyledTableCell align="center" sx={{ width: 150, padding: "4px 8px" }}>Mã học phần</StyledTableCell>
-                                <StyledTableCell align="center" sx={{ width: 250, padding: "4px 8px" }}>Tên học phần</StyledTableCell>
-                                <StyledTableCell align="center" sx={{ width: 100, padding: "4px 8px" }}>Số tín chỉ</StyledTableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                            {selectedHocPhan ? (
-                              <TableRow>
-                                <StyledTableCell align="center">{selectedHocPhan?.maHocPhan || "N/A"}</StyledTableCell>
-                                <StyledTableCell align="center">{selectedHocPhan?.ten || "N/A"}</StyledTableCell>
-                                <StyledTableCell align="center">{selectedHocPhan?.soTinChi ?? 0}</StyledTableCell>
-                              </TableRow>
-                            ) : (
-                              <TableRow>
-                                <StyledTableCell align="center" colSpan={3}>Chưa có học phần nào được chọn</StyledTableCell>
-                              </TableRow>
-                            )}
-                            </TableBody>
-                              </Table>
-                          </TableContainer>
-                          <Box display="flex" alignItems="center" sx={{paddingBottom:"5px", paddingTop:"5px"}}>
-                            <DialogContentText>Chọn giảng viên dạy:</DialogContentText>
-                            <Button variant="contained" sx={{marginLeft:"auto"}}><AttachmentIcon></AttachmentIcon> </Button>
-                          </Box>
-                          <TableContainer component={Paper} sx={{ maxHeight: "400px", overflowY: "auto", border: "1px solid #ddd" }}>
-                          <Table stickyHeader sx={{ minWidth: 700 }}>
-                            <TableHead sx={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#0071A6", height: "40px" }}>
-                              <TableRow sx={{ height: "40px" }}>
-                                <StyledTableCell align="center" sx={{ padding: "4px 8px" }}>Tên giảng viên</StyledTableCell>
-                                <StyledTableCell align="center" sx={{ padding: "4px 8px" }}>Thuộc khoa</StyledTableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                            {selectedGiangVien ? (
-                              <TableRow>
-                                <StyledTableCell align="center">{selectedHocPhan?.ten || "N/A"}</StyledTableCell>
-                                <StyledTableCell align="center">{selectedHocPhan?.soTinChi ?? 0}</StyledTableCell>
-                              </TableRow>
-                            ) : (
-                              <TableRow>
-                                <StyledTableCell align="center" colSpan={2}>Chưa có giảng viên nào được chọn</StyledTableCell>
-                              </TableRow>
-                            )}
-                            </TableBody>
-                              </Table>
-                          </TableContainer>
-                          
-                      </DialogContent>
-                      <DialogActions>
-                        <Button>Hủy</Button>
-                        <Button
-
-                        >
-                          Lưu
-                        </Button>
-                      </DialogActions>
-              </Dialog>
-          <Dialog id='chonHocPhan' fullWidth open={openDialogHocPhan} onClose={handleCloseDialogHocPhan} maxWidth={"md"}>
-            <DialogTitle>Chọn học phần:</DialogTitle>
-            <DialogContent>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  width: "40%",
-                  paddingBottom: "10px",
-                }}
-              >
-                <Autocomplete
-                  sx={{ flexGrow: 1, width: "100%" ,marginTop: "10px"}}
-                  options={khoas}
-                  getOptionLabel={(option) => option.ten || ""}
-                  value={selectedKhoaFilter}
-                  onChange={handleKhoaChange}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Chọn khoa" size="small" />
-                  )}
-                />
-              </Box>
-              <TableContainer component={Paper} sx={{ maxHeight: "400px", overflowY: "auto", border: "1px solid #ddd" }}>
-                <Table stickyHeader sx={{ minWidth: 700 }}>
-                      <TableHead sx={{ position: "sticky", top: 0, zIndex: 2, backgroundColor: "#0071A6" }}>
-                        <TableRow>
-                          <StyledTableCell align="center" sx={{ width: 40 }}></StyledTableCell>
-                          <StyledTableCell align="center" sx={{ width: 150 }}>Mã học phần</StyledTableCell>
-                          <StyledTableCell align="center" sx={{ width: 250 }}>Tên học phần</StyledTableCell>
-                          <StyledTableCell align="center" sx={{ width: 100 }}>Số tín chỉ</StyledTableCell>
-                          <StyledTableCell align="center" sx={{ width: 200 }}>Tên Khoa</StyledTableCell>
-                        </TableRow>
-                      </TableHead>
-
-                      <TableBody>
-                        {hocPhanFilter.length > 0 ? (
-                          hocPhanFilter.map((row, index) => (
-                            <StyledTableRow key={row.maHocPhan || index}>
-                              <StyledTableCell align="center">
-                                <RadioGroup value={selectedHocPhan} onChange={handleSelectHocPhan}>
-                                  <Radio value={row.id} />
-                                </RadioGroup>
-                              </StyledTableCell>
-                              <StyledTableCell align="center">{row.maHocPhan}</StyledTableCell>
-                              <StyledTableCell align="left">{row.ten}</StyledTableCell>
-                              <StyledTableCell align="center">{row.soTinChi}</StyledTableCell>
-                              <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
-                            </StyledTableRow>
-                          ))
-                        ) : (
-                          <StyledTableRow>
-                            <StyledTableCell align="center" colSpan={5}>
-                              Không tìm thấy học phần nào
-                            </StyledTableCell>
-                          </StyledTableRow>
-                        )}
-                      </TableBody>
-
-                    </Table>
-                </TableContainer>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                onClick={submicSelectedHocPhan}
-                color="primary"
-              >
-              Chọn học phần này
-              </Button>
-            </DialogActions>
-          </Dialog>
-
-          <Dialog id='chonGiangVien' fullWidth maxWidth={"md"} open={openDialogGiangVien} >
-            <DialogTitle>Chọn giảng viên:</DialogTitle>
-            <DialogContent>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  width: "40%",
-                  paddingBottom: "10px",
-                }}
-              >
-                <Autocomplete
-                  sx={{ flexGrow: 1, width: "100%" ,marginTop: "10px"}}
-                  options={khoas}
-                  getOptionLabel={(option) => option.ten || ""}
-                  value={selectedKhoaFilter}
-                  onChange={handleKhoaChange}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Chọn khoa" size="small" />
-                  )}
-                />
-              </Box>
-              <TableContainer component={Paper} sx={{ maxHeight: "400px", overflowY: "auto", border: "1px solid #ddd" }}>
-                <Table stickyHeader sx={{ minWidth: 700 }}>
-                      <TableHead sx={{ position: "sticky", top: 0, zIndex: 2, backgroundColor: "#0071A6" }}>
-                        <TableRow>
-                          <StyledTableCell align="center" sx={{ width: 50 }}></StyledTableCell>
-                          <StyledTableCell align="center" sx={{ width: 250 }}>Tên giảng viên</StyledTableCell>
-                          <StyledTableCell align="center" sx={{ width: 200 }}>Thuộc Khoa</StyledTableCell>
-                        </TableRow>
-                      </TableHead>
-
-                      <TableBody>
-                        {hocPhanFilter.length > 0 ? (
-                          hocPhanFilter.map((row, index) => (
-                            <StyledTableRow key={row.ten || index}>
-                              <StyledTableCell align="center">
-                                <RadioGroup value={selectedGiangVien} onChange={handleSelectGiangVien}>
-                                  <Radio value={row.id} />
-                                </RadioGroup>
-                              </StyledTableCell>
-                              <StyledTableCell align="left">{row.ten}</StyledTableCell>
-                              <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
-                            </StyledTableRow>
-                          ))
-                        ) : (
-                          <StyledTableRow>
-                            <StyledTableCell align="center" colSpan={5}>
-                              Không tìm thấy giảng viên nào
-                            </StyledTableCell>
-                          </StyledTableRow>
-                        )}
-                      </TableBody>
-
-                    </Table>
-                </TableContainer>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                onClick={submicSelectedHocPhan}
-                color="primary"
-              >
-              Chọn giảng viên này
-              </Button>
-            </DialogActions>
-          </Dialog>
-
-
+        
+          
         </div>
       </div>
       <div style={styles.table}>
+      <Paper style={{ height: "100vh", width: "100%" }}>
+
+  <TableVirtuoso style={{ width: "100%", height: "100%" }} // Đảm bảo full height
+    data={filteredData}
+    components={VirtuosoTableComponents}
+    fixedHeaderContent={fixedHeaderContent}
+    itemContent={rowContent}
+  />
+  <DialogPLOHocPhan nganhId={nganhId} open={openDialog} onClose={handleCloseDialog} />
+</Paper>
+
       
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 700 }} aria-label="customized table">
-          <TableHead sx={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: "#0071A6" }}>
-            <TableRow>
-              <StyledTableCell align="center">STT</StyledTableCell>
-              <StyledTableCell align="center">Mã lớp học phần</StyledTableCell>
-              <StyledTableCell align="center">Tên lớp học phần</StyledTableCell>
-              <StyledTableCell align="center">Giảng viên dạy</StyledTableCell>
-              <StyledTableCell align="center">Học kỳ</StyledTableCell>
-              <StyledTableCell align="center">Năm học</StyledTableCell>
-              <StyledTableCell align="center"></StyledTableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody sx={{ overflowY: "auto" }}>
-            {Array.isArray(filteredData) && filteredData.length > 0 ? (
-              filteredData.map((row, index) => (
-                <StyledTableRow key={row.maHocKy || index}>
-                  <StyledTableCell align="center" width={50}>{index + 1}</StyledTableCell>
-                  <StyledTableCell align="center" width={200}>{row.maLopHocPhan}</StyledTableCell>
-                  <StyledTableCell align="center">{row.ten}</StyledTableCell>
-                  <StyledTableCell align="center" width={250}>{row.tenGiangVien}</StyledTableCell>
-                  <StyledTableCell align="center" width={150}>{row.tenHocKy}</StyledTableCell>
-                  <StyledTableCell align="center" width={150}>{row.namHoc}</StyledTableCell>
-                  <StyledTableCell align="center" width={150}>
-                  <Tooltip title="Sửa thông tin lớp học phần">
-                    <IconButton
-        
-                    ><EditIcon /></IconButton>
-                  </Tooltip>
-                  <Tooltip title="Danh sách sinh viên">
-                    <IconButton
-        
-                    ><FormatListBulletedIcon/></IconButton>
-                  </Tooltip>
-                  </StyledTableCell>
-                </StyledTableRow>
-              ))
-            ) : (
-              <StyledTableRow>
-                <StyledTableCell align="center" colSpan={4}>
-                  Không có dữ liệu
-                </StyledTableCell>
-              </StyledTableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-     <Snackbar 
-        open={openSnackbar} 
-        autoHideDuration={3000} 
-        onClose={handleSnackbarClose} 
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} 
-      >
-        <MuiAlert variant='filled' onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
-          {snackbarMessage}
-        </MuiAlert>
-      </Snackbar>
       </div>
     </div>
     </Layout>
   );
 };
 
-export default TestPage;
+export default NganhPage;

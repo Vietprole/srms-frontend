@@ -23,8 +23,8 @@ import { Label } from "@/components/ui/label"
 import { calculateDiemCLO, calculateDiemCLOMax } from "@/api/api-ketqua"
 import { getSinhViens } from "@/api/api-sinhvien"
 import { useParams } from "react-router-dom"
-import { getCLOsByLopHocPhanId } from "@/api/api-clo"
-
+import { getCLOsByHocPhanId } from "@/api/api-clo"
+import { getLopHocPhanById } from "@/api/api-lophocphan"
 // const CLOs = [
 //   {
 //     "id": 1,
@@ -138,9 +138,11 @@ export default function DiemCLO() {
 
   React.useEffect(() => {
     const fetchData = async () => {
+              const lopHocPhan = await getLopHocPhanById(lopHocPhanId);
+            const hocPhanId = lopHocPhan.hocPhanId;
       const [sinhViens, CLOs] = await Promise.all([
         getSinhViens(null, null, lopHocPhanId),
-        getCLOsByLopHocPhanId(lopHocPhanId),
+        getCLOsByHocPhanId(hocPhanId),
       ]);
       
       const newData = await Promise.all(sinhViens.map(async (sv) => {
