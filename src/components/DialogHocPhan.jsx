@@ -538,14 +538,14 @@ const VirtuosoTableComponents = {
                   <DialogTitle>Thêm học phần vào ngành</DialogTitle>
                   <DialogContent style={{ height: "400px", padding: 10 }}>
                   <TableVirtuoso
-  ref={virtuosoRef}
+  // ref={virtuosoRef}
   data={hocPhanChuaChon}
   components={VirtuosoTableComponents}
   fixedHeaderContent={fixedHeaderContent}
   itemContent={rowContent}
-  firstItemIndex={0}
-  initialTopMostItemIndex={scrollIndex}
-  rangeChanged={(range) => setScrollIndex(range.startIndex)}
+  // firstItemIndex={0}
+  // initialTopMostItemIndex={scrollIndex}
+  // rangeChanged={(range) => setScrollIndex(range.startIndex)}
 />
 
   </DialogContent>

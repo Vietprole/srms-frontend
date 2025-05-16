@@ -110,62 +110,62 @@ function DialogPLOHocPhan({ nganhId, open, onClose }) {
 const [scrollIndex, setScrollIndex] = useState(0);
 
   
+const fetchData = useCallback(async () => {
+  try {
+    const nganhs = await getNganhById(nganhId);
+    const hocphans = await getHocPhansByNganhId(nganhId);
+    const totalCredits = hocphans.reduce((total, hp) => total + hp.soTinChi, 0);
+    const plos = await getPLOsByNganhId(nganhId);
+    const ploHocPhanMap = {}; 
+    for (const plo of plos) {
+      try {
+        const hpTheoPLO = await getHocPhansByPLOId(plo.id);
+        ploHocPhanMap[plo.id] = hpTheoPLO.map((hp) => hp.id);
+      } catch (error) {
+        console.error(`Lỗi khi lấy học phần của PLO ${plo.id}:`, error);
+        ploHocPhanMap[plo.id] = []; // Đảm bảo có key
+      }
+    }
+
+    // Tạo bảng tổng hợp học phần với các PLO bool tương ứng
+    const mergedList = hocphans.map((hp) => {
+      const ploFlags = {};
+      for (const plo of plos) {
+        ploFlags[`plo${plo.id}`] = ploHocPhanMap[plo.id]?.includes(hp.id) || false;
+      }
+
+      return {
+        id: hp.id,
+        maHocPhan: hp.maHocPhan,
+        ten: hp.ten,
+        ...ploFlags,
+      };
+    });
+
+    // Set state
+    setNganh(nganhs);
+    setLsPLO(plos);
+    setHocPhanDaChon(mergedList);
+    setTongSoTinChi(totalCredits);
+
+    // Ngoài ra, nếu cần lưu trạng thái checkbox ban đầu để check thay đổi
+    const originalMap = {};
+    for (const plo of plos) {
+      originalMap[plo.id] = ploHocPhanMap[plo.id];
+    }
+
+    setHocPhanTheoPLO(originalMap);
+    setOriginalHocPhanTheoPLO(originalMap);
+  } catch (error) {
+    console.error("Lỗi khi fetch dữ liệu:", error);
+  }
+}, [nganhId]);
   useEffect(() => {
     if (open && nganhId) {
       fetchData();
     }
-  }, [nganhId, open]);
+  }, [fetchData, nganhId, open]);
 
-  const fetchData = async () => {
-    try {
-      const nganhs = await getNganhById(nganhId);
-      const hocphans = await getHocPhansByNganhId(nganhId);
-      const totalCredits = hocphans.reduce((total, hp) => total + hp.soTinChi, 0);
-      const plos = await getPLOsByNganhId(nganhId);
-      const ploHocPhanMap = {}; 
-      for (const plo of plos) {
-        try {
-          const hpTheoPLO = await getHocPhansByPLOId(plo.id);
-          ploHocPhanMap[plo.id] = hpTheoPLO.map((hp) => hp.id);
-        } catch (error) {
-          console.error(`Lỗi khi lấy học phần của PLO ${plo.id}:`, error);
-          ploHocPhanMap[plo.id] = []; // Đảm bảo có key
-        }
-      }
-  
-      // Tạo bảng tổng hợp học phần với các PLO bool tương ứng
-      const mergedList = hocphans.map((hp) => {
-        const ploFlags = {};
-        for (const plo of plos) {
-          ploFlags[`plo${plo.id}`] = ploHocPhanMap[plo.id]?.includes(hp.id) || false;
-        }
-  
-        return {
-          id: hp.id,
-          maHocPhan: hp.maHocPhan,
-          ten: hp.ten,
-          ...ploFlags,
-        };
-      });
-  
-      // Set state
-      setNganh(nganhs);
-      setLsPLO(plos);
-      setHocPhanDaChon(mergedList);
-      setTongSoTinChi(totalCredits);
-  
-      // Ngoài ra, nếu cần lưu trạng thái checkbox ban đầu để check thay đổi
-      const originalMap = {};
-      for (const plo of plos) {
-        originalMap[plo.id] = ploHocPhanMap[plo.id];
-      }
-  
-      setHocPhanTheoPLO(originalMap);
-      setOriginalHocPhanTheoPLO(originalMap);
-    } catch (error) {
-      console.error("Lỗi khi fetch dữ liệu:", error);
-    }
-  };
   
   
   
@@ -398,9 +398,9 @@ const handleSavePLOs = async () => {
     return rowContent(index, row);
   }}
   fixedHeaderContent={fixedHeaderContent}
-  firstItemIndex={0}
-  initialTopMostItemIndex={scrollIndex}
-  rangeChanged={(range) => setScrollIndex(range.startIndex)}
+  // firstItemIndex={0}
+  // initialTopMostItemIndex={scrollIndex}
+  // rangeChanged={(range) => setScrollIndex(range.startIndex)}
 />
 
 

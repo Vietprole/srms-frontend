@@ -4,6 +4,7 @@ import { getCLOsByHocPhanId } from '@/api/api-clo';
 import { getCauHoisByBaiKiemTraId, getCLOsByCauHoiId, updateCLOsToCauHoi } from '@/api/api-cauhoi';
 import { getBaiKiemTrasByLopHocPhanId } from '@/api/api-baikiemtra';
 import MappingTable from '@/components/MappingTable';
+import { getLopHocPhanById } from '@/api/api-lophocphan';
 
 export default function NoiCauHoiCLO() {
   const [cauHois, setCauHois] = useState([]);
@@ -15,9 +16,11 @@ export default function NoiCauHoiCLO() {
 
   const fetchData = useCallback(async () => {
     try {
+        const lopHocPhan = await getLopHocPhanById(lopHocPhanId);
+      const hocPhanId = lopHocPhan.hocPhanId;
       const baiKiemTrasData = await getBaiKiemTrasByLopHocPhanId(lopHocPhanId);
       const [cLOsData] = await Promise.all([
-        getCLOsByHocPhanId(lopHocPhanId),
+        getCLOsByHocPhanId(hocPhanId),
       ]);
   
       const cauHoisPromises = baiKiemTrasData.map(baiKiemTra =>
