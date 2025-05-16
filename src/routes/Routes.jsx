@@ -32,12 +32,12 @@ import TestPage from "@/pages/TestPage";
 import HocKiPage from "@/pages/Admin/HocKyPage";
 import QuanLyCLO from "@/pages/chuandaura/QuanLyCLO";
 import MapPLOCLO from "@/pages/chuandaura/MapPLOCLO";
+import StudentInCoursePage from "../pages/StudentInCoursePage";
 const role = getRole();
 const RoleBasedRoute = ({ giangVienElement, defaultElement }) => {
   return role === "GiangVien" ? giangVienElement : defaultElement;
 };
 
-const lophocphans = []
 const routes = [
   {
     path: "/",
@@ -139,7 +139,11 @@ const routes = [
   {
     path: "/test",
     element: <TestPage />,
-  }
+  },  
+  {
+    path: "/lophocphan/:courseId/sinhvien",
+    element: <StudentInCoursePage />,
+  },
 ]
 const router = createBrowserRouter(routes, {
   future: {

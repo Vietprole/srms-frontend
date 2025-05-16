@@ -549,65 +549,7 @@ const VirtuosoTableComponents = {
 />
 
   </DialogContent>
-                    {/* <TableContainer component={Paper} sx={{ maxHeight: "350px", overflowY: "auto" }}>
-                      <Table sx={{ minWidth: 700 }} aria-label="customized table">
-                        <TableHead sx={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#0071A6" }}>
-                          <TableRow>
-                            <StyledTableCell align="center" width={"60pxpx"}> 
-                            <Checkbox
-                              sx={{ color: "#fff", padding: "5px" }} // Reduced padding of checkbox
-                              indeterminate={selectedHocPhans.length > 0 && selectedHocPhans.length < hocPhanChuaChon.length}
-                              checked={selectedHocPhans.length === hocPhanChuaChon.length}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setSelectedHocPhans(hocPhanChuaChon.map((row) => row.id)); // Select all
-                                } else {
-                                  setSelectedHocPhans([]); // Deselect all
-                                }
-                              }}
-                            />
 
-                            </StyledTableCell>
-                            <StyledTableCell align="center" sx={{ padding: "6px 8px" }}width={"50px"}>STT</StyledTableCell>
-                            <StyledTableCell align="center" sx={{ padding: "6px 8px" }}>Mã học phần</StyledTableCell>
-                            <StyledTableCell align="center" sx={{ padding: "6px 8px" }}>Tên học phần</StyledTableCell>
-                            <StyledTableCell align="center" sx={{ padding: "6px 8px" }}>Số tín chỉ</StyledTableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {(hocPhanChuaChon && Array.isArray(hocPhanChuaChon) && hocPhanChuaChon.length > 0) ? (
-                            hocPhanChuaChon.map((row, index) => (
-                              <StyledTableRow key={row.id} sx={{ height: "30px" }}>
-                                <StyledTableCell align="center" sx={{ padding: "4px 8px" }}>
-                                  <Checkbox
-                                    checked={selectedHocPhans.includes(row.id)}  // Using row.id here
-                                    onChange={() => handleSelectHocPhan(row.id)} // Pass row.id to handle selection
-                                  />
-                                </StyledTableCell>
-                                <StyledTableCell align="center" width={50} sx={{ padding: "4px 8px" }}>
-                                  {index + 1}
-                                </StyledTableCell>
-                                <StyledTableCell align="center" width={150} sx={{ padding: "4px 8px" }}>
-                                  {row.maHocPhan} 
-                                </StyledTableCell>
-                                <StyledTableCell align="left" sx={{ padding: "4px 8px" }}>
-                                  {row.ten}
-                                </StyledTableCell>
-                                <StyledTableCell align="center" sx={{ padding: "4px 8px" }}>
-                                  {row.soTinChi}
-                                </StyledTableCell>
-                              </StyledTableRow>
-                            ))
-                          ) : (
-                            <TableRow>
-                              <TableCell colSpan={5} align="center">
-                                Không có học phần nào để hiển thị
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </TableBody>
-                      </Table>
-                    </TableContainer> */}
                     <DialogActions>
                       <Button onClick={() => setOpenAddDialog(false)}>Hủy</Button>
                       <Button variant="contained" color="primary" onClick={()=>{handleSubmitAddHocPhan()}} disabled={hocPhanChuaChon.length === 0}>Thêm</Button>

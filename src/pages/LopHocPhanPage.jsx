@@ -51,6 +51,8 @@ import {
   removeSinhVienFromLopHocPhan 
 } from "@/api/api-lophocphan";
 import VirtualizedAutocomplete from '../components/VirtualizedAutocomplete';
+import { useNavigate } from "react-router-dom";
+
 const styles = {
   main: {
     width: '100%',
@@ -158,6 +160,7 @@ export default function LopHocPhanPage() {
   const [hocKyItems, setHocKyItems] = useState([]);
   const [selectedHocPhan, setSelectedHocPhan] = useState(null);
   const [selectedHocKy, setSelectedHocKy] = useState(null);
+  const navigate = useNavigate();
 
   // Add new states for form fields
   const [tenLopHocPhan, setTenLopHocPhan] = useState("");
@@ -637,7 +640,7 @@ export default function LopHocPhanPage() {
             </IconButton>
           </Tooltip>
           <Tooltip title="Xem danh sách sinh viên">
-            <IconButton onClick={() => handleOpenSinhVienDialog(row.id)}>
+          <IconButton onClick={() => navigate(`/lophocphan/${row.id}/sinhvien`)}>
               <FormatListBulletedIcon />
             </IconButton>
           </Tooltip>
@@ -698,15 +701,6 @@ export default function LopHocPhanPage() {
           </div>
 
           <div style={styles.filters}>
-            {/* <Autocomplete
-              options={hocPhanItems}
-              getOptionLabel={(option) => option.label || ""}
-              value={selectedHocPhan}
-              onChange={handleHocPhanChange}
-              renderInput={(params) => (
-                <TextField {...params} label="Chọn học phần" size="small" />
-              )}
-            /> */}
             <VirtualizedAutocomplete
               options={hocPhanItems}
               getOptionLabel={(option) => `${option.maHocPhan || ""} - ${option.ten || ""}`}
