@@ -23,7 +23,7 @@ import { Label } from "@/components/ui/label"
 import { calculateDiemCLO, calculateDiemCLOMax } from "@/api/api-ketqua"
 import { getSinhViens } from "@/api/api-sinhvien"
 import { useParams } from "react-router-dom"
-import { getCLOsByLopHocPhanId } from "@/api/api-clo"
+import { getCLOsByHocPhanId } from "@/api/api-clo"
 
 // const CLOs = [
 //   {
@@ -140,7 +140,7 @@ export default function DiemCLO() {
     const fetchData = async () => {
       const [sinhViens, CLOs] = await Promise.all([
         getSinhViens(null, null, lopHocPhanId),
-        getCLOsByLopHocPhanId(lopHocPhanId),
+        getCLOsByHocPhanId(lopHocPhanId),
       ]);
       
       const newData = await Promise.all(sinhViens.map(async (sv) => {

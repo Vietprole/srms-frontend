@@ -1,7 +1,7 @@
 // import Layout from "./Layout";
 import { useParams } from "react-router-dom";
 import {
-  getCLOsByLopHocPhanId,
+  getCLOsByHocPhanId,
   addCLO,
 } from "@/api/api-clo";
 
@@ -271,7 +271,7 @@ export default function CLOPage() {
   const fetchData = async () => {
    
     const lopHocPhanData = await getLopHocPhanById(lopHocPhanId);
-    const clos = await getCLOsByLopHocPhanId(lopHocPhanData.hocPhanId);
+    const clos = await getCLOsByHocPhanId(lopHocPhanData.hocPhanId);
     setLopHocPhanData(lopHocPhanData);
     setData(clos);
   };

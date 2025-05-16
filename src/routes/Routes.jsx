@@ -7,6 +7,7 @@ import GiangVienPage from "@/pages/Admin/GiangVienPage";
 import HocPhanPage from "@/pages/Admin/HocPhanPage";
 import PLOPage from "@/pages/PLOPage";
 import MapHocPhanPLOPage from "@/pages/MapHocPhanPLOPage";
+import NoiCLOPLO from "@/pages/chuandaura/MapPLOCLO";
 import LopHocPhanPage from "@/pages/LopHocPhanPage";
 import CongThucDiemPage from "@/pages/CongThucDiemPage";
 import NhapDiemPage from "@/pages/NhapDiemPage";
@@ -17,7 +18,7 @@ import CaiDatPage from "@/pages/CaiDatPage";
 import QuanLyCauHoi from "@/pages/nhapdiem/QuanLyCauHoi";
 import BangDiem from "@/pages/nhapdiem/BangDiem";
 import TaoCLO from "@/pages/nhapdiem/TaoCLO";
-import NoiCLOPLO from "@/pages/nhapdiem/NoiCLOPLO";
+// import NoiCLOPLO from "@/pages/nhapdiem/NoiCLOPLO";
 import NoiCauHoiCLO from "@/pages/nhapdiem/NoiCauHoiCLO";
 import DiemCLO from "@/pages/nhapdiem/DiemCLO";
 import DiemPk from "@/pages/nhapdiem/DiemPk";
@@ -74,6 +75,10 @@ const routes = [
   {
     path: "/maphocphanplo",
     element: <MapHocPhanPLOPage />,
+  },
+  {
+    path: "/mapcloplo",
+    element: <NoiCLOPLO />,
   },
   {
     path: "/lophocphan",

@@ -24,15 +24,15 @@ const formSchema = z.object({
   moTa: z.string().min(2, {
     message: "Mô tả CLO phải có ít nhất 2 ký tự.",
   }),
-  lopHocPhanId: z.coerce.number({
+  hocPhanId: z.coerce.number({
     required_error: "Vui lòng chọn lớp học phần",
     invalid_type_error: "Lớp học phần không hợp lệ",
   }),
 });
 
-export function CLOForm({ cLO, handleAdd, handleEdit, setIsDialogOpen, lopHocPhanId: propLopHocPhanId }) {
-  const { lopHocPhanId: paramLopHocPhanId } = useParams();
-  const effectiveLopHocPhanId = propLopHocPhanId || paramLopHocPhanId;
+export function CLOForm({ cLO, handleAdd, handleEdit, setIsDialogOpen, hocPhanId: propHocPhanId }) {
+  const { hocPhanId: paramHocPhanId } = useParams();
+  const effectiveHocPhanId = propHocPhanId || paramHocPhanId;
 
   // 1. Define your form.
   const form = useForm({
@@ -40,7 +40,7 @@ export function CLOForm({ cLO, handleAdd, handleEdit, setIsDialogOpen, lopHocPha
     defaultValues: cLO || {
       ten: "",
       moTa: "",
-      lopHocPhanId: effectiveLopHocPhanId,
+      hocPhanId: effectiveHocPhanId,
     },
   });
 
@@ -64,24 +64,6 @@ export function CLOForm({ cLO, handleAdd, handleEdit, setIsDialogOpen, lopHocPha
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        {/* {cLO && (
-          <FormField
-            control={form.control}
-            name="id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Id</FormLabel>
-                <FormControl>
-                  <Input {...field} readOnly/>
-                </FormControl>
-                <FormDescription>
-                  This is your unique identifier.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )} */}
         <FormField
           control={form.control}
           name="ten"
@@ -114,7 +96,7 @@ export function CLOForm({ cLO, handleAdd, handleEdit, setIsDialogOpen, lopHocPha
             </FormItem>
           )}
         />
-        <input type="hidden" {...form.register("lopHocPhanId")} />
+        <input type="hidden" {...form.register("hocPhanId")} />
         <Button type="submit">Lưu</Button>
       </form>
     </Form>

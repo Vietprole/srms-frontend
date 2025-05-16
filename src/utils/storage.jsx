@@ -50,3 +50,14 @@ export const getSinhVienId = () => {
     return null;
   }
 }
+
+export const getNguoiQuanLyCTDTId = () => {
+  const result = sessionStorage.getItem('accessToken')
+  try {
+    const decodedToken = jwtDecode(result);
+    const nguoiQuanLyCTDTId = decodedToken.nguoiQuanLyCTDTId;
+    return parseInt(nguoiQuanLyCTDTId);
+  } catch (error) {
+    return null;
+  }
+}
