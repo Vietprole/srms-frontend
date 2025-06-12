@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { styled } from '@mui/material/styles';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -39,7 +38,6 @@ import { getAllGiangViens } from "@/api/api-giangvien";
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import { 
   Checkbox,
-  Grid,
   Typography,
   CircularProgress,
   Backdrop
@@ -52,49 +50,65 @@ import {
 } from "@/api/api-lophocphan";
 import VirtualizedAutocomplete from '../components/VirtualizedAutocomplete';
 import { useNavigate } from "react-router-dom";
+import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
+import ArrowRightIcon from '@mui/icons-material/ArrowRight';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+
 
 const styles = {
   main: {
-    width: '100%',
-    height: '91vh',
     display: 'flex',
     flexDirection: 'column',
-    overflowY: 'hidden',
-    padding: "10px",
+    height: '100%',
+    padding: '10px',
+    boxSizing: 'border-box',
+    overflow: 'hidden',
   },
+
   title: {
     width: '100%',
-    height: '6%',
     fontSize: '1.2em',
     fontFamily: 'Roboto',
     fontWeight: 'bold',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
+
   btnMore: {
     display: 'flex',
     justifyContent: 'flex-end',
     marginLeft: 'auto',
   },
+
   tbActions: {
     width: '100%',
-    height: '6%',
+    marginTop: 10,
     display: 'flex',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    flexDirection: 'row',
+    alignItems: 'center', // căn giữa dọc cho cả dòng
+    gap: '10px',          // khoảng cách giữa các phần tử
+    paddingBottom: '10px',
   },
+  
+
   ipSearch: {
     width: '25%',
-    height: '100%',
+    height: 40,
     justifyContent: 'flex-start',
     borderRadius: '5px',
   },
+
+  cbKhoa: {
+    width: "22%",
+    display: "flex",
+    alignItems: "center",
+    height: 40, // 👈 Thêm chiều cao cụ thể
+    marginLeft: "10px",
+  },
+  
   btnCreate: {
     width: '15%',
-    height: '100%',
+    height: 40,
     display: 'flex',
     marginLeft: 'auto',
     justifyContent: 'center',
@@ -103,13 +117,43 @@ const styles = {
     color: 'white',
     cursor: 'pointer',
   },
+
   table: {
-    width: '100%',
-    height: '98%',
+    flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    paddingTop: '10px',
-    overflowY: 'auto',
+    overflow: 'hidden',
+    width: '100%', // 👈 thêm dòng này
+  },
+  
+
+  divPagination: {
+    flexShrink: 0,
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderTop: '1px solid #eee',
+    backgroundColor: '#f5f5f5',
+    padding: '5px 10px',
+  },
+
+  squareStyle: {
+    width: 35,
+    height: 35,
+    backgroundColor: '#fff',
+    border: '1px solid #ccc',
+    borderLeft: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 14,
+    cursor: 'pointer',
+    boxSizing: 'border-box',
+    transition: 'all 0.2s ease-in-out',
+    '&:hover': {
+      backgroundColor: '#0071A6',
+      color: '#fff',
+    },
   },
   filters: {
     width: '22%',
@@ -141,9 +185,10 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
     cursor: 'pointer',
   },
 }));
-import { TableVirtuoso } from 'react-virtuoso';
 
 export default function LopHocPhanPage() {
+  
+  
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
@@ -191,8 +236,30 @@ export default function LopHocPhanPage() {
   const [selectedSinhViens, setSelectedSinhViens] = useState([]); // Sinh viên được chọn để thêm
   const [selectedSinhViensDaChon, setSelectedSinhViensDaChon] = useState([]); // Sinh viên được chọn để xóa
   const [searchSinhVien, setSearchSinhVien] = useState(""); // Tìm kiếm sinh viên chưa thêm
-  const [searchSinhVienDaChon, setSearchSinhVienDaChon] = useState(""); // Tìm kiếm sinh viên đã thêm
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10); // tùy chọn mặc định
+  const pageSizeOptions = [10,20,50]; // tuỳ bạn thêm số lựa chọn
 
+  const totalItems = filteredData.length;
+  const startRow = (page - 1) * pageSize + 1;
+  const endRow = Math.min(page * pageSize, totalItems);
+  const totalPages = Math.ceil(totalItems / pageSize);
+  let pagesToShow = [];
+  
+  if (totalPages <= 4) {
+    pagesToShow = Array.from({ length: totalPages }, (_, i) => i + 1);
+  } else {
+    if (page <= 3) {
+      pagesToShow = [1, 2, 3, 'more', totalPages];
+    } else if (page >= totalPages - 2) {
+      pagesToShow = [1, 'more', totalPages - 2, totalPages - 1, totalPages];
+    } else {
+      pagesToShow = [1, 'more', page - 1, page, page + 1, 'more', totalPages];
+    }
+  }
+
+  // Lấy dữ liệu cho trang hiện tại
+  const paginatedData = filteredData.slice((page - 1) * pageSize, page * pageSize);
   // Thêm state loading
   const [isLoading, setIsLoading] = useState(false);
 
@@ -210,27 +277,45 @@ export default function LopHocPhanPage() {
   const fetchData = async () => {
     try {
       const [lopHocPhanData, hocPhanData, hocKyData, giangVienData] = await Promise.all([
-        getLopHocPhans(null, null, null, null),
+        getLopHocPhans(null, null, null, null),  // Lấy tất cả (để backup data ban đầu)
         getAllHocPhans(),
         getAllHocKys(),
         getAllGiangViens()
       ]);
-
-      setData(lopHocPhanData);
-      setFilteredData(lopHocPhanData);
-      
+  
+      setData(lopHocPhanData); // Lưu bản gốc
       setHocPhanItems(hocPhanData);
-      
-      setHocKyItems(hocKyData.map(hk => ({ 
-        label: hk.tenHienThi, 
-        value: hk.id 
-      })));
-
+  
+      const hocKyItemsMapped = hocKyData.map(hk => ({
+        label: hk.tenHienThi,
+        value: hk.id
+      }));
+      setHocKyItems(hocKyItemsMapped);
+  
+      const currentLabel = getCurrentHocKyLabel();
+      const currentHocKy = hocKyItemsMapped.find(hk => hk.label === currentLabel);
+  
+      if (currentHocKy) {
+        setSelectedHocKy(currentHocKy);
+        setSelectedHocKyAdd(currentHocKy);
+  
+        // ✅ Gọi API để lọc danh sách theo học kỳ hiện tại
+        const filtered = await getLopHocPhans(
+          null,
+          currentHocKy.value,
+          null,
+          null
+        );
+        setFilteredData(filtered);
+      } else {
+        setFilteredData(lopHocPhanData); // fallback nếu không tìm thấy
+      }
+  
       setComboBoxGiangViens(giangVienData.map(gv => ({
         label: gv.ten,
         value: gv.id
       })));
-
+  
     } catch (error) {
       console.error(error);
       setSnackbarMessage("Lỗi khi tải dữ liệu");
@@ -238,8 +323,20 @@ export default function LopHocPhanPage() {
       setOpenSnackbar(true);
     }
   };
+  const getCurrentHocKyLabel = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1;
+  
+    if (month >= 1 && month <= 5) return `HK2 - ${year - 1}-${year}`;
+    if (month >= 6 && month <= 8) return `Hè - ${year - 1}-${year}`;
+    return `HK1 - ${year}-${year + 1}`;
+  };
+  
+  
 
   const handleSearchChange = (event) => {
+    setPage(1); // Reset về trang 1 khi tìm kiếm
     const value = event.target.value;
     setSearchQuery(value);
     filterData(value);
@@ -256,25 +353,22 @@ export default function LopHocPhanPage() {
     }
   };
 
-  const handleHocPhanChange = async (event, newValue) => {
-    setSelectedHocPhan(newValue); // Cập nhật state (sẽ có hiệu lực sau)
+  const handleHocPhanChange = (event, newValue) => {
+    setPage(1);
+    setSelectedHocPhan(newValue);
   
-    // Dùng ngay newValue và selectedHocKy để lọc
-    if (newValue || selectedHocKy) {
-      const filtered = await getLopHocPhans(
-        newValue?.value || null,
-        selectedHocKy?.value || null,
-        null,
-        null
-      );
+    if (newValue) {
+      const filtered = data.filter((row) => row.tenHocPhan === newValue.ten);
       setFilteredData(filtered);
     } else {
       setFilteredData(data);
     }
   };
   
+  
 
   const handleHocKyChange = async (event, newValue) => {
+    setPage(1); // Reset về trang 1 khi thay đổi học kỳ
     setSelectedHocKy(newValue);
     if (newValue || selectedHocPhan) {
       const filtered = await getLopHocPhans(
@@ -507,21 +601,21 @@ export default function LopHocPhanPage() {
   };
 
   // Sửa lại hàm mở dialog
-  const handleOpenSinhVienDialog = async (lopHocPhanId) => {
-    try {
-      setSelectedLopHocPhanId(lopHocPhanId);
-      // Lấy thông tin lớp học phần
-      const lopHocPhan = await getLopHocPhanById(lopHocPhanId);
-      setSelectedLopHocPhan(lopHocPhan);
-      setOpenSinhVienDialog(true);
-      await loadSinhVienData(lopHocPhanId);
-    } catch (error) {
-      console.log(error);
-      setSnackbarMessage("Lỗi khi tải thông tin lớp học phần");
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
-    }
-  };
+  // const handleOpenSinhVienDialog = async (lopHocPhanId) => {
+  //   try {
+  //     setSelectedLopHocPhanId(lopHocPhanId);
+  //     // Lấy thông tin lớp học phần
+  //     const lopHocPhan = await getLopHocPhanById(lopHocPhanId);
+  //     setSelectedLopHocPhan(lopHocPhan);
+  //     setOpenSinhVienDialog(true);
+  //     await loadSinhVienData(lopHocPhanId);
+  //   } catch (error) {
+  //     console.log(error);
+  //     setSnackbarMessage("Lỗi khi tải thông tin lớp học phần");
+  //     setSnackbarSeverity("error");
+  //     setOpenSnackbar(true);
+  //   }
+  // };
 
   // Sửa lại hàm xử lý thêm sinh viên
   const handleAddSinhVien = async () => {
@@ -577,7 +671,6 @@ export default function LopHocPhanPage() {
     setSelectedSinhViens([]);
     setSelectedSinhViensDaChon([]);
     setSearchSinhVien("");
-    setSearchSinhVienDaChon("");
   };
 
 
@@ -591,69 +684,6 @@ export default function LopHocPhanPage() {
     { width: 180, label: "Thao tác", dataKey: "actions", align: "center" },
   ];
   
-  const VirtuosoTableComponents = {
-    // eslint-disable-next-line react/display-name
-    Scroller: React.forwardRef((props, ref) => (
-      <TableContainer component={Paper} {...props} ref={ref} sx={{ height: "calc(100vh - 200px)" }} />
-    )),
-    Table: (props) => (
-      <Table {...props} sx={{ borderCollapse: "separate", tableLayout: "fixed", backgroundColor: "white" }} />
-    ),
-    // eslint-disable-next-line react/display-name
-    TableHead: React.forwardRef((props, ref) => <TableHead {...props} ref={ref} />),
-    TableRow: StyledTableRow,
-    // eslint-disable-next-line react/display-name
-    TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
-    TableCell: StyledTableCell,
-  };
-  
-  function fixedHeaderContent() {
-    return (
-      <StyledTableRow>
-        {columns.map((column) => (
-          <StyledTableCell
-            key={column.dataKey}
-            variant="head"
-            align="center"
-            style={{ width: column.width, textAlign: "center" }}
-          >
-            {column.label}
-          </StyledTableCell>
-        ))}
-      </StyledTableRow>
-    );
-  }
-  
-  function rowContent(index, row) {
-    return (
-      <>
-        <StyledTableCell align="center">{index + 1}</StyledTableCell>
-        <StyledTableCell align="center">{row.maLopHocPhan}</StyledTableCell>
-        <StyledTableCell align="center">{row.ten}</StyledTableCell>
-        <StyledTableCell align="center">{row.tenHocPhan}</StyledTableCell>
-        <StyledTableCell align="center">{row.tenHocKy}</StyledTableCell>
-        <StyledTableCell align="center">{row.tenGiangVien}</StyledTableCell>
-        <StyledTableCell align="center">
-          <Tooltip title="Sửa lớp học phần">
-            <IconButton onClick={() => handleOpenEditDialog(row.id)}>
-              <EditIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Xem danh sách sinh viên">
-          <IconButton onClick={() => navigate(`/lophocphan/${row.id}/sinhvien`)}>
-              <FormatListBulletedIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Xóa lớp học phần">
-            <IconButton onClick={() => handleOpenDeleteDialog(row.id)}>
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
-        </StyledTableCell>
-      </>
-    );
-  }
-  
 
   return (
     <Layout>
@@ -665,42 +695,56 @@ export default function LopHocPhanPage() {
           </div>
         </div>
         
-        <div style={styles.tbActions}>
-          <div style={styles.ipSearch}>
-            <Box sx={{
-              display: "flex",
-              alignItems: "center",
-              border: "2px solid #ccc",
-              borderRadius: "20px",
-              padding: "4px 8px",
-              width: "100%",
-              maxWidth: "100%",
-              "&:focus-within": {
-                border: "2px solid #337AB7",
-              },
-              height: "100%",
-            }}>
-              <TextField
-                fullWidth
-                fontSize="10px"
-                placeholder="Tìm kiếm theo tên lớp học phần..."
-                variant="standard"
-                autoComplete='off'
-                InputProps={{
-                  disableUnderline: true,
-                  startAdornment: (
-                    <IconButton aria-label="search">
-                      <SearchIcon sx={{ color: "#888" }} />
-                    </IconButton>
-                  ),
-                }}
-                value={searchQuery}
-                onChange={handleSearchChange}
-              />
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,                 // spacing
+            width: "100%",
+            mt: 1,
+            mb: 2,
+          }}
+        >
+          {/* Tìm kiếm */}
+          <Box sx={{ minWidth: 250 /* Giảm chiều ngang */ }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                border: "2px solid #ccc",
+                borderRadius: "10px",
+                px: 1.2,       // padding ngang
+                py: 0.5,       // padding dọc
+                "&:focus-within": {
+                  border: "2px solid #337AB7",
+                },
+              }}
+            >
+            <TextField
+              fullWidth
+              variant="standard"
+              placeholder="Tìm kiếm lớp học phần..."
+              autoComplete="off"
+              InputProps={{
+                disableUnderline: true,
+                startAdornment: (
+                  <IconButton aria-label="search" size="small">
+                    <SearchIcon sx={{ color: "#888", fontSize: 20 }} />
+                  </IconButton>
+                ),
+                sx: {
+                  fontSize: 15, // chỉnh font nhỏ hơn nếu muốn
+                  height: "28px", // kiểm soát trực tiếp chiều cao
+                },
+              }}
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
             </Box>
-          </div>
+          </Box>
 
-          <div style={styles.filters}>
+          {/* Bộ lọc học phần */}
+          <Box sx={{ minWidth: 300 }}>
             <VirtualizedAutocomplete
               options={hocPhanItems}
               getOptionLabel={(option) => `${option.maHocPhan || ""} - ${option.ten || ""}`}
@@ -709,41 +753,161 @@ export default function LopHocPhanPage() {
               label="Chọn học phần"
               onChange={handleHocPhanChange}
             />
+          </Box>
 
-          </div>
+          {/* Bộ lọc học kỳ */}
+          <Box sx={{ minWidth: 300 }}>
+          <Autocomplete
+            options={hocKyItems}
+            getOptionLabel={(option) => option.label || ""}
+            value={selectedHocKy}
+            onChange={handleHocKyChange}
+            renderInput={(params) => (
+              <TextField {...params} label="Chọn học kỳ" size="small" />
+            )}
+          />
 
-          <div style={styles.filters}>
-            <Autocomplete
-              options={hocKyItems}
-              getOptionLabel={(option) => option.label || ""}
-              value={selectedHocKy}
-              onChange={handleHocKyChange}
-              renderInput={(params) => (
-                <TextField {...params} label="Chọn học kỳ" size="small" />
-              )}
-            />
-          </div>
+          </Box>
 
-          <div style={styles.btnCreate}>
-            <Button 
-              sx={{width:"100%"}} 
-              variant="contained" 
-              onClick={() => setOpenAddDialog(true)}
-            >
-              Tạo lớp học phần
-            </Button>
-          </div>
-        </div>
+            {/* Nút tạo lớp học phần */}
+            <Box sx={{ display: "flex", justifyContent: "flex-end", flex: 1 }}>
+            <Box sx={{ minWidth: 160 }}>
+              <Button fullWidth variant="contained" onClick={() => setOpenAddDialog(true)}>
+                Tạo lớp học phần
+              </Button>
+            </Box>
+          </Box>
+        </Box>
+
 
         <div style={styles.table}>
+          <TableContainer component={Paper}>
+  <Table sx={{ minWidth: 700 }} aria-label="customized table">
+    <TableHead sx={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#0071A6" }}>
+      <TableRow>
+        {columns.map((column) => (
+          <StyledTableCell
+            key={column.dataKey}
+            align={column.align || "center"}
+            sx={{ width: column.width || "auto", textAlign: "center" }}
+          >
+            {column.label}
+          </StyledTableCell>
+        ))}
+      </TableRow>
+    </TableHead>
+    <TableBody>
+      {paginatedData.map((row, index) => (
+        <StyledTableRow key={row.id}>
+          <StyledTableCell align="center">{(page - 1) * pageSize + index + 1}</StyledTableCell>
+          <StyledTableCell align="center">{row.maLopHocPhan}</StyledTableCell>
+          <StyledTableCell align="center">{row.ten}</StyledTableCell>
+          <StyledTableCell align="center">{row.tenHocPhan}</StyledTableCell>
+          <StyledTableCell align="center">{row.tenHocKy}</StyledTableCell>
+          <StyledTableCell align="center">{row.tenGiangVien}</StyledTableCell>
+          <StyledTableCell align="center">
+            <Tooltip title="Sửa lớp học phần" arrow>
+              <IconButton onClick={() => handleOpenEditDialog(row.id)}>
+                <EditIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Xem danh sách sinh viên" arrow>
+              <IconButton onClick={() => navigate(`/lophocphan/${row.id}/sinhvien`)}>
+                <FormatListBulletedIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Xóa lớp học phần" arrow>
+              <IconButton onClick={() => handleOpenDeleteDialog(row.id)}>
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
+          </StyledTableCell>
+        </StyledTableRow>
+      ))}
+    </TableBody>
+  </Table>
+</TableContainer>
 
-          <TableVirtuoso
-            data={filteredData}
-            components={VirtuosoTableComponents}
-            fixedHeaderContent={fixedHeaderContent}
-            itemContent={(index, row) => rowContent(index, row)}
-          />
         </div>
+        <div style={styles.divPagination}>
+  {/* Trái: các nút số trang */}
+  <Box display="flex" alignItems="center">
+  <Box
+    sx={{
+      ...styles.squareStyle,
+      borderLeft: '1px solid #ccc',
+      borderTopLeftRadius: '6px',
+      borderBottomLeftRadius: '6px',
+      opacity: page === 1 ? 0.5 : 1,
+      pointerEvents: page === 1 ? 'none' : 'auto',
+    }}
+    onClick={() => setPage(page - 1)}
+  >
+    <ArrowLeftIcon fontSize="small" />
+  </Box>
+
+  {pagesToShow.map((item, idx) =>
+  item === 'more' ? (
+    <Box key={`more-${idx}`} sx={{ ...styles.squareStyle, pointerEvents: 'none' }}>
+      <MoreHorizIcon fontSize="small" />
+    </Box>
+  ) : (
+    <Box
+      key={item}
+      sx={{
+        ...styles.squareStyle,
+        ...(page === item
+          ? { backgroundColor: '#0071A6', color: '#fff', fontWeight: 'bold' }
+          : {}),
+      }}
+      onClick={() => setPage(item)}
+    >
+      {item}
+    </Box>
+  )
+)}
+
+  <Box
+    sx={{
+      ...styles.squareStyle,
+      borderTopRightRadius: '6px',
+      borderBottomRightRadius: '6px',
+      opacity: page >= totalPages ? 0.5 : 1,
+      pointerEvents: page >= totalPages ? 'none' : 'auto',
+    }}
+    onClick={() => setPage(page + 1)}
+  >
+    <ArrowRightIcon fontSize="small" />
+  </Box>
+</Box>
+
+
+  {/* Phải: chọn số bản ghi + hiển thị dòng */}
+  <Box display="flex" alignItems="center" gap={2}>
+    <Box display="flex" alignItems="center" gap={1}>
+      <span style={{ fontSize: 14 }}>Số bản ghi/trang:</span>
+      <Autocomplete
+        disableClearable
+        options={pageSizeOptions}
+        size="small"
+        sx={{ width: 80, backgroundColor: "#fff", borderRadius: "4px" }}
+        value={pageSize}
+        getOptionLabel={(option) => option.toString()} // ✅ Convert số sang chuỗi
+        onChange={(event, newValue) => {
+          setPageSize(newValue);
+          setPage(1); // reset về trang 1
+        }}
+        renderInput={(params) => (
+          <TextField {...params} variant="outlined" size="small" />
+        )}
+      />
+
+    </Box>
+    <span style={{ fontSize: 14, color: '#333' }}>
+      Dòng {startRow} đến {endRow} / {totalItems}
+    </span>
+  </Box>
+</div>
 
         {/* Add Dialog */}
         <Dialog 
@@ -809,14 +973,14 @@ export default function LopHocPhanPage() {
                 <TextField {...params} label="Chọn học kỳ" variant="standard" required />
               )}
             />
-<VirtualizedAutocomplete
-  options={comboBoxGiangViens}
-  value={selectedGiangVien}
-  onChange={(e, newVal) => setSelectedGiangVien(newVal)}
-  getOptionLabel={(option) => option.label || ""}
-  label="Chọn giảng viên"
-  noOptionsText="Không tìm thấy giảng viên"  // Thông báo nếu không có kết quả
-/>
+            <VirtualizedAutocomplete
+              options={comboBoxGiangViens}
+              value={selectedGiangVien}
+              onChange={(e, newVal) => setSelectedGiangVien(newVal)}
+              getOptionLabel={(option) => option.label || ""}
+              label="Chọn giảng viên"
+              noOptionsText="Không tìm thấy giảng viên"  // Thông báo nếu không có kết quả
+            />
 
 
             <TextField

@@ -140,7 +140,7 @@ function PLOPage() {
       setMoTaPLO(plo.data.moTa);
 
       // Tìm ngành phù hợp trong danh sách
-      const matchedNganh = nganh.find((item) => item.ten === plo.data.tenNganh);
+      const matchedNganh = data.find((item) => item.ten === plo.data.tenNganh);
       setSelectedNganh(matchedNganh || null);
 
       tenPLORef.current = plo.data.ten;
@@ -377,7 +377,7 @@ function PLOPage() {
     { width: 50, label: "STT", dataKey: "index", align: "center" },
     { width: 200, label: "Tên PLO", dataKey: "maHocPhan", align: "center" },
     { label: "Mô tả cho PLO", dataKey: "tenHocPhan", align: "left" },
-    { width: 300, label: "Thuộc ngành", dataKey: "tenKhoa", align: "center" },
+    { width: 300, label: "Thuộc Chương Trình Đào Tạo", dataKey: "tenKhoa", align: "center" },
     { width: 150, label: "", dataKey: "actions", align: "center" },
   ];
 

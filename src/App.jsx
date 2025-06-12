@@ -9,7 +9,6 @@ export default function App() {
       <div className="flex min-h-screen">
         <AppSidebar />
         <main className="flex-1">
-          {/* Your main content */}
           <Outlet />
         </main>
       </div>

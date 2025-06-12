@@ -65,11 +65,18 @@ const handleCloseDialogAdd = () => {
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
   }
-  function handleSelectAddSinhVien(id) {
-    setSelectedAddSinhVien((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
-  }
+  const handleSelectAddSinhVien = (id) => {
+    let newSelected;
+    if (selectedAddSinhVien.includes(id)) {
+      newSelected = selectedAddSinhVien.filter((sid) => sid !== id);
+    } else {
+      newSelected = [...selectedAddSinhVien, id];
+    }
+  
+    setSelectedAddSinhVien(newSelected);
+    setSinhViensNotInCourse((prev) => sortSinhVienList(prev, newSelected));
+  };
+  
 
 
 
@@ -86,6 +93,14 @@ const handleCloseDialogAdd = () => {
       padding: "4px 8px", // giảm chiều cao
     },
   }));
+  function sortSinhVienList(list, selectedIds) {
+    return [...list].sort((a, b) => {
+      const aSelected = selectedIds.includes(a.id);
+      const bSelected = selectedIds.includes(b.id);
+      return aSelected === bSelected ? 0 : aSelected ? -1 : 1;
+    });
+  }
+  
   const handleRemoveSelectedSinhViens = async () => {
     if (!selectedSinhViens.length) 
     {
@@ -230,9 +245,11 @@ const handleCloseDialogAdd = () => {
                 checked={isAllSelected}
                 onChange={(e) => {
                   if (e.target.checked) {
-                    setSelectedAddSinhVien(allIds); // ✅ chọn tất cả
+                    setSelectedAddSinhVien(allIds);
+                    setSinhViensNotInCourse((prev) => sortSinhVienList(prev, allIds));
                   } else {
-                    setSelectedAddSinhVien([]); // ✅ bỏ chọn
+                    setSelectedAddSinhVien([]);
+                    setSinhViensNotInCourse((prev) => sortSinhVienList(prev, []));
                   }
                 }}
               />

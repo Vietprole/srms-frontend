@@ -10,6 +10,7 @@ import Paper from "@mui/material/Paper";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
+import EditIcon from "@mui/icons-material/Edit";
 import TextField from "@mui/material/TextField";
 import SearchIcon from "@mui/icons-material/Search";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -31,82 +32,121 @@ import {
   getNganhById,
   updateNganh,
 } from "@/api/api-nganh";
-import EditIcon from "@mui/icons-material/Edit";
+
 import Layout from "../Layout";
 import TestDialog from "@/components/DialogHocPhan";
-import Pagination from "@mui/material/Pagination";
-import Stack from "@mui/material/Stack";
 import { getTaiKhoans } from "@/api/api-taikhoan";
 import { getRole, getNguoiQuanLyCTDTId } from "@/utils/storage";
 import { getNganhsByNguoiQuanLyId } from "@/api/api-nganh";
 import { useCallback } from "react";
-
+import ArrowLeftIcon from "@mui/icons-material/ArrowLeft";
+import ArrowRightIcon from "@mui/icons-material/ArrowRight";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 function TestPage() {
   const styles = {
     main: {
-      width: "100%",
-      height: "91vh",
-      display: "flex",
-      flexDirection: "column",
-      overflowY: "hidden",
-      padding: "10px",
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100%',
+      padding: '10px',
+      boxSizing: 'border-box',
+      overflow: 'hidden',
     },
+  
     title: {
-      width: "100%",
-      height: "6%",
-      fontSize: "1.2em",
-      fontFamily: "Roboto",
-      fontWeight: "bold",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "flex-start",
-      flexDirection: "row",
+      width: '100%',
+      fontSize: '1.2em',
+      fontFamily: 'Roboto',
+      fontWeight: 'bold',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
     },
+  
     btnMore: {
-      display: "flex",
-      justifyContent: "flex-end",
-      marginLeft: "auto",
+      display: 'flex',
+      justifyContent: 'flex-end',
+      marginLeft: 'auto',
     },
+  
     tbActions: {
-      width: "100%",
-      height: "6%",
-      display: "flex",
-      justifyContent: "flex-start",
-      alignItems: "center",
-      flexDirection: "row",
+      width: '100%',
+      marginTop: 10,
+      display: 'flex',
+      alignItems: 'center', // căn giữa dọc cho cả dòng
+      gap: '10px',          // khoảng cách giữa các phần tử
+      paddingBottom: '10px',
     },
+    
+  
     ipSearch: {
-      width: "30%",
-      height: "100%",
-      justifyContent: "flex-start",
-      borderRadius: "5px",
+      width: '30%',
+      height: 40,
+      justifyContent: 'flex-start',
+      borderRadius: '5px',
     },
-    btnCreate: {
-      width: "10%",
-      height: "100%",
-      display: "flex",
-      marginLeft: "auto",
-      justifyContent: "center",
-      alignItems: "center",
-      borderRadius: "5px",
-      color: "white",
-      cursor: "pointer",
-    },
-    table: {
-      width: "100%",
-      height: "98%",
-      display: "flex",
-      flexDirection: "column",
-      paddingTop: "10px",
-      overflowY: "auto",
-    },
+  
     cbKhoa: {
       width: "22%",
-      height: "80%",
+      display: "flex",
+      alignItems: "center",
+      height: 40, // 👈 Thêm chiều cao cụ thể
       marginLeft: "10px",
-      marginBottom: "10px",
+    },
+    
+    
+  
+    btnCreate: {
+      width: '10%',
+      height: 40,
+      display: 'flex',
+      marginLeft: 'auto',
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: '5px',
+      color: 'white',
+      cursor: 'pointer',
+    },
+  
+    table: {
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
+      width: '100%', // 👈 thêm dòng này
+    },
+    
+  
+    divPagination: {
+      flexShrink: 0,
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      borderTop: '1px solid #eee',
+      backgroundColor: '#f5f5f5',
+      padding: '5px 10px',
+    },
+  
+    squareStyle: {
+      width: 35,
+      height: 35,
+      backgroundColor: '#fff',
+      border: '1px solid #ccc',
+      borderLeft: 'none',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: 14,
+      cursor: 'pointer',
+      boxSizing: 'border-box',
+      transition: 'all 0.2s ease-in-out',
+      '&:hover': {
+        backgroundColor: '#0071A6',
+        color: '#fff',
+      },
     },
   };
+  
   const [openDialog, setOpenDialog] = React.useState(false);
   const [openSnackbar, setOpenSnackbar] = React.useState(false);
   const [snackbarMessage, setSnackbarMessage] = React.useState("");
@@ -125,35 +165,48 @@ function TestPage() {
   const inputRef = useRef("");
   const [selectedKhoaFilter, setSelectedKhoaFilter] = useState(null);
   const [page, setPage] = useState(1);
-  const rowsPerPage = 10; // Số dòng mỗi trang
   const [taikhoans, setTaiKhoans] = useState([]);
   const [selectedTaiKhoan, setSelectedTaiKhoan] = useState(null);
-  // Tính toán số trang
-  const pageCount = Math.ceil(filteredData.length / rowsPerPage);
+  const [pageSize, setPageSize] = useState(20); // tùy chọn mặc định
+  const pageSizeOptions = [20,50,100]; // tuỳ bạn thêm số lựa chọn
 
-  // Xử lý khi thay đổi trang
-  const handlePageChange = (event, newPage) => {
-    setPage(newPage);
-  };
+  const totalItems = filteredData.length;
+  const startRow = (page - 1) * pageSize + 1;
+  const endRow = Math.min(page * pageSize, totalItems);
+  const totalPages = Math.ceil(totalItems / pageSize);
+  let pagesToShow = [];
+  
+  if (totalPages <= 4) {
+    pagesToShow = Array.from({ length: totalPages }, (_, i) => i + 1);
+  } else {
+    if (page <= 3) {
+      pagesToShow = [1, 2, 3, 'more', totalPages];
+    } else if (page >= totalPages - 2) {
+      pagesToShow = [1, 'more', totalPages - 2, totalPages - 1, totalPages];
+    } else {
+      pagesToShow = [1, 'more', page - 1, page, page + 1, 'more', totalPages];
+    }
+  }
 
   // Lấy dữ liệu cho trang hiện tại
-  const paginatedData = filteredData.slice(
-    (page - 1) * rowsPerPage,
-    page * rowsPerPage
-  );
+  const paginatedData = filteredData.slice((page - 1) * pageSize, page * pageSize);
+
 
   const role = getRole();
   const nguoiQuanLyCTDTId = getNguoiQuanLyCTDTId();
 
   const handleKhoaChange = (event, newValue) => {
     setSelectedKhoaFilter(newValue);
+    setPage(1); // 👉 Reset về trang đầu tiên
+  
     if (!newValue) {
-      setFilteredData(data); // Nếu không chọn khoa nào, hiển thị toàn bộ dữ liệu
+      setFilteredData(data); 
     } else {
       const filtered = data.filter((row) => row.tenKhoa === newValue.ten);
       setFilteredData(filtered);
     }
   };
+  
 
   const handleOpenDialog = (id) => {
     setNganhId(id);
@@ -252,7 +305,7 @@ function TestPage() {
       setOpenSnackbar(true);
     }
   };
-  console.log("role, nguoiQuanLyCTDTId: ", role, nguoiQuanLyCTDTId);
+  // console.log("role, nguoiQuanLyCTDTId: ", role, nguoiQuanLyCTDTId);
   const fetchData = useCallback(async () => {
     const khoa = await getAllKhoas();
     setKhoas(khoa);
@@ -336,8 +389,10 @@ function TestPage() {
   const handleSearchChange = (event) => {
     const value = event.target.value;
     setSearchQuery(value);
+    setPage(1); // 👉 Reset về trang đầu tiên khi tìm kiếm
     filterData(value);
   };
+  
 
   const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
@@ -412,17 +467,19 @@ function TestPage() {
             </Box>
           </div>
           <div style={styles.cbKhoa}>
-            <Autocomplete
-              sx={{ width: "100%" }}
-              options={khoas}
-              getOptionLabel={(option) => option.ten || ""}
-              required
-              value={selectedKhoaFilter}
-              onChange={handleKhoaChange}
-              renderInput={(params) => (
-                <TextField {...params} label="Chọn khoa" size="small" />
-              )}
-            />
+          <Autocomplete
+  size="small" // 👉 Nhỏ gọn lại để align đẹp
+  sx={{ width: "100%" }}
+  options={khoas}
+  getOptionLabel={(option) => option.ten || ""}
+  required
+  value={selectedKhoaFilter}
+  onChange={handleKhoaChange}
+  renderInput={(params) => (
+    <TextField {...params} label="Chọn khoa" size="small" />
+  )}
+/>
+
           </div>
           <div style={styles.btnCreate}>
             {role === "Admin" && (
@@ -525,41 +582,82 @@ function TestPage() {
                 </TableRow>
               </TableHead>
               <TableBody sx={{ overflowY: "auto" }}>
-                {paginatedData.map((row, index) => (
-                  <StyledTableRow key={row.maNganh + row.ten}>
-                    <StyledTableCell align="center" width={50}>
-                      {(page - 1) * rowsPerPage + index + 1}
-                    </StyledTableCell>
-                    <StyledTableCell align="center" width={150}>
-                      {row.maNganh}
-                    </StyledTableCell>
-                    <StyledTableCell align="left">{row.ten}</StyledTableCell>
-                    <StyledTableCell align="center">
-                      {row.tenKhoa}
-                    </StyledTableCell>
-                    <StyledTableCell align="center">
-                      {row.tenNguoiQuanLy}
-                    </StyledTableCell>
-                    <StyledTableCell align="center" width={150}>
-                      <Tooltip title="Sửa ctđt">
-                        <IconButton onClick={() => handleClickOpenEdit(row.id)}>
-                          <EditIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Xem danh sách học phần">
-                        <IconButton onClick={() => handleOpenDialog(row.id)}>
-                          <FormatListBulletedIcon />
-                        </IconButton>
-                      </Tooltip>
-                    </StyledTableCell>
-                  </StyledTableRow>
-                ))}
-                <TestDialog
-                  nganhId={nganhId}
-                  open={openDialog}
-                  onClose={handleCloseDialog}
-                ></TestDialog>
-              </TableBody>
+  {paginatedData.map((row, index) => (
+    <StyledTableRow key={row.id}>
+      <StyledTableCell align="center">{(page - 1) * pageSize + index + 1}</StyledTableCell>
+      <StyledTableCell align="center">{row.maNganh}</StyledTableCell>
+      <StyledTableCell align="center">{row.ten}</StyledTableCell>
+      <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
+      <StyledTableCell align="center">{row.tenNguoiQuanLy}</StyledTableCell>
+      <StyledTableCell align="center">
+        <Tooltip
+          title="Sửa thông tin chương trình đào tạo"
+          arrow
+          componentsProps={{
+            tooltip: {
+              sx: {
+                backgroundColor: "#fff", // 👉 nền trắng
+                color: "#333",           // 👉 chữ đen
+                fontSize: 13,
+                boxShadow: 2,
+                borderRadius: 1,
+                px: 1.5,
+                py: 1,
+              },
+            },
+            arrow: {
+              sx: {
+                color: "#fff", // 👉 màu của mũi tên tooltip
+              },
+            },
+          }}
+        >
+        <IconButton
+          onClick={() => handleClickOpenEdit(row.id)}
+        >
+          <EditIcon/>
+        </IconButton>
+        </Tooltip>
+        <Tooltip
+          title="Sửa thông tin chương trình đào tạo"
+          arrow
+          componentsProps={{
+            tooltip: {
+              sx: {
+                backgroundColor: "#fff", // 👉 nền trắng
+                color: "#333",           // 👉 chữ đen
+                fontSize: 13,
+                boxShadow: 2,
+                borderRadius: 1,
+                px: 1.5,
+                py: 1,
+              },
+            },
+            arrow: {
+              sx: {
+                color: "#fff", // 👉 màu của mũi tên tooltip
+              },
+            },
+          }}
+        >
+          <IconButton
+            onClick={() => handleOpenDialog(row.id)}
+          >
+            <FormatListBulletedIcon />
+          </IconButton>
+        </Tooltip>
+        
+      </StyledTableCell>
+    </StyledTableRow>
+  ))}
+
+  <TestDialog
+    nganhId={nganhId}
+    open={openDialog}
+    onClose={handleCloseDialog}
+  />
+</TableBody>
+
             </Table>
           </TableContainer>
           <Dialog
@@ -656,17 +754,88 @@ function TestPage() {
             </MuiAlert>
           </Snackbar>
         </div>
-        <Stack
-          spacing={2}
-          sx={{ padding: "20px 0", display: "flex", alignItems: "center" }}
-        >
-          <Pagination
-            count={pageCount}
-            page={page}
-            onChange={handlePageChange}
-            color="primary"
-          />
-        </Stack>
+
+        <div style={styles.divPagination}>
+  {/* Trái: các nút số trang */}
+  <Box display="flex" alignItems="center">
+  <Box
+    sx={{
+      ...styles.squareStyle,
+      borderLeft: '1px solid #ccc',
+      borderTopLeftRadius: '6px',
+      borderBottomLeftRadius: '6px',
+      opacity: page === 1 ? 0.5 : 1,
+      pointerEvents: page === 1 ? 'none' : 'auto',
+    }}
+    onClick={() => setPage(page - 1)}
+  >
+    <ArrowLeftIcon fontSize="small" />
+  </Box>
+
+  {pagesToShow.map((item, idx) =>
+  item === 'more' ? (
+    <Box key={`more-${idx}`} sx={{ ...styles.squareStyle, pointerEvents: 'none' }}>
+      <MoreHorizIcon fontSize="small" />
+    </Box>
+  ) : (
+    <Box
+      key={item}
+      sx={{
+        ...styles.squareStyle,
+        ...(page === item
+          ? { backgroundColor: '#0071A6', color: '#fff', fontWeight: 'bold' }
+          : {}),
+      }}
+      onClick={() => setPage(item)}
+    >
+      {item}
+    </Box>
+  )
+)}
+
+
+
+  <Box
+    sx={{
+      ...styles.squareStyle,
+      borderTopRightRadius: '6px',
+      borderBottomRightRadius: '6px',
+      opacity: page >= totalPages ? 0.5 : 1,
+      pointerEvents: page >= totalPages ? 'none' : 'auto',
+    }}
+    onClick={() => setPage(page + 1)}
+  >
+    <ArrowRightIcon fontSize="small" />
+  </Box>
+</Box>
+
+
+  {/* Phải: chọn số bản ghi + hiển thị dòng */}
+  <Box display="flex" alignItems="center" gap={2}>
+    <Box display="flex" alignItems="center" gap={1}>
+      <span style={{ fontSize: 14 }}>Số bản ghi/trang:</span>
+      <Autocomplete
+  disableClearable
+  options={pageSizeOptions}
+  size="small"
+  sx={{ width: 80, backgroundColor: "#fff", borderRadius: "4px" }}
+  value={pageSize}
+  getOptionLabel={(option) => option.toString()} // ✅ Convert số sang chuỗi
+  onChange={(event, newValue) => {
+    setPageSize(newValue);
+    setPage(1); // reset về trang 1
+  }}
+  renderInput={(params) => (
+    <TextField {...params} variant="outlined" size="small" />
+  )}
+/>
+
+    </Box>
+    <span style={{ fontSize: 14, color: '#333' }}>
+      Dòng {startRow} đến {endRow} / {totalItems}
+    </span>
+  </Box>
+</div>
       </div>
     </Layout>
   );
