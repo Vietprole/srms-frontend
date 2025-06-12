@@ -155,7 +155,7 @@ export default function NoiCLOPLO() {
       const plos= await getPLOsByNganhId(selectedNganhFilter.id);
       const cloData = await getCLOsByHocPhanId(newValue.id);
       setPLOs(plos);
-      setCLOs(cloData);
+      setCLOs(sortCLOsByTen(cloData));
       const toggledData = {};
       for (const plo of plos) {
         const cloData = await getCLOsByPLOId(plo.id);
@@ -384,4 +384,13 @@ export default function NoiCLOPLO() {
     </Layout>
     
   );
+}
+
+function sortCLOsByTen(clos) {
+  return [...clos].sort((a, b) => {
+    // Lấy số phía sau "CLO"
+    const numA = parseInt(a.ten.replace(/\D/g, ""), 10);
+    const numB = parseInt(b.ten.replace(/\D/g, ""), 10);
+    return numA - numB;
+  });
 }

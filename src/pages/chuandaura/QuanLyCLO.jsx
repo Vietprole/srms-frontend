@@ -169,23 +169,23 @@ export default function QuanLyCLO() {
                 Tạo CLO
               </Button>
             </Box>
-            <TableContainer component={Paper}>
-              <Table>
+            <TableContainer component={Paper} sx={{ maxHeight: '60vh', overflowY: 'auto' }}>
+              <Table stickyHeader sx={{ tableLayout: "fixed" }}>
                 <TableHead>
                   <TableRow>
-                    <StyledTableCell>STT</StyledTableCell>
-                    <StyledTableCell>Tên CLO</StyledTableCell>
-                    <StyledTableCell align="left" sx={{ textAlign: "left" }}>Mô tả</StyledTableCell>
-                    <StyledTableCell>Thao tác</StyledTableCell>
+                    <StyledTableCell align="center" sx={{ width: 50 }}>STT</StyledTableCell>
+                    <StyledTableCell align="center" sx={{ width: 200 }}>Tên CLO</StyledTableCell>
+                    <StyledTableCell align="left">Mô tả</StyledTableCell>
+                    <StyledTableCell align="center" sx={{ width: 150 }}>Thao tác</StyledTableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {clos.map((clo, idx) => (
                     <TableRow key={clo.id}>
-                      <StyledBodyTableCell>{idx + 1}</StyledBodyTableCell>
-                      <StyledBodyTableCell>{clo.ten}</StyledBodyTableCell>
-                      <StyledBodyTableCell align="left" sx={{ textAlign: "left" }}>{clo.moTa}</StyledBodyTableCell>
-                      <StyledBodyTableCell>
+                      <StyledBodyTableCell align="center" sx={{ width: 50 }}>{idx + 1}</StyledBodyTableCell>
+                      <StyledBodyTableCell align="center" sx={{ width: 200 }}>{clo.ten}</StyledBodyTableCell>
+                      <StyledBodyTableCell align="left">{clo.moTa}</StyledBodyTableCell>
+                      <StyledBodyTableCell align="center" sx={{ width: 150 }}>
                         <Tooltip title="Sửa CLO">
                           <IconButton onClick={() => handleOpenEdit(clo)}><EditIcon /></IconButton>
                         </Tooltip>
