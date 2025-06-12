@@ -23,6 +23,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   color: "#fff",
   fontWeight: "normal",
   fontSize: 16,
+  fontFamily: "Roboto, sans-serif",
   borderRight: "1px solid #fff",
   textAlign: "center",
   // Nếu muốn bo góc trái/phải cho header:
@@ -45,6 +46,14 @@ const StyledBodyTableCell = styled(TableCell)(({ theme }) => ({
     borderRight: 0,
   },
 }));
+
+function sortCLOsByTen(clos) {
+  return [...clos].sort((a, b) => {
+    const numA = parseInt(a.ten.replace(/\D/g, ""), 10);
+    const numB = parseInt(b.ten.replace(/\D/g, ""), 10);
+    return numA - numB;
+  });
+}
 
 export default function QuanLyCLO() {
   const [hocPhans, setHocPhans] = useState([]);
@@ -70,7 +79,9 @@ export default function QuanLyCLO() {
   // Fetch CLO khi chọn học phần
   useEffect(() => {
     if (selectedHocPhan) {
-      getCLOsByHocPhanId(selectedHocPhan.id).then(setClos);
+      getCLOsByHocPhanId(selectedHocPhan.id).then((data) => {
+        setClos(sortCLOsByTen(data));
+      });
     } else {
       setClos([]);
     }
@@ -93,7 +104,7 @@ export default function QuanLyCLO() {
       await addCLO({ ten: tenCLO, moTa: moTaCLO, hocPhanId: selectedHocPhan.id });
       setSnackbar({ open: true, message: "Thêm CLO thành công", severity: "success" });
       setOpenAddDialog(false);
-      getCLOsByHocPhanId(selectedHocPhan.id).then(setClos);
+      getCLOsByHocPhanId(selectedHocPhan.id).then((data) => setClos(sortCLOsByTen(data)));
     } catch {
       setSnackbar({ open: true, message: "Thêm CLO thất bại", severity: "error" });
     }
@@ -117,7 +128,7 @@ export default function QuanLyCLO() {
       await updateCLO(selectedCLO.id, { ten: tenCLO, moTa: moTaCLO, hocPhanId: selectedHocPhan.id });
       setSnackbar({ open: true, message: "Cập nhật CLO thành công", severity: "success" });
       setOpenEditDialog(false);
-      getCLOsByHocPhanId(selectedHocPhan.id).then(setClos);
+      getCLOsByHocPhanId(selectedHocPhan.id).then((data) => setClos(sortCLOsByTen(data)));
     } catch {
       setSnackbar({ open: true, message: "Cập nhật CLO thất bại", severity: "error" });
     }
@@ -129,7 +140,7 @@ export default function QuanLyCLO() {
       await deleteCLO(selectedCLO.id);
       setSnackbar({ open: true, message: "Xóa CLO thành công", severity: "success" });
       setOpenDeleteDialog(false);
-      getCLOsByHocPhanId(selectedHocPhan.id).then(setClos);
+      getCLOsByHocPhanId(selectedHocPhan.id).then((data) => setClos(sortCLOsByTen(data)));
     } catch {
       setSnackbar({ open: true, message: "Xóa CLO thất bại", severity: "error" });
     }

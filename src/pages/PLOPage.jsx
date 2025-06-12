@@ -193,9 +193,9 @@ function PLOPage() {
   const fetchData = async () => {
     try {
       const plos = await getAllPLOs();
-      // Đảm bảo response từ API trả về thêm thông tin tenNganh
-      setData(plos);
-      setFilteredData(plos);
+      const sortedPlos = sortPLOsByTen(plos);
+      setData(sortedPlos);
+      setFilteredData(sortedPlos);
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu:", error);
       setSnackbarMessage("Không thể tải dữ liệu: " + error.message);
@@ -211,7 +211,8 @@ function PLOPage() {
       const filtered = data.filter((row) =>
         row.ten.toLowerCase().includes(query.toLowerCase())
       );
-      setFilteredData(filtered);
+      const sortedFiltered = sortPLOsByTen(filtered);
+      setFilteredData(sortedFiltered);
     }
   };
 
@@ -462,6 +463,37 @@ function PLOPage() {
     );
   }
 
+  function sortPLOsByTen(plos) {
+    return [...plos].sort((a, b) => {
+      const numA = parseInt(a.ten.replace(/\D/g, ""), 10);
+      const numB = parseInt(b.ten.replace(/\D/g, ""), 10);
+      return numA - numB;
+    });
+  }
+
+  function groupAndSortPLOs(plos) {
+    // Nhóm theo tenNganh
+    const groups = {};
+    plos.forEach((plo) => {
+      const key = plo.tenNganh || "Khác";
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(plo);
+    });
+
+    // Sắp xếp từng nhóm theo số thứ tự trong tên PLO
+    Object.keys(groups).forEach((key) => {
+      groups[key].sort((a, b) => {
+        const numA = parseInt(a.ten.replace(/\D/g, ""), 10);
+        const numB = parseInt(b.ten.replace(/\D/g, ""), 10);
+        return numA - numB;
+      });
+    });
+
+    return groups;
+  }
+
+  const groupedPLOs = groupAndSortPLOs(filteredData);
+
   return (
     <Layout>
       <div style={styles.main}>
@@ -594,12 +626,57 @@ function PLOPage() {
           </div>
         </div>
         <div style={styles.table}>
-          <TableVirtuoso
-            data={filteredData}
-            components={VirtuosoTableComponents}
-            fixedHeaderContent={fixedHeaderContent}
-            itemContent={rowContent}
-          />
+          {Object.keys(groupedPLOs).map((nganh, idx) => (
+            <TableContainer component={Paper} key={nganh} sx={{ marginBottom: 4 }}>
+              <Table>
+                <TableHead>
+                  <StyledTableRow>
+                    <StyledTableCell align="center">STT</StyledTableCell>
+                    <StyledTableCell align="center">Tên PLO</StyledTableCell>
+                    <StyledTableCell align="left">Mô tả cho PLO</StyledTableCell>
+                    <StyledTableCell align="center">Thuộc Chương Trình Đào Tạo</StyledTableCell>
+                    <StyledTableCell align="center"></StyledTableCell>
+                  </StyledTableRow>
+                </TableHead>
+                <TableBody>
+                  <TableRow>
+                    <StyledTableCell
+                      colSpan={5}
+                      sx={{
+                        backgroundColor: '#f5f5f5',
+                        fontWeight: 'bold',
+                        color: '#0071A6',
+                        fontFamily: 'Roboto, sans-serif',
+                        fontSize: 16
+                      }}
+                    >
+                      {nganh}
+                    </StyledTableCell>
+                  </TableRow>
+                  {groupedPLOs[nganh].map((row, index) => (
+                    <StyledTableRow key={row.id}>
+                      <StyledTableCell align="center">{index + 1}</StyledTableCell>
+                      <StyledTableCell align="center">{row.ten}</StyledTableCell>
+                      <StyledTableCell align="left">{row.moTa}</StyledTableCell>
+                      <StyledTableCell align="center">{row.tenNganh}</StyledTableCell>
+                      <StyledTableCell align="center">
+                        <Tooltip title="Sửa thông tin PLO">
+                          <IconButton onClick={() => handleOpenEditDialog(row.id)}>
+                            <EditIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Xóa PLO">
+                          <IconButton onClick={() => handleOpenDeleteDialog(row.id)}>
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </StyledTableCell>
+                    </StyledTableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          ))}
           <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
             <DialogTitle>Xóa Học Phần</DialogTitle>
             <DialogContent>
