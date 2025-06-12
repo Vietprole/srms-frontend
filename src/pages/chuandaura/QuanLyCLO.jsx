@@ -16,6 +16,7 @@ import {
 } from "@/api/api-clo";
 import { getAllHocPhans } from "@/api/api-hocphan";
 import { styled } from "@mui/material/styles";
+import { getAllNganhs, getHocPhansByNganhId } from "@/api/api-nganh";
 
 // Thêm StyledTableCell cho header
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -71,21 +72,26 @@ export default function QuanLyCLO() {
   const [errorTenCLO, setErrorTenCLO] = useState(false);
   const [errorMoTaCLO, setErrorMoTaCLO] = useState(false);
 
+  const [nganhs, setNganhs] = useState([]);
+  const [selectedNganh, setSelectedNganh] = useState(null);
+
   // Fetch học phần
   useEffect(() => {
-    getAllHocPhans().then(data => setHocPhans(data));
+    getAllNganhs().then(setNganhs);
   }, []);
 
   // Fetch CLO khi chọn học phần
   useEffect(() => {
-    if (selectedHocPhan) {
-      getCLOsByHocPhanId(selectedHocPhan.id).then((data) => {
-        setClos(sortCLOsByTen(data));
-      });
+    if (selectedNganh) {
+      getHocPhansByNganhId(selectedNganh.id).then(setHocPhans);
+      setSelectedHocPhan(null); // Reset học phần khi đổi ngành
+      setClos([]); // Reset CLO
     } else {
+      setHocPhans([]);
+      setSelectedHocPhan(null);
       setClos([]);
     }
-  }, [selectedHocPhan]);
+  }, [selectedNganh]);
 
   // Xử lý mở dialog thêm
   const handleOpenAdd = () => {
@@ -146,21 +152,42 @@ export default function QuanLyCLO() {
     }
   };
 
+  useEffect(() => {
+    if (selectedHocPhan) {
+      getCLOsByHocPhanId(selectedHocPhan.id).then((data) => setClos(sortCLOsByTen(data)));
+    } else {
+      setClos([]);
+    }
+  }, [selectedHocPhan]);
+
   return (
     <Layout>
       <Box sx={{ width: "100%", p: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
           <Typography variant="h6" fontWeight="bold">Danh sách CLO</Typography>
         </Box>
-        <Box sx={{ width: 300, mb: 2 }}>
-          <Autocomplete
-            options={hocPhans}
-            getOptionLabel={option => option.ten || ""}
-            value={selectedHocPhan}
-            onChange={(e, v) => setSelectedHocPhan(v)}
-            renderInput={params => <TextField {...params} label="Chọn học phần" variant="outlined" />}
-            noOptionsText="Không có học phần"
-          />
+        <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+          <Box sx={{ width: 300 }}>
+            <Autocomplete
+              options={nganhs}
+              getOptionLabel={option => option.ten || ""}
+              value={selectedNganh}
+              onChange={(e, v) => setSelectedNganh(v)}
+              renderInput={params => <TextField {...params} label="Chọn chương trình đào tạo" variant="outlined" />}
+              noOptionsText="Không có chương trình đào tạo"
+            />
+          </Box>
+          <Box sx={{ width: 300 }}>
+            <Autocomplete
+              options={hocPhans}
+              getOptionLabel={option => option.ten || ""}
+              value={selectedHocPhan}
+              onChange={(e, v) => setSelectedHocPhan(v)}
+              renderInput={params => <TextField {...params} label="Chọn học phần" variant="outlined" />}
+              noOptionsText="Không có học phần"
+              disabled={!selectedNganh}
+            />
+          </Box>
         </Box>
         {selectedHocPhan && (
           <Box>
