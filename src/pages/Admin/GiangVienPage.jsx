@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { styled } from '@mui/material/styles';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -30,58 +29,66 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Layout from '../Layout';
 import {getAllGiangViens,addGiangVien,getGiangVienById,updateGiangVien,deleteGiangVien} from "@/api/api-giangvien";
-import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
-import { TableVirtuoso } from 'react-virtuoso';
+import ArrowLeftIcon from "@mui/icons-material/ArrowLeft";
+import ArrowRightIcon from "@mui/icons-material/ArrowRight";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+
 function GiangVienPage() 
 {
   const styles = {
-    main:
-    {
-      width: '100%',
-      height: '91vh',
+    main: {
       display: 'flex',
       flexDirection: 'column',
-      overflowY: 'hidden',
-      padding: "10px",
+      height: '100%',
+      padding: '10px',
+      boxSizing: 'border-box',
+      overflow: 'hidden',
     },
-    title:
-    {
+  
+    title: {
       width: '100%',
-      height: '6%',
       fontSize: '1.2em',
       fontFamily: 'Roboto',
       fontWeight: 'bold',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'flex-start',
-      flexDirection: 'row',
+      justifyContent: 'space-between',
     },
-    btnMore:
-    {
+  
+    btnMore: {
       display: 'flex',
       justifyContent: 'flex-end',
       marginLeft: 'auto',
     },
-    tbActions:
-    {
+  
+    tbActions: {
       width: '100%',
-      height: '6%',
+      marginTop: 10,
       display: 'flex',
-      justifyContent: 'flex-start',
-      alignItems: 'center',
-      flexDirection: 'row',
+      alignItems: 'center', // căn giữa dọc cho cả dòng
+      gap: '10px',          // khoảng cách giữa các phần tử
+      paddingBottom: '10px',
     },
-    ipSearch:
-    {
+    
+  
+    ipSearch: {
       width: '25%',
-      height: '100%',
+      height: 40,
       justifyContent: 'flex-start',
       borderRadius: '5px',
     },
-    btnCreate:
-    {
+  
+    cbKhoa: {
+      width: "22%",
+      display: "flex",
+      alignItems: "center",
+      height: 40, // 👈 Thêm chiều cao cụ thể
+      marginLeft: "10px",
+    },
+    
+    btnCreate: {
       width: '15%',
-      height: '100%',
+      height: 40,
       display: 'flex',
       marginLeft: 'auto',
       justifyContent: 'center',
@@ -90,23 +97,52 @@ function GiangVienPage()
       color: 'white',
       cursor: 'pointer',
     },
-    table:
-    {
-      width: '100%',
-      height: '98%',
+  
+    table: {
+      flex: 1,
       display: 'flex',
       flexDirection: 'column',
-      paddingTop: '10px',
-      overflowY: 'auto',
+      overflow: 'hidden',
+      width: '100%', // 👈 thêm dòng này
     },
-    cbKhoa:
-    {
+    
+  
+    divPagination: {
+      flexShrink: 0,
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      borderTop: '1px solid #eee',
+      backgroundColor: '#f5f5f5',
+      padding: '5px 10px',
+    },
+  
+    squareStyle: {
+      width: 40,
+      height: 35,
+      backgroundColor: '#fff',
+      border: '1px solid #ccc',
+      borderLeft: 'none',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: 14,
+      cursor: 'pointer',
+      boxSizing: 'border-box',
+      transition: 'all 0.2s ease-in-out',
+      '&:hover': {
+        backgroundColor: '#0071A6',
+        color: '#fff',
+      },
+    },
+    filters: {
       width: '22%',
       height: '80%',
       marginLeft: '10px',
       marginBottom: '10px',
     },
   };
+  
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
@@ -124,6 +160,33 @@ function GiangVienPage()
   const [tenKhoa, setTenKhoa] = useState("");
   const [giangVienId, setGiangVienId] = useState(null);
   const [khoaId, setKhoaId] = useState("");
+
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10); // tùy chọn mặc định
+  const pageSizeOptions = [10,20,50]; // tuỳ bạn thêm số lựa chọn
+
+  const totalItems = filteredData.length;
+  const startRow = (page - 1) * pageSize + 1;
+  const endRow = Math.min(page * pageSize, totalItems);
+  const totalPages = Math.ceil(totalItems / pageSize);
+  let pagesToShow = [];
+  
+  if (totalPages <= 4) {
+    pagesToShow = Array.from({ length: totalPages }, (_, i) => i + 1);
+  } else {
+    if (page <= 3) {
+      pagesToShow = [1, 2, 3, 'more', totalPages];
+    } else if (page >= totalPages - 2) {
+      pagesToShow = [1, 'more', totalPages - 2, totalPages - 1, totalPages];
+    } else {
+      pagesToShow = [1, 'more', page - 1, page, page + 1, 'more', totalPages];
+    }
+  }
+
+  // Lấy dữ liệu cho trang hiện tại
+  const paginatedData = filteredData.slice((page - 1) * pageSize, page * pageSize);
+
+
   const handleOpenEditDialog  = async (giangVienId) => {
     const giangVien = await getGiangVienById(giangVienId);
     setTenGiangVien(giangVien.ten);
@@ -152,6 +215,7 @@ function GiangVienPage()
   }
 
   const handleKhoaChange = (event, newValue) => {
+    setPage(1); // Reset về trang 1 khi thay đổi khoa
     setSelectedKhoaFilter(newValue);
     if (!newValue) {
       setFilteredData(data);
@@ -195,6 +259,7 @@ function GiangVienPage()
 
   
   const handleSearchChange = (event) => {
+    setPage(1); // Reset về trang 1 khi tìm kiếm
     const value = event.target.value;
     setSearchQuery(value); 
     filterData(value); 
@@ -329,65 +394,6 @@ function GiangVienPage()
       console.log(error);
     }
   };
-  const columns = [
-    { width: 150, label: "STT", dataKey: "index", align: "center" },
-    { width: 300, label: "Mã Giảng Viên", dataKey: "maGV", align: "center" },
-    { width: 400, label: "Tên Giảng Viên", dataKey: "ten", align: "center" },
-    { label: "Tên Khoa", dataKey: "tenKhoa", align: "center" },
-    { width: 150, label: "", dataKey: "actions", align: "center" },
-  ];
-  
-  const VirtuosoTableComponents = {
-    Scroller: React.forwardRef((props, ref) => (
-      <TableContainer component={Paper} {...props} ref={ref} sx={{ height: "calc(100vh - 200px)" }} />
-    )),
-    
-    Table: (props) => (
-      <Table {...props} sx={{ borderCollapse: "separate", tableLayout: "fixed", backgroundColor: "white" }} />
-    ),
-    
-    TableHead: React.forwardRef((props, ref) => <TableHead {...props} ref={ref} />),
-    TableRow: StyledTableRow, // Sử dụng StyledTableRow bạn đã định nghĩa
-    TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
-    TableCell: StyledTableCell, // Sử dụng StyledTableCell bạn đã định nghĩa
-  };
-  
-  const fixedHeaderContent = () => (
-    <StyledTableRow>
-      {columns.map((column) => (
-        <StyledTableCell
-          key={column.dataKey}
-          variant="head"
-          align={column.align}
-          style={{ width: column.width, textAlign: column.align }} // Đảm bảo text ở giữa
-        >
-          {column.label}
-        </StyledTableCell>
-      ))}
-    </StyledTableRow>
-  );
-  
-  const rowContent = (index, row) => (
-    <>
-      <StyledTableCell align="center">{index + 1}</StyledTableCell> {/* STT */}
-      <StyledTableCell align="center">{row.maGiangVien}</StyledTableCell> {/* STT */}
-      <StyledTableCell align="center">{row.ten}</StyledTableCell>
-      <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
-      <StyledTableCell align="center">
-        <Tooltip title="Sửa giảng viên">
-          <IconButton onClick={() => handleOpenEditDialog(row.id)}>
-            <EditIcon />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Xóa giảng viên">
-          <IconButton onClick={() => handleOpenDeleteDialog(row.id)}>
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      </StyledTableCell>
-    </>
-  );
-
   return (
     <Layout>
       <div style={styles.main}>
@@ -397,115 +403,125 @@ function GiangVienPage()
           <IconButton aria-label="more actions"><MoreVertIcon/></IconButton>
         </div>
       </div>
-      <div style={styles.tbActions}>
-        <div style={styles.ipSearch}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              border: "2px solid #ccc", // Viền ngoài
-              borderRadius: "20px", // Bo tròn góc
-              padding: "4px 8px", // Khoảng cách nội dung
-              width: "100%", // Chiều rộng toàn khung tìm kiếm
-              maxWidth: "100%", // Đảm bảo full width
-              "&:focus-within": {
-                border: "2px solid #337AB7", // Đổi màu viền khi focus
-              },
-              height: "100%",
-            }}
-          >
+      <Box
+sx={{
+  display: "flex",
+  alignItems: "center",
+  gap: 2,                 // spacing
+  width: "100%",
+  mt: 1,
+  mb: 2,
+}}
+>
+  {/* Tìm kiếm theo tên giảng viên */}
+  <Box sx={{ minWidth: 300 /* Giảm chiều ngang */ }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                border: "2px solid #ccc",
+                borderRadius: "10px",
+                px: 1.2,       // padding ngang
+                py: 0.5,       // padding dọc
+                "&:focus-within": {
+                  border: "2px solid #337AB7",
+                },
+              }}
+            >
             <TextField
               fullWidth
-              fontSize="10px"
-              placeholder="Tìm kiếm theo tên giảng viên..."
               variant="standard"
-              autoComplete='off'
+              placeholder="Tìm kiếm theo tên giảng viên..."
+              autoComplete="off"
               InputProps={{
                 disableUnderline: true,
                 startAdornment: (
-                  <React.Fragment>
-                    <IconButton aria-label="more actions">
-                      <SearchIcon sx={{ color: "#888" }} />
-                    </IconButton>
-                  </React.Fragment>
+                  <IconButton aria-label="search" size="small">
+                    <SearchIcon sx={{ color: "#888", fontSize: 20 }} fontSize="small"/>
+                  </IconButton>
                 ),
+                sx: {
+                  fontSize: 15, // chỉnh font nhỏ hơn nếu muốn
+                  height: "28px", // kiểm soát trực tiếp chiều cao
+                },
               }}
-              value={searchQuery} // Liên kết giá trị tìm kiếm với state
-              onChange={handleSearchChange} // Gọi hàm xử lý khi thay đổi
+              value={searchQuery}
+              onChange={handleSearchChange}
             />
+            </Box>
           </Box>
-        </div>
-        <div style={styles.cbKhoa}>
-        <Autocomplete
-          sx={{ width: "100%" }}
-          options={khoas}
-          getOptionLabel={(option) => option.ten || ""}
-          required
-          value={selectedKhoaFilter}
-          onChange={handleKhoaChange}
-          renderInput={(params) => (
-            <TextField {...params} label="Chọn khoa" size="small" />
-          )}
-        />
+
+ {/* Bộ lọc khoa */}
+<Box sx={{ minWidth: 250, maxWidth: 300 }}>
+  <Autocomplete
+    options={khoas}
+    getOptionLabel={(option) => option.ten || ""}
+    value={selectedKhoaFilter}
+    onChange={handleKhoaChange}
+    renderInput={(params) => (
+      <TextField {...params} label="Chọn khoa" size="small" />
+    )}
+  />
+</Box>
+
+{/* Nút tạo giảng viên */}
+<Box sx={{ display: "flex", justifyContent: "flex-end", flex: 1 }}>
+            <Box sx={{ minWidth: 160 }}>
+  <Button fullWidth variant="contained" onClick={handleOpenAddDialog}>
+    Tạo giảng viên
+  </Button>
+  </Box>
+</Box>
 
 
-        </div>
-        <div style={styles.btnCreate}>
-          <Button sx={{width:"100%"}} variant="contained" onClick={handleOpenAddDialog}>Tạo giảng viên</Button>
-          <Dialog id='themGiangVien' fullWidth open={openAddDialog} onClose={handleCloseAddDialog} >
-                      <DialogTitle>Tạo giảng viên mới:</DialogTitle>
-                      <DialogContent >
-                        <DialogContentText>
-                          Thêm giảng viên mới vào hệ thống
-                        </DialogContentText>
-                        <TextField
-                          autoFocus
-                          required
-                          id='tenGiangVien'
-                          margin="dense"
-                          label="Tên giảng viên"
-                          fullWidth
-                          variant="standard"
-                          onBlur={(e) => setTenGiangVien(e.target.value.trim())}
-                          error={errorTenGiangVien}
-                          onInput={(e) => setErrorTenGiangVien(e.target.value.trim() === "")}
-                          helperText="Vui lòng nhập tên giảng viên"
-                          autoComplete='off'
-                        />
-          
-                       <Autocomplete
-                          options={khoas}
-                          getOptionLabel={(option) => option.ten || ''}
-                          noOptionsText="Không tìm thấy khoa"
-                          required
-                          id="disable-clearable"
-                          disableClearable
-                          onChange={(event, newValue) => setSelectedKhoa(newValue)} // Cập nhật state khi chọn khoa
-                          renderInput={(params) => (
-                            <TextField {...params} label="Chọn khoa" variant="standard" />
-                          )}
-                        />
-                      </DialogContent>
-                      <DialogActions>
-                        <Button onClick={handleCloseAddDialog} >Hủy</Button>
-                        <Button
-                          onClick={handleSubmitAdd}
-                        >
-                          Lưu
-                        </Button>
-                      </DialogActions>
-                    </Dialog>
-        </div>
-      </div>
+  {/* Dialog thêm giảng viên */}
+  <Dialog
+    id="themGiangVien"
+    fullWidth
+    open={openAddDialog}
+    onClose={handleCloseAddDialog}
+  >
+    <DialogTitle>Tạo giảng viên mới:</DialogTitle>
+    <DialogContent>
+      <DialogContentText>
+        Thêm giảng viên mới vào hệ thống
+      </DialogContentText>
+      <TextField
+        autoFocus
+        required
+        id="tenGiangVien"
+        margin="dense"
+        label="Tên giảng viên"
+        fullWidth
+        variant="standard"
+        onBlur={(e) => setTenGiangVien(e.target.value.trim())}
+        error={errorTenGiangVien}
+        onInput={(e) => setErrorTenGiangVien(e.target.value.trim() === "")}
+        helperText="Vui lòng nhập tên giảng viên"
+        autoComplete="off"
+      />
+      <Autocomplete
+        options={khoas}
+        getOptionLabel={(option) => option.ten || ""}
+        noOptionsText="Không tìm thấy khoa"
+        required
+        id="disable-clearable"
+        disableClearable
+        onChange={(event, newValue) => setSelectedKhoa(newValue)}
+        renderInput={(params) => (
+          <TextField {...params} label="Chọn khoa" variant="standard" />
+        )}
+      />
+    </DialogContent>
+    <DialogActions>
+      <Button onClick={handleCloseAddDialog}>Hủy</Button>
+      <Button onClick={handleSubmitAdd}>Lưu</Button>
+    </DialogActions>
+  </Dialog>
+</Box>
+
       <div style={styles.table}>
-      <TableVirtuoso
-      style={{ width: "100%", height: "100%" }} // Đảm bảo full height
-      data={filteredData}
-      components={VirtuosoTableComponents}
-      fixedHeaderContent={fixedHeaderContent}
-      itemContent={rowContent}
-    />
-       {/* <TableContainer component={Paper}>
+       <TableContainer component={Paper}>
        <Table sx={{ minWidth: 700 }} aria-label="customized table">
          <TableHead sx={{position: 'sticky',top: 0,  zIndex: 1,backgroundColor: "#0071A6",}}>
           <TableRow>
@@ -517,20 +533,20 @@ function GiangVienPage()
 
          </TableHead>
          <TableBody sx={{ overflowY: "auto" }}>
-            {filteredData.map((row, index) => (
+            {paginatedData.map((row, index) => (
               <StyledTableRow key={row.maHocPhan || index}>
                 <StyledTableCell align="center" width={150}>{index + 1}</StyledTableCell>
                 <StyledTableCell align="center">{row.ten}</StyledTableCell>
                 <StyledTableCell align="center" width={450}>{row.tenKhoa}</StyledTableCell>
                 <StyledTableCell align="center" width={150}>
                   <Tooltip title="Sửa giảng viên">
-                    <IconButton onClick={() => handleOpenEditDialog(row.id)}>
-                      <EditIcon />
+                    <IconButton onClick={() => handleOpenEditDialog(row.id)} size='small'>
+                      <EditIcon fontSize='small' />
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="Xóa giảng viên">
-                    <IconButton onClick={() => handleOpenDeleteDialog(row.id)}>
-                      <DeleteIcon />
+                    <IconButton onClick={() => handleOpenDeleteDialog(row.id)} size='small'>
+                      <DeleteIcon fontSize='small' />
                     </IconButton>
                   </Tooltip>
                 </StyledTableCell>
@@ -540,7 +556,7 @@ function GiangVienPage()
             
         </TableBody>
        </Table>
-     </TableContainer> */}
+     </TableContainer>
      <Dialog id='suaGiangVien' fullWidth open={openEditDialog} onClose={handleCloseEditDialog}>
                       <DialogTitle>Sửa thông tin giảng viên:</DialogTitle>
                       <DialogContent >
@@ -612,6 +628,85 @@ function GiangVienPage()
       </Snackbar>
       
       </div>
+      <div style={styles.divPagination}>
+  {/* Trái: các nút số trang */}
+  <Box display="flex" alignItems="center">
+  <Box
+    sx={{
+      ...styles.squareStyle,
+      borderLeft: '1px solid #ccc',
+      borderTopLeftRadius: '6px',
+      borderBottomLeftRadius: '6px',
+      opacity: page === 1 ? 0.5 : 1,
+      pointerEvents: page === 1 ? 'none' : 'auto',
+    }}
+    onClick={() => setPage(page - 1)}
+  >
+    <ArrowLeftIcon fontSize="small" />
+  </Box>
+
+  {pagesToShow.map((item, idx) =>
+  item === 'more' ? (
+    <Box key={`more-${idx}`} sx={{ ...styles.squareStyle, pointerEvents: 'none' }}>
+      <MoreHorizIcon fontSize="small" />
+    </Box>
+  ) : (
+    <Box
+      key={item}
+      sx={{
+        ...styles.squareStyle,
+        ...(page === item
+          ? { backgroundColor: '#0071A6', color: '#fff', fontWeight: 'bold' }
+          : {}),
+      }}
+      onClick={() => setPage(item)}
+    >
+      {item}
+    </Box>
+  )
+)}
+
+  <Box
+    sx={{
+      ...styles.squareStyle,
+      borderTopRightRadius: '6px',
+      borderBottomRightRadius: '6px',
+      opacity: page >= totalPages ? 0.5 : 1,
+      pointerEvents: page >= totalPages ? 'none' : 'auto',
+    }}
+    onClick={() => setPage(page + 1)}
+  >
+    <ArrowRightIcon fontSize="small" />
+  </Box>
+</Box>
+
+
+  {/* Phải: chọn số bản ghi + hiển thị dòng */}
+  <Box display="flex" alignItems="center" gap={2}>
+    <Box display="flex" alignItems="center" gap={1}>
+      <span style={{ fontSize: 14 }}>Số bản ghi/trang:</span>
+      <Autocomplete
+        disableClearable
+        options={pageSizeOptions}
+        size="small"
+        sx={{ width: 80, backgroundColor: "#fff", borderRadius: "4px" }}
+        value={pageSize}
+        getOptionLabel={(option) => option.toString()} // ✅ Convert số sang chuỗi
+        onChange={(event, newValue) => {
+          setPageSize(newValue);
+          setPage(1); // reset về trang 1
+        }}
+        renderInput={(params) => (
+          <TextField {...params} variant="outlined" size="small" />
+        )}
+      />
+
+    </Box>
+    <span style={{ fontSize: 14, color: '#333' }}>
+      Dòng {startRow} đến {endRow} / {totalItems}
+    </span>
+  </Box>
+</div>
     </div>
     </Layout>
   );

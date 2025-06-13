@@ -45,46 +45,58 @@ const giangVienId = getGiangVienId();
 
 const styles = {
   main: {
-    width: '100%',
-    height: '91vh',
     display: 'flex',
     flexDirection: 'column',
-    overflowY: 'hidden',
-    padding: "10px",
+    height: '100%',
+    padding: '10px',
+    boxSizing: 'border-box',
+    overflow: 'hidden',
   },
+
   title: {
     width: '100%',
-    height: '6%',
     fontSize: '1.2em',
     fontFamily: 'Roboto',
     fontWeight: 'bold',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
+
   btnMore: {
     display: 'flex',
     justifyContent: 'flex-end',
     marginLeft: 'auto',
   },
+
   tbActions: {
     width: '100%',
-    height: '6%',
+    marginTop: 10,
     display: 'flex',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    flexDirection: 'row',
+    alignItems: 'center', // căn giữa dọc cho cả dòng
+    gap: '10px',          // khoảng cách giữa các phần tử
+    paddingBottom: '10px',
   },
+  
+
   ipSearch: {
     width: '25%',
-    height: '100%',
+    height: 40,
     justifyContent: 'flex-start',
     borderRadius: '5px',
   },
+
+  cbKhoa: {
+    width: "22%",
+    display: "flex",
+    alignItems: "center",
+    height: 40, // 👈 Thêm chiều cao cụ thể
+    marginLeft: "10px",
+  },
+  
   btnCreate: {
     width: '15%',
-    height: '100%',
+    height: 40,
     display: 'flex',
     marginLeft: 'auto',
     justifyContent: 'center',
@@ -93,15 +105,45 @@ const styles = {
     color: 'white',
     cursor: 'pointer',
   },
+
   table: {
-    width: '100%',
-    height: '100%',
+    flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    paddingTop: '10px',
-    overflowY: 'auto',
+    overflow: 'hidden',
+    width: '100%', // 👈 thêm dòng này
   },
-  filterBox: {
+  
+
+  divPagination: {
+    flexShrink: 0,
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderTop: '1px solid #eee',
+    backgroundColor: '#f5f5f5',
+    padding: '5px 10px',
+  },
+
+  squareStyle: {
+    width: 40,
+    height: 35,
+    backgroundColor: '#fff',
+    border: '1px solid #ccc',
+    borderLeft: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 14,
+    cursor: 'pointer',
+    boxSizing: 'border-box',
+    transition: 'all 0.2s ease-in-out',
+    '&:hover': {
+      backgroundColor: '#0071A6',
+      color: '#fff',
+    },
+  },
+  filters: {
     width: '22%',
     height: '80%',
     marginLeft: '10px',
@@ -196,36 +238,6 @@ export default function SinhVienPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  const handleGoClick = () => {
-    setKhoaId(comboBoxKhoaId);
-    setNganhId(comboBoxNganhId);
-    setLopHocPhanId(comboBoxLopHocPhanId);
-    const url = createSearchURL(baseUrl, { 
-      khoaId: comboBoxKhoaId, 
-      nganhId: comboBoxNganhId,
-      lopHocPhanId: comboBoxLopHocPhanId 
-    });
-    navigate(url);
-  };
-
-  const handleAddSinhVien = async (newSinhVien) => {
-    try {
-      await addSinhVien(newSinhVien);
-      fetchData();
-    } catch (error) {
-      
-    }
-  };
-
-  const handleUpdateSinhVien = async (updatedSinhVien) => {
-    try {
-      await updateSinhVien(updatedSinhVien);
-      fetchData();
-    } catch (error) {
-      // toast.error("Cập nhật sinh viên thất bại!");
-    }
-  };
 
   const handleDeleteSinhVien = async () => {
     try {
@@ -362,10 +374,10 @@ export default function SinhVienPage() {
     filterData(newValue, null);
   };
 
-  const handleNganhChange = (event, newValue) => {
-    setSelectedNganh(newValue);
-    filterData(selectedKhoa, newValue);
-  };
+  // const handleNganhChange = (event, newValue) => {
+  //   setSelectedNganh(newValue);
+  //   filterData(selectedKhoa, newValue);
+  // };
 
   const filterData = (khoa, nganh) => {
     let filteredData = data;
@@ -396,78 +408,6 @@ export default function SinhVienPage() {
       setNganhItems([]);
     }
   };
-
-  const columns = [
-    { width: 50, label: "STT", dataKey: "index", align: "center" },
-    { width: 150, label: "Mã sinh viên", dataKey: "maSinhVien", align: "center" },
-    { label: "Tên sinh viên", dataKey: "ten", align: "left" },
-    { width: 200, label: "Khoa", dataKey: "tenKhoa", align: "center" },
-    { width: 250, label: "Ngành", dataKey: "tenNganh", align: "center" },
-    { width: 120, label: "Năm nhập học", dataKey: "namNhapHoc", align: "center" },
-    { width: 150, label: "Thao tác", dataKey: "actions", align: "center" }, // nếu Admin hoặc Phòng Đào Tạo
-  ];
-  function fixedHeaderContent() {
-    return (
-      <StyledTableRow>
-        {columns.map((column) => (
-          <StyledTableCell
-            key={column.dataKey}
-            variant="head"
-            align={column.align}
-            style={{ width: column.width, textAlign: column.align }}
-          >
-            {column.label}
-          </StyledTableCell>
-        ))}
-      </StyledTableRow>
-    );
-  }
-  function rowContent(index, row) {
-    return (
-      <>
-        <StyledTableCell align="center">{index + 1}</StyledTableCell>
-        <StyledTableCell align="center">{row.maSinhVien}</StyledTableCell>
-        <StyledTableCell align="left">{row.ten}</StyledTableCell>
-        <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
-        <StyledTableCell align="center">{row.tenNganh}</StyledTableCell>
-        <StyledTableCell align="center">{row.namNhapHoc}</StyledTableCell>
-        {(role === "Admin" || role === "PhongDaoTao") ? (
-          <StyledTableCell align="center">
-            <Tooltip title="Sửa sinh viên">
-              <IconButton onClick={() => handleOpenEditDialog(row.id)}>
-                <EditIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Xóa sinh viên">
-              <IconButton onClick={() => handleOpenDeleteDialog(row.id)}>
-                <DeleteIcon />
-              </IconButton>
-            </Tooltip>
-          </StyledTableCell>
-        ) : (
-          <StyledTableCell />
-        )}
-      </>
-    );
-  }
-  const VirtuosoTableComponents = {
-    // eslint-disable-next-line react/display-name
-    Scroller: React.forwardRef((props, ref) => (
-      <TableContainer component={Paper} {...props} ref={ref} sx={{ height: "calc(100vh - 200px)", overflowY: "auto" }} />
-    )),
-    Table: (props) => (
-      <Table {...props} sx={{ borderCollapse: "separate", tableLayout: "fixed", backgroundColor: "white" }} />
-    ),
-    // eslint-disable-next-line react/display-name
-    TableHead: React.forwardRef((props, ref) => (
-      <TableHead {...props} ref={ref} sx={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#0071A6" }} />
-    )),
-    TableRow: StyledTableRow,
-    // eslint-disable-next-line react/display-name
-    TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
-    TableCell: StyledTableCell,
-  };  
-
   return (
     <Layout>
       <div style={styles.main}>
@@ -555,15 +495,15 @@ export default function SinhVienPage() {
         </div>
 
         <div style={styles.table}>
-        <TableVirtuoso
+        {/* <TableVirtuoso
   data={filteredData}
   components={VirtuosoTableComponents}
   fixedHeaderContent={fixedHeaderContent}
   itemContent={rowContent}
-  style={{ width: "100%", height: "calc(100vh - 250px)" }}
-/>
+  style={{ width: "100%", height: "calc(100vh - 00px)" }}
+/> */}
 
-          {/* <TableContainer component={Paper}>
+          <TableContainer component={Paper}>
             <Table sx={{ minWidth: 700 }} aria-label="customized table">
               <TableHead sx={{position: 'sticky', top: 0, zIndex: 1, backgroundColor: "#0071A6"}}>
                 <TableRow>
@@ -605,7 +545,7 @@ export default function SinhVienPage() {
                 ))}
               </TableBody>
             </Table>
-          </TableContainer> */}
+          </TableContainer>
         </div>
 
         <Dialog open={openAddDialog} onClose={handleCloseAddDialog} fullWidth>

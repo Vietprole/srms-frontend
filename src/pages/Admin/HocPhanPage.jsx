@@ -547,7 +547,7 @@ function HocPhanPage()
       <div style={styles.title}>
         <span>Danh sách học phần</span>
         <div style={styles.btnMore}>
-          <IconButton aria-label="more actions"><MoreVertIcon/></IconButton>
+          <IconButton aria-label="more actions" size='small'><MoreVertIcon fontSize='small'/></IconButton>
         </div>
       </div>
       <div style={styles.tbActions}>
@@ -701,13 +701,13 @@ function HocPhanPage()
           <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
           <StyledTableCell align="center">
             <Tooltip title="Sửa học phần" arrow>
-              <IconButton onClick={() => handleOpenEditDialog(row.id)}>
-                <EditIcon />
+              <IconButton onClick={() => handleOpenEditDialog(row.id)} size='small'>
+                <EditIcon fontSize='small' />
               </IconButton>
             </Tooltip>
             <Tooltip title="Xóa học phần" arrow>
-              <IconButton onClick={() => handleOpenDeleteDialog(row.id)}>
-                <DeleteIcon />
+              <IconButton onClick={() => handleOpenDeleteDialog(row.id)} size='small'>
+                <DeleteIcon fontSize='small'/>
               </IconButton>
             </Tooltip>
           </StyledTableCell>

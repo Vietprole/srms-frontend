@@ -138,7 +138,7 @@ const styles = {
   },
 
   squareStyle: {
-    width: 35,
+    width: 40,
     height: 35,
     backgroundColor: '#fff',
     border: '1px solid #ccc',
@@ -691,7 +691,7 @@ export default function LopHocPhanPage() {
         <div style={styles.title}>
           <span>Danh sách lớp học phần</span>
           <div style={styles.btnMore}>
-            <IconButton aria-label="more actions"><MoreVertIcon/></IconButton>
+            <IconButton aria-label="more actions" size="small"><MoreVertIcon fontSize="small"/></IconButton>
           </div>
         </div>
         
@@ -729,7 +729,7 @@ export default function LopHocPhanPage() {
                 disableUnderline: true,
                 startAdornment: (
                   <IconButton aria-label="search" size="small">
-                    <SearchIcon sx={{ color: "#888", fontSize: 20 }} />
+                    <SearchIcon sx={{ color: "#888", fontSize: 20 }} fontSize="small"/>
                   </IconButton>
                 ),
                 sx: {
@@ -807,18 +807,18 @@ export default function LopHocPhanPage() {
           <StyledTableCell align="center">{row.tenGiangVien}</StyledTableCell>
           <StyledTableCell align="center">
             <Tooltip title="Sửa lớp học phần" arrow>
-              <IconButton onClick={() => handleOpenEditDialog(row.id)}>
-                <EditIcon />
+              <IconButton onClick={() => handleOpenEditDialog(row.id)}  size="small">
+                <EditIcon   fontSize="small"/>
               </IconButton>
             </Tooltip>
             <Tooltip title="Xem danh sách sinh viên" arrow>
-              <IconButton onClick={() => navigate(`/lophocphan/${row.id}/sinhvien`)}>
-                <FormatListBulletedIcon />
+              <IconButton onClick={() => navigate(`/lophocphan/${row.id}/sinhvien`)} size="small">
+                <FormatListBulletedIcon  fontSize="small" />
               </IconButton>
             </Tooltip>
             <Tooltip title="Xóa lớp học phần" arrow>
-              <IconButton onClick={() => handleOpenDeleteDialog(row.id)}>
-                <DeleteIcon />
+              <IconButton onClick={() => handleOpenDeleteDialog(row.id)} size="small">
+                <DeleteIcon   fontSize="small"/>
               </IconButton>
             </Tooltip>
           </StyledTableCell>

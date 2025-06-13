@@ -59,8 +59,8 @@ function KhoaPage()
   const [data, setData] = useState([]);
   const [searchQuery, setSearchQuery] = useState(""); // Lưu giá trị tìm kiếm
   const [filteredData, setFilteredData] = useState(data); // Lưu dữ liệu đã lọc
-  const [pageSize, setPageSize] = useState(10); // 👈 Số bản ghi/trang mặc định
-  const pageSizeOptions = [10,50, 100, 200];
+  const [pageSize, setPageSize] = useState(20); // 👈 Số bản ghi/trang mặc định
+  const pageSizeOptions = [20,50, 100];
   const [currentPage, setCurrentPage] = useState(1); // Trang hiện tại
   const [totalItems, setTotalItems] = useState(0); // Tổng số bản ghi thực tế
   const startRow = (currentPage - 1) * pageSize + 1;
@@ -92,6 +92,7 @@ useEffect(() => {
     setOpen(false);
   };
   useEffect(() => {
+    if (!data.length) return; // ⛔ Không làm gì khi data chưa load xong
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
   
@@ -111,12 +112,7 @@ useEffect(() => {
     console.log(khoas);
     setData(khoas);
   };
-  
-  useEffect(() => {
-    // Only set filteredData once data has been loaded
-    setFilteredData(data);
-  }, [data]);
-  
+
   const filterData = (query) => {
     if (!query.trim()) {
       setFilteredData(data); // If search query is empty, show all data
@@ -712,7 +708,7 @@ const styles = {
   
   
   squareStyle: {
-    width: 35,
+    width: 40,
     height: 35,
     backgroundColor: '#fff',
     border: '1px solid #ccc',

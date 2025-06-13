@@ -128,7 +128,7 @@ function TestPage() {
     },
   
     squareStyle: {
-      width: 35,
+      width: 40,
       height: 35,
       backgroundColor: '#fff',
       border: '1px solid #ccc',
