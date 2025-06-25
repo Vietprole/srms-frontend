@@ -53,7 +53,7 @@ import { useNavigate } from "react-router-dom";
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-
+import DialogSinhVienInLHP from '../components/DialogSinhVienInLHP';
 
 const styles = {
   main: {

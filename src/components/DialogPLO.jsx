@@ -2,7 +2,7 @@ import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
-import { useEffect, useState } from "react";
+import { useEffect, useState,useRef } from "react";
 import { getNganhById } from "@/api/api-nganh";
 import Typography  from "@mui/material/Typography";
 import DialogContentText from '@mui/material/DialogContentText';
@@ -20,22 +20,24 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { styled } from '@mui/material/styles';
-import Checkbox from "@mui/material/Checkbox";
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
-import { removeHocPhanFromNganh } from "@/api/api-nganh";
-import SaveIcon from '@mui/icons-material/Save';
-import { getHocPhansByNganhId,updateHocPhanCotLois } from "@/api/api-nganh";
-import { getRole } from "@/utils/storage";
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import Autocomplete from '@mui/material/Autocomplete';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import AddIcon from '@mui/icons-material/Add';
-import DialogAddHocPhan from "./DialogAddHocPhan";
-import FormControlLabel from "@mui/material/FormControlLabel";
+import {
+  addPLO,
+  updatePLO,
+  getPLOById,
+  deletePLO,
+  getPLOsByNganhId,
+} from "@/api/api-plo";
+import EditIcon from '@mui/icons-material/Edit';
+import Tooltip from '@mui/material/Tooltip';
 // eslint-disable-next-line react/prop-types
-function DialogHocPhan({ nganhId, open, onClose }) {
+function DialogPLO({ nganhId, open, onClose }) {
   const styles = {
     main: {
       display: "flex",
@@ -51,6 +53,7 @@ function DialogHocPhan({ nganhId, open, onClose }) {
       alignItems: "center",
       gap: "12px",
       flexWrap: "wrap", // nếu màn hình hẹp sẽ xuống dòng hợp lý
+      paddingBottom: "10px",
     },
     mainContent: {
       display: "flex",
@@ -113,23 +116,58 @@ function DialogHocPhan({ nganhId, open, onClose }) {
       },
     },
   };
-  const [openAddHocPhan, setOpenAddHocPhan] = useState(false);
   const [nganh, setNganh] = useState(null);
-  const [hocPhanDaChon, setHocPhanDaChon] = useState([]);
-  const [selectedDeleteHocPhan, setSelectedDeleteHocPhan] = useState([]);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [tongSoTinChi, setTongSoTinChi] = useState(0);
-  const [openAlertDialog, setOpenAlertDialog] = useState(false);
   const [searchQuery, setSearchQuery] = useState(""); // Lưu giá trị tìm kiếm
-  const [filteredData, setFilteredData] = useState(hocPhanDaChon); // Lưu dữ liệu đã lọc
-  const [originalData, setOriginalData] = useState([]);
-  const [userRole, setUserRole] = useState('');
+  const [filteredData, setFilteredData] = useState(""); // Lưu dữ liệu đã lọc
+  const [openAddDialog, setOpenAddDialog] = useState(false);
+  const [tenPLO, setTenPLO] = useState("");
+  const [errorTenPLO, setErrorTenPLO] = useState(false);
+  const [moTaPLO, setMoTaPLO] = useState("");
+  const [errorMoTaPLO, setErrorMoTaPLO] = useState(false);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const tenPLORef = useRef("");
+  const moTaPLORef = useRef("");
+  const [ploID, setPloID] = useState("");
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const handleCloseDeleteDialog = () => {
+    setOpenDeleteDialog(false);
+    setPloID(null);
+  };
+
+  const handleDeleteHocPhan = async () => {
+    try {
+      const rp = await deletePLO(ploID);
+      if (rp.status !== 204) {
+        throw new Error("Xóa PLO thất bại");
+      }
+      setSnackbarMessage("Xóa PLO thành công");
+      setSnackbarSeverity("success");
+      setOpenSnackbar(true);
+      handleCloseDeleteDialog();
+      fetchData();
+    } catch (error) {
+      setSnackbarMessage("Xóa PLO thất bại");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+      handleCloseDeleteDialog();
+      console.log(error);
+    }
+  };
+
+  
+  const handleOpenDeleteDialog = (idPLO) => {
+    setPloID(idPLO);
+    setOpenDeleteDialog(true);
+  };
+
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20); // tùy chọn mặc định
   const pageSizeOptions = [20,50,100]; // tuỳ bạn thêm số lựa chọn
-  const [onlyShowCotLoi, setOnlyShowCotLoi] = useState(false);
+  const [plos, setPlos] = useState([]);
+
 
 
   const totalItems = filteredData.length;
@@ -157,26 +195,20 @@ function DialogHocPhan({ nganhId, open, onClose }) {
     if (open && nganhId) {
       fetchData();
     }
-    const role = getRole();
-    setUserRole(role);
   }, [nganhId, open]);
 
   const fetchData = async () => {
     try {
       const nganhs = await getNganhById(nganhId);
-      const hocphans = await getHocPhansByNganhId(nganhId);
-      const totalCredits = hocphans.reduce((total, hocPhan) => total + hocPhan.soTinChi, 0);
-      setOriginalData(hocphans);
-      setHocPhanDaChon(hocphans);
-      setFilteredData(hocphans);
+      const data = await getPLOsByNganhId(nganhId);
       setNganh(nganhs);
-      setTongSoTinChi(totalCredits);
-      
-
+      setPlos(data); // lưu dữ liệu gốc
+      setFilteredData(data); // dùng để hiển thị
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu ngành:", error);
     }
   };
+  
 
   const handleClose = () => {
     setSearchQuery(""); // Reset search query when closing dialog
@@ -188,27 +220,21 @@ function DialogHocPhan({ nganhId, open, onClose }) {
     setPage(1);
     const value = event.target.value;
     setSearchQuery(value);
-    filterData(value, onlyShowCotLoi);
+    filterData(value);
   };
+  const filterData = (query) => {
+    let data = plos; // dùng dữ liệu gốc
   
-
-  const filterData = (query, cotLoiOnly = onlyShowCotLoi) => {
-    let data = hocPhanDaChon;
-  
-    // Nếu có tìm kiếm
     if (query.trim()) {
       data = data.filter((row) =>
         row.ten.toLowerCase().includes(query.toLowerCase())
       );
     }
   
-    // Nếu có tick checkbox cốt lõi
-    if (cotLoiOnly) {
-      data = data.filter((row) => row.laCotLoi);
-    }
-  
     setFilteredData(data);
   };
+  
+  
   
 
   const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -233,135 +259,142 @@ function DialogHocPhan({ nganhId, open, onClose }) {
       backgroundColor:"#D3F3FF", // Màu nền khi hover
       cursor: 'pointer', // Tùy chọn: Thêm hiệu ứng con trỏ
     },
-    height: '25px', // Reduce row height here
+    height: '30px', // Reduce row height here
   }));
   
 
-  const handleSelect = (id) => {
-    setSelectedDeleteHocPhan((prevSelected) => {
-      if (prevSelected.includes(id)) {
-        return prevSelected.filter((selectedId) => selectedId !== id); // Bỏ chọn
-      } else {
-        return [...prevSelected, id]; // Chọn
-      }
-    });
-  };
+
   
   const handleSnackbarClose = () => {
     setOpenSnackbar(false);
   };
 
-  const handleDeleteHocPhan = async () => {
-    if (!hasPermission()) {
+  const handleCloseDialogAdd = () => {
+    setTenPLO("");
+    setMoTaPLO("");
+    setErrorMoTaPLO(false);
+    setErrorTenPLO(false);
+    setOpenAddDialog(false);
+  };
+
+  const handleAddSubmit = async () => {
+    if (tenPLO.trim() === "") {
+      setErrorTenPLO(true);
+      setSnackbarMessage("Vui lòng nhập tên PLO");
       setSnackbarSeverity("error");
-      setSnackbarMessage("Bạn không có quyền thực hiện thao tác này!");
       setOpenSnackbar(true);
       return;
     }
-    let successCount = 0;
-    let failureCount = 0;
-  
+    if (moTaPLO.trim() === "") {
+      setErrorMoTaPLO(true);
+      setSnackbarMessage("Vui lòng nhập mô tả cho PLO");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+      return;
+    }
+    const ploData = {
+      ten: tenPLO,
+      moTa: moTaPLO,
+      nganhId: nganhId,
+    };
     try {
-      for (const hocPhanId of selectedDeleteHocPhan) {
-        const response = await removeHocPhanFromNganh(nganhId, hocPhanId);
-  
-        if (response.status === 204) {
-          successCount++;
-        } else {
-          failureCount++;
-        }
-      }
-      if (successCount > 0 || failureCount > 0) {
+      const rp = await addPLO(ploData);
+      if (rp.status === 201) {
+        setSnackbarMessage("Thêm PLO thành công");
         setSnackbarSeverity("success");
-        setSnackbarMessage(`Đã xóa thành công: ${successCount}, thất bại: ${failureCount}`);
         setOpenSnackbar(true);
-        setSelectedDeleteHocPhan([]);
+        handleCloseDialogAdd();
+        fetchData(); // Cập nhật lại dữ liệu sau khi thêm mới
       } else {
-        setSnackbarSeverity("info");
-        setSnackbarMessage("Không có học phần nào được chọn.");
+        setSnackbarMessage("Thêm PLO thất bại");
+        setSnackbarSeverity("error");
         setOpenSnackbar(true);
-        setSelectedDeleteHocPhan([]);
       }
-      fetchData();
-      setOpenAlertDialog(false);
     } catch (error) {
-      console.error("Lỗi khi xóa học phần:", error);
+      setSnackbarMessage(error.message);
       setSnackbarSeverity("error");
-      setSnackbarMessage("Có lỗi xảy ra khi xóa học phần!");
       setOpenSnackbar(true);
-      setSelectedDeleteHocPhan([]);
     }
   };
-  
-  const handleOpenAlertDialog = () => {
-    setOpenAlertDialog(true);
+  const handleOpenAddDialog = () => {
+    setTenPLO("");
+    setMoTaPLO("");
+    setErrorTenPLO(false);
+    setErrorMoTaPLO(false);
+    setOpenAddDialog(true);
   };
-  const handleCloseAlertDialog = () => {
-    setOpenAlertDialog(false);
-    setSelectedDeleteHocPhan([]);
-  };
-  const handleToggleCotLoi = (hocPhanId) => {
-    // Cập nhật trạng thái laCotLoi cho cả hocPhanDaChon (nguồn dữ liệu gốc)
-    setHocPhanDaChon((prev) =>
-      prev.map((hp) =>
-        hp.id === hocPhanId ? { ...hp, laCotLoi: !hp.laCotLoi } : hp
-      )
-    );
 
-    // Cập nhật filteredData để UI thay đổi theo (nếu đang hiển thị)
-    setFilteredData((prev) =>
-      prev.map((hp) =>
-        hp.id === hocPhanId ? { ...hp, laCotLoi: !hp.laCotLoi } : hp
-      )
-    );
+  const handleCloseDialogEdit = () => {
+    setOpenEditDialog(false);
+    setTenPLO("");
+    setMoTaPLO("");
+    setErrorTenPLO(false);
+    setErrorMoTaPLO(false);
+    tenPLORef.current = "";
+    moTaPLORef.current = "";
+    setPloID("");
   };
-  
-  const handleSaveCotLoi = async () => {
-    if (!hasPermission()) {
+
+  const handleSubmitEdit = async () => {
+    if (tenPLORef.current.trim() === "") {
+      setErrorTenPLO(true);
+      setSnackbarMessage("Vui lòng nhập tên PLO");
       setSnackbarSeverity("error");
-      setSnackbarMessage("Bạn không có quyền thực hiện thao tác này!");
       setOpenSnackbar(true);
       return;
     }
-    const updatedHocPhans = filteredData.map((hp) => ({
-      HocPhanId: hp.id,
-      LaCotLoi: hp.laCotLoi
-    }));
-  
-    try {
-      const rp=await updateHocPhanCotLois(nganhId, updatedHocPhans);
-      if(rp.status===200){
-        setSnackbarSeverity("success");
-        setSnackbarMessage("Cập nhật học phần cốt lõi thành công!");
-        setOpenSnackbar(true);
-        fetchData();
-      }
-      else{
-        setSnackbarSeverity("error");
-        setSnackbarMessage("Cập nhật học phần cốt lõi thất bại!");
-        setOpenSnackbar(true);
-      }
+    if (moTaPLORef.current.trim() === "") {
+      setErrorMoTaPLO(true);
+      setSnackbarMessage("Vui lòng nhập mô tả cho PLO");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+      return;
+    }
+    const ploData = {
+      ten: tenPLORef.current,
+      moTa: moTaPLORef.current,
+    };
 
-      
-    } catch (error) {
-        setSnackbarSeverity("error");
-        setSnackbarMessage("Cập nhật học phần cốt lõi thất bại!");
+    try {
+      const response = await updatePLO(ploID, ploData);
+      if (response.status === 200) {
+        setSnackbarMessage("Cập nhật PLO thành công");
+        setSnackbarSeverity("success");
         setOpenSnackbar(true);
-        console.log("error",error);
+        handleCloseDialogEdit();
+        fetchData(); // Cập nhật lại dữ liệu sau khi sửa
+      } else {
+        setSnackbarMessage("Cập nhật PLO thất bại");
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
+      }
+    } catch (error) {
+      setSnackbarMessage(error.message);
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
     }
   };
-  const hasChanges = () => {
-    return hocPhanDaChon.some((hocPhan) => {
-      const original = originalData.find((o) => o.id === hocPhan.id);
-      return original && original.laCotLoi !== hocPhan.laCotLoi;
-    });
-  };
-  
-  
-  const hasPermission = () => {
-    return userRole === 'Admin' || userRole === 'NguoiPhuTrachCTĐT';
-  };
 
+  const handleOpenEditDialog = async (ploID) => {
+    const plo = await getPLOById(ploID);
+    if (plo.status === 200) {
+      setTenPLO(plo.data.ten);
+      setMoTaPLO(plo.data.moTa);
+      tenPLORef.current = plo.data.ten;
+      moTaPLORef.current = plo.data.moTa;
+      setPloID(ploID);
+      setOpenEditDialog(true);
+    } else if (plo.status === 404) {
+      setSnackbarMessage("Không tìm thấy PLO");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+    } else {
+      setSnackbarMessage("Lỗi không xác định");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+    }
+
+  };
 
   return (
     <Dialog
@@ -374,7 +407,7 @@ function DialogHocPhan({ nganhId, open, onClose }) {
       }}
     >
       <DialogTitle fontSize={"18px"} fontWeight={"bold"}>
-        Danh sách học phần thuộc ngành:  
+        Danh sách các PLO thuộc ngành:  
         <Typography component="span" color="info.main" fontWeight="bold">
           {nganh ? ` ${nganh.ten}` : " Đang tải..."}
         </Typography>
@@ -383,10 +416,6 @@ function DialogHocPhan({ nganhId, open, onClose }) {
           <DialogContentText component="span">
             Mã ngành:
             <Typography component="span" color="info.main" fontWeight="500"> {nganh ? nganh.maNganh : "Đang tải..."} </Typography>
-          </DialogContentText>
-          <DialogContentText component="span">
-            Tổng số tín chỉ: 
-            <Typography component="span" color="info.main" fontWeight="500"> {tongSoTinChi ? tongSoTinChi : "0"} </Typography>
           </DialogContentText>
           <DialogContentText component="span">
             Khoa:<Typography component="span" color="info.main" fontWeight="500"> {nganh ? nganh.tenKhoa : "Đang tải..."}</Typography>
@@ -406,7 +435,7 @@ function DialogHocPhan({ nganhId, open, onClose }) {
     border: "1px solid #ccc", // giảm border dày
     borderRadius: "16px",
     padding: "2px 6px", // giảm padding
-    width: "50%",
+    width: "40%",
     height: "34px", // giảm chiều cao
     "&:focus-within": {
       border: "1px solid #337AB7",
@@ -416,7 +445,7 @@ function DialogHocPhan({ nganhId, open, onClose }) {
 
       <TextField
         fullWidth
-        placeholder="Tìm kiếm theo tên học phần..."
+        placeholder="Tìm kiếm theo tên PLO..."
         variant="standard"
         autoComplete="off"
         InputProps={{
@@ -431,87 +460,139 @@ function DialogHocPhan({ nganhId, open, onClose }) {
         onChange={handleSearchChange}
       />
     </Box>
-    <FormControlLabel
-      control={
-        <Checkbox
-          checked={onlyShowCotLoi}
-          onChange={(e) => {
-            setOnlyShowCotLoi(e.target.checked);
-            filterData(searchQuery, e.target.checked);
-          }}
-        />
-      }
-      label="Chỉ hiện học phần cốt lõi"
-      sx={{ whiteSpace: "nowrap" }}
-    />
   </Box>
 
   {/* Các nút chức năng */}
-  <Button
-    sx={{ width: "180px", height: "40px" }}
-    variant="outlined"
-    color="error"
-    startIcon={<DeleteIcon />}
-    onClick={handleOpenAlertDialog}
-    disabled={!hasPermission() || selectedDeleteHocPhan.length === 0}
-  >
-    Xóa học phần
-  </Button>
 
-  <Button
-    sx={{ width: "100px", height: "40px" }}
-    variant="contained"
-    startIcon={<SaveIcon />}
-    disabled={!hasPermission() || !hasChanges()}
-    onClick={handleSaveCotLoi}
-  >
-    Lưu
-  </Button>
+
 
   <Button
     variant="contained"
     sx={{ width: "180px", height: "40px" }}
     startIcon={<AddIcon />}
-    onClick={() => setOpenAddHocPhan(true)}
+    onClick={handleOpenAddDialog} // Mở dialog thêm PLO
   >
-    Thêm học phần
+    Thêm PLO
   </Button>
-
-  {/* Dialog xác nhận xóa */}
-  <Dialog open={openAlertDialog} onClose={handleCloseAlertDialog}>
-    <DialogTitle>Xác nhận xóa</DialogTitle>
-    <DialogContent>
-      <DialogContentText>
-        Bạn có chắc chắn muốn xóa học phần đã chọn khỏi ngành không?
-      </DialogContentText>
-    </DialogContent>
-    <DialogActions>
-      <Button onClick={handleCloseAlertDialog}>Hủy</Button>
-      <Button variant="contained" onClick={handleDeleteHocPhan}>Xóa</Button>
-    </DialogActions>
-  </Dialog>
-
-  {/* Dialog thêm học phần */}
-  <DialogAddHocPhan
-    nganhId={nganhId}
-    open={openAddHocPhan}
-    onClose={() => {
-      setSearchQuery("");
-      fetchData();
-      setOpenAddHocPhan(false);
-    }}
-    onSavedSuccess={(message) => {
-      setSnackbarMessage(message || "Thêm học phần thành công!");
-      setSnackbarSeverity("success");
-      setOpenSnackbar(true);
-    }}
-  />
+ 
 </Box>
+<Dialog
+                id="suaPLO"
+                fullWidth
+                open={openEditDialog}
+                onClose={handleCloseDialogEdit}
+              >
+                <DialogTitle>Sửa thông tin PLO:</DialogTitle>
+                <DialogContent>
+                  <DialogContentText>Sửa thông tin PLO</DialogContentText>
+                  <TextField
+                    autoFocus
+                    required
+                    id="suatenPLO"
+                    margin="dense"
+                    label="Tên PLO"
+                    fullWidth
+                    variant="standard"
+                    defaultValue={tenPLO}
+                    onChange={(e) => {
+                      tenPLORef.current = e.target.value;
+                      setErrorTenPLO(e.target.value.trim() === "");
+                    }}
+                    error={errorTenPLO}
+                    helperText={errorTenPLO ? "Vui lòng nhập tên PLO" : ""}
+                    autoComplete="off"
+                  />
+                  <TextField
+                    autoFocus
+                    required
+                    id="suaMoTaPLO"
+                    margin="dense"
+                    label="Mô tả cho PLO"
+                    variant="standard"
+                    fullWidth
+                    defaultValue={moTaPLO}
+                    onChange={(e) => {
+                      moTaPLORef.current = e.target.value;
+                      setErrorMoTaPLO(e.target.value.trim() === "");
+                    }}
+                    error={errorMoTaPLO}
+                    helperText={errorMoTaPLO ? "Vui lòng nhập mô tả cho PLO" : ""}
+                    autoComplete="off"
+                  />
+                  
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={handleCloseDialogEdit}>HỦY</Button>
+                  <Button onClick={handleSubmitEdit}>LƯU</Button>
+                </DialogActions>
+              </Dialog>
+              <Dialog
+                id="themPLO"
+                fullWidth
+                open={openAddDialog}
+                onClose={handleCloseDialogAdd}
+              >
+                <DialogTitle>Thêm mới PLO</DialogTitle>
+                <DialogContent>
+                  <DialogContentText>Nhập thông tin PLO mới</DialogContentText>
+                  <TextField
+                    autoFocus
+                    required
+                    id="themTenPLO"
+                    margin="dense"
+                    label="Tên PLO"
+                    fullWidth
+                    variant="standard"
+                    value={tenPLO}
+                    onChange={(e) => {
+                      setTenPLO(e.target.value);
+                      setErrorTenPLO(e.target.value.trim() === "");
+                    }}
+                    error={errorTenPLO}
+                    helperText={errorTenPLO ? "Vui lòng nhập tên PLO" : ""}
+                    autoComplete="off"
+                  />
+                  <TextField
+                    required
+                    id="themMoTaPLO"
+                    margin="dense"
+                    label="Mô tả cho PLO"
+                    variant="standard"
+                    fullWidth
+                    value={moTaPLO}
+                    onChange={(e) => {
+                      setMoTaPLO(e.target.value);
+                      setErrorMoTaPLO(e.target.value.trim() === "");
+                    }}
+                    error={errorMoTaPLO}
+                    helperText={errorMoTaPLO ? "Vui lòng nhập mô tả cho PLO" : ""}
+                    autoComplete="off"
+                  />
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={handleCloseDialogAdd}>HỦY</Button>
+                  <Button onClick={handleAddSubmit}>TẠO PLO</Button>
+                </DialogActions>
+              </Dialog>
+              <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
+                <DialogTitle>Xóa Học Phần</DialogTitle>
+                <DialogContent>
+                  <DialogContentText>
+                    Bạn có chắc chắn muốn xóa PLO này không?
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={handleCloseDeleteDialog}>Hủy</Button>
+                  <Button onClick={handleDeleteHocPhan} color="error">
+                    Xóa
+                  </Button>
+                </DialogActions>
+              </Dialog>
 
 
             
-            <Box sx={{ height: 500, display: "flex", flexDirection: "column" }}>
-  <Box sx={{ flex: 1, overflowY: "auto", paddingBottom: "100px" }}>
+    <Box sx={{ height: 500, display: "flex", flexDirection: "column" }}>
+      <Box sx={{ flex: 1, overflowY: "auto" , paddingBottom: "100px"} }>
 
 
         <TableContainer
@@ -532,57 +613,37 @@ function DialogHocPhan({ nganhId, open, onClose }) {
           }}
         >
           <TableRow>
-            <StyledTableCell align="center">
-              <Checkbox
-               size="small"
-                sx={{ color: "#fff" }}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setSelectedDeleteHocPhan(hocPhanDaChon.map((row) => row.id));
-                  } else {
-                    setSelectedDeleteHocPhan([]);
-                  }
-                }}
-                checked={selectedDeleteHocPhan.length === hocPhanDaChon.length}
-              />
-            </StyledTableCell>
             <StyledTableCell align="center">STT</StyledTableCell>
-            <StyledTableCell align="center">Mã học phần</StyledTableCell>
-            <StyledTableCell align="center">Tên học phần</StyledTableCell>
-            {/* <StyledTableCell align="center">Thuộc khoa</StyledTableCell> */}
-            <StyledTableCell align="center">Số tín chỉ</StyledTableCell>
-            <StyledTableCell align="center">Là cốt lõi</StyledTableCell>
+            <StyledTableCell align="center">Tên PLO</StyledTableCell>
+            <StyledTableCell align="center">Mô tả cho PLO</StyledTableCell>
+            <StyledTableCell align="center"></StyledTableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {filteredData.length === 0 ? (
+          {paginatedData.length === 0 ? (
             <TableRow>
               <StyledTableCell colSpan={7} align="center">
-                Chưa có học phần được thêm vào ngành
+                Chưa có PLO được thêm vào chương trình đào tạo
               </StyledTableCell>
             </TableRow>
           ) : (
             paginatedData.map((row, index) => (
               <StyledTableRow key={row.id || index}>
-                <StyledTableCell align="center"  width={50}>
-                  <Checkbox
-                    size="small"
-                    checked={selectedDeleteHocPhan.includes(row.id)}
-                    onChange={() => handleSelect(row.id)}
-                  />
-                </StyledTableCell>
                 <StyledTableCell align="center" width={50}>{index + 1}</StyledTableCell>
-                <StyledTableCell align="center" width={150}>{row.maHocPhan}</StyledTableCell>
-                <StyledTableCell align="left">{row.ten}</StyledTableCell>
-                {/* <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell> */}
-                <StyledTableCell align="center" width={150}>{row.soTinChi}</StyledTableCell>
+                <StyledTableCell align="center" width={300}>{row.ten}</StyledTableCell>
+                <StyledTableCell align="left">{row.moTa}</StyledTableCell>
                 <StyledTableCell align="center" width={150}>
-                  <Checkbox
-                    size="small"
-                    checked={row.laCotLoi}
-                    onChange={() => handleToggleCotLoi(row.id)}
-                  />
-                </StyledTableCell>
+          <Tooltip title="Sửa thông tin PLO">
+            <IconButton size="small" onClick={()=> handleOpenEditDialog(row.id)}>
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Xóa PLO">
+            <IconButton  size="small" onClick={()=>handleOpenDeleteDialog(row.id)}>
+              <DeleteIcon fontSize="small"/>
+            </IconButton>
+          </Tooltip>
+        </StyledTableCell>
               </StyledTableRow>
             ))
           )}
@@ -706,4 +767,4 @@ function DialogHocPhan({ nganhId, open, onClose }) {
   );
 }
 
-export default DialogHocPhan;
+export default DialogPLO;

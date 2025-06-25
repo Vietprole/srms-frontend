@@ -13,7 +13,6 @@ import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 import EditIcon from "@mui/icons-material/Edit";
 import TextField from "@mui/material/TextField";
 import SearchIcon from "@mui/icons-material/Search";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
@@ -167,6 +166,7 @@ function TestPage() {
   const [page, setPage] = useState(1);
   const [taikhoans, setTaiKhoans] = useState([]);
   const [selectedTaiKhoan, setSelectedTaiKhoan] = useState(null);
+  
   const [pageSize, setPageSize] = useState(20); // tùy chọn mặc định
   const pageSizeOptions = [20,50,100]; // tuỳ bạn thêm số lựa chọn
 
@@ -422,11 +422,6 @@ function TestPage() {
       <div style={styles.main}>
         <div style={styles.title}>
           <span>Danh sách chương trình đào tạo</span>
-          <div style={styles.btnMore}>
-            <IconButton aria-label="more actions">
-              <MoreVertIcon />
-            </IconButton>
-          </div>
         </div>
         <div style={styles.tbActions}>
           <div style={styles.ipSearch}>
@@ -455,8 +450,8 @@ function TestPage() {
                   disableUnderline: true,
                   startAdornment: (
                     <React.Fragment>
-                      <IconButton aria-label="more actions">
-                        <SearchIcon sx={{ color: "#888" }} />
+                      <IconButton aria-label="more actions" size="small">
+                        <SearchIcon sx={{ color: "#888" }} fontSize="small" />
                       </IconButton>
                     </React.Fragment>
                   ),
@@ -574,7 +569,7 @@ function TestPage() {
                   <StyledTableCell align="center">STT</StyledTableCell>
                   <StyledTableCell align="center">Mã CTĐT</StyledTableCell>
                   <StyledTableCell align="center">Tên CTĐT</StyledTableCell>
-                  <StyledTableCell align="center">Tên Khoa</StyledTableCell>
+                  {/* <StyledTableCell align="center">Tên Khoa</StyledTableCell> */}
                   <StyledTableCell align="center">
                     Người quản lí
                   </StyledTableCell>
@@ -587,7 +582,7 @@ function TestPage() {
       <StyledTableCell align="center">{(page - 1) * pageSize + index + 1}</StyledTableCell>
       <StyledTableCell align="center">{row.maNganh}</StyledTableCell>
       <StyledTableCell align="center">{row.ten}</StyledTableCell>
-      <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
+      {/* <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell> */}
       <StyledTableCell align="center">{row.tenNguoiQuanLy}</StyledTableCell>
       <StyledTableCell align="center">
         <Tooltip
@@ -613,9 +608,10 @@ function TestPage() {
           }}
         >
         <IconButton
+          size="small"
           onClick={() => handleClickOpenEdit(row.id)}
         >
-          <EditIcon/>
+          <EditIcon fontSize="small"/>
         </IconButton>
         </Tooltip>
         <Tooltip
@@ -642,8 +638,9 @@ function TestPage() {
         >
           <IconButton
             onClick={() => handleOpenDialog(row.id)}
+            size="small"
           >
-            <FormatListBulletedIcon />
+            <FormatListBulletedIcon fontSize="small"/>
           </IconButton>
         </Tooltip>
         

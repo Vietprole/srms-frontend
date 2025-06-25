@@ -12,7 +12,7 @@ import {
   SidebarMenuSubItem,
   SidebarMenuSubButton,
 } from "@/components/ui/sidebar";
-import React, { useState, useEffect } from "react";
+import  { useState, useEffect } from "react";
 import "@/utils/storage";
 import {
   Collapsible,
@@ -48,7 +48,6 @@ import CaiDatIcon from "@/assets/icons/cai-dat-icon.png";
 import DangXuatIcon from "@/assets/icons/dang-xuat-icon.png";
 import LogoDUT from "@/assets/logos/logo-dut.png";
 import { getRole } from "@/utils/storage";
-import HocKiIcon from "@/assets/icons/hocki-icon.png";
 const truongKhoaItem = [
   {
     title: "Khoa",
@@ -172,10 +171,6 @@ const adminItem = [
         url: "/plo",
       },
       {
-        title: "Nối học phần - PLO",
-        url: "/maphocphanplo",
-      },
-      {
         title: "Quản lý CLO",
         url: "/chuandaura/quan-ly-clo",
       },
@@ -247,11 +242,6 @@ const phongDaoTaoItem = [
     icon: PLOIcon,
   },
   {
-    title: "Nối Học Phần - PLO",
-    url: "/maphocphanplo",
-    icon: NoiHocPhanPLOIcon,
-  },
-  {
     title: "Giảng viên",
     url: "/giangvien",
     icon: GiangVienIcon,
@@ -318,11 +308,6 @@ const nguoiPhuTrachCTDTItems = [
     title: "PLO",
     url: "/plo",
     icon: PLOIcon,
-  },
-  {
-    title: "Nối Học Phần - PLO",
-    url: "/maphocphanplo",
-    icon: NoiHocPhanPLOIcon,
   },
   {
     title: "Quản lý CLO",

@@ -35,7 +35,7 @@ import AddIcon from '@mui/icons-material/Add';
 import DialogAddHocPhan from "./DialogAddHocPhan";
 import FormControlLabel from "@mui/material/FormControlLabel";
 // eslint-disable-next-line react/prop-types
-function DialogHocPhan({ nganhId, open, onClose }) {
+function DialogSinhVienInLHP({ nganhId, open, onClose }) {
   const styles = {
     main: {
       display: "flex",
@@ -549,7 +549,7 @@ function DialogHocPhan({ nganhId, open, onClose }) {
             <StyledTableCell align="center">STT</StyledTableCell>
             <StyledTableCell align="center">Mã học phần</StyledTableCell>
             <StyledTableCell align="center">Tên học phần</StyledTableCell>
-            {/* <StyledTableCell align="center">Thuộc khoa</StyledTableCell> */}
+            <StyledTableCell align="center">Thuộc khoa</StyledTableCell>
             <StyledTableCell align="center">Số tín chỉ</StyledTableCell>
             <StyledTableCell align="center">Là cốt lõi</StyledTableCell>
           </TableRow>
@@ -564,7 +564,7 @@ function DialogHocPhan({ nganhId, open, onClose }) {
           ) : (
             paginatedData.map((row, index) => (
               <StyledTableRow key={row.id || index}>
-                <StyledTableCell align="center"  width={50}>
+                <StyledTableCell align="center">
                   <Checkbox
                     size="small"
                     checked={selectedDeleteHocPhan.includes(row.id)}
@@ -574,7 +574,7 @@ function DialogHocPhan({ nganhId, open, onClose }) {
                 <StyledTableCell align="center" width={50}>{index + 1}</StyledTableCell>
                 <StyledTableCell align="center" width={150}>{row.maHocPhan}</StyledTableCell>
                 <StyledTableCell align="left">{row.ten}</StyledTableCell>
-                {/* <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell> */}
+                <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
                 <StyledTableCell align="center" width={150}>{row.soTinChi}</StyledTableCell>
                 <StyledTableCell align="center" width={150}>
                   <Checkbox
@@ -706,4 +706,4 @@ function DialogHocPhan({ nganhId, open, onClose }) {
   );
 }
 
-export default DialogHocPhan;
+export default DialogSinhVienInLHP;
