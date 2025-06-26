@@ -6,7 +6,6 @@ import SinhVienPage from "@/pages/SinhVienPage";
 import GiangVienPage from "@/pages/Admin/GiangVienPage";
 import HocPhanPage from "@/pages/Admin/HocPhanPage";
 import PLOPage from "@/pages/PLOPage";
-import MapHocPhanPLOPage from "@/pages/MapHocPhanPLOPage";
 import NoiCLOPLO from "@/pages/chuandaura/MapPLOCLO";
 import LopHocPhanPage from "@/pages/LopHocPhanPage";
 import CongThucDiemPage from "@/pages/CongThucDiemPage";
@@ -71,10 +70,6 @@ const routes = [
   {
     path: "/plo",
     element: <PLOPage />,
-  },
-  {
-    path: "/maphocphanplo",
-    element: <MapHocPhanPLOPage />,
   },
   {
     path: "/mapcloplo",

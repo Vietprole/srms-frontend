@@ -404,7 +404,7 @@ function TestPage() {
         </IconButton>
         </Tooltip>
         <Tooltip
-          title="Xem PLO của chương trình đào tạo"
+          title="Nối PLO - Học phần của chương trình đào tạo"
           arrow
           componentsProps={{
             tooltip: {

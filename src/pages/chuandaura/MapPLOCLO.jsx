@@ -197,23 +197,6 @@ export default function NoiCLOPLO() {
       // const lopHocPhanData = await getLopHocPhanById(lopHocPhanId);
       const nganhs= await getAllNganhs();
       setNganhs(nganhs);
-      // setLopHocPhanData(lopHocPhanData);
-      // const [cLOsData, pLOsData] = await Promise.all([
-      //   getCLOsByHocPhanId(lopHocPhanData.hocPhanId),
-      //   getPLOsByLopHocPhanId(lopHocPhanId),
-      // ]);
-      // setCLOs(cLOsData);
-      // setPLOs(pLOsData);
-      
-
-      // const toggledData = {};
-      // for (const plo of pLOsData) {
-      //   const cloData = await getCLOsByPLOId(plo.id);
-      //   console.log("CLO Data: ", pLOsData);
-      //   toggledData[plo.id] = cloData.map(clo => clo.id);
-      // }
-      // setToggledData(toggledData);
-      // console.log("Toggled Data: ", toggledData);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
