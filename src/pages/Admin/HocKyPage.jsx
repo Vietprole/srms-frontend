@@ -162,9 +162,9 @@ function HocKiPage()
   
   
   const hocKi = [
-    { hocki: 'Kỳ 1', ten : 'Học kỳ 1' },
-    { hocki: 'Kỳ 2', ten : 'Học kỳ 2' },
-    { hocki: 'Kỳ hè', ten : 'Học kỳ hè' },
+    { hocki: 'Học kỳ 1', ten : 'Học kỳ 1' },
+    { hocki: 'Học kỳ 2', ten : 'Học kỳ 2' },
+    { hocki: 'Học kỳ hè', ten : 'Học kỳ hè' },
   ];
 
   const handleSnackbarClose = () => {

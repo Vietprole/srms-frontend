@@ -1,340 +1,324 @@
-/* eslint-disable react/display-name */
-import * as React from 'react';
-import { styled } from '@mui/material/styles';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell, { tableCellClasses } from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
-import IconButton from '@mui/material/IconButton';
-import TextField from '@mui/material/TextField';
-import SearchIcon from '@mui/icons-material/Search';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import {Tooltip } from '@mui/material';
-import Box from '@mui/material/Box';
+import {
+  Box, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
+  IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Snackbar, Autocomplete, Tooltip
+} from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import AddIcon from "@mui/icons-material/Add";
+import MuiAlert from "@mui/material/Alert";
+import Layout from "@/pages/Layout";
 import { useState, useEffect } from "react";
-import Autocomplete from '@mui/material/Autocomplete';
-import DatasetLinkedIcon from '@mui/icons-material/DatasetLinked';
 import {
-  getAllKhoas
-} from "@/api/api-khoa";
-import {
-  getNganhs,
-} from "@/api/api-nganh";
-import Layout from './Layout';
-import { TableVirtuoso } from "react-virtuoso";
-import DialogPLOHocPhan from '../components/DialogMappingPLO_Cource';
-function NganhPage() 
-{
-  const styles = {
-    main:
-    {
-      width: '100%',
-      height: '91vh',
-      display: 'flex',
-      flexDirection: 'column',
-      overflowY: 'hidden',
-      padding: "10px",
-    },
-    title:
-    {
-      width: '100%',
-      height: '6%',
-      fontSize: '1.2em',
-      fontFamily: 'Roboto',
-      fontWeight: 'bold',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'flex-start',
-      flexDirection: 'row',
-    },
-    btnMore:
-    {
-      display: 'flex',
-      justifyContent: 'flex-end',
-      marginLeft: 'auto',
-    },
-    tbActions:
-    {
-      width: '100%',
-      height: '6%',
-      display: 'flex',
-      justifyContent: 'flex-start',
-      alignItems: 'center',
-      flexDirection: 'row',
-    },
-    ipSearch:
-    {
-      width: '25%',
-      height: '100%',
-      justifyContent: 'flex-start',
-      borderRadius: '5px',
-    },
-    btnCreate:
-    {
-      width: '10%',
-      height: '100%',
-      display: 'flex',
-      marginLeft: 'auto',
-      justifyContent: 'center',
-      alignItems: 'center',
-      borderRadius: '5px',
-      color: 'white',
-      cursor: 'pointer',
-    },
-    table:
-    {
-      width: '100%',
-      height: '100vb',
-      display: 'flex',
-      flexDirection: 'column',
-      paddingTop: '10px',
-      overflowY: 'auto',
-    },
-    cbKhoa:
-    {
-      width: '22%',
-      height: '80%',
-      marginLeft: '10px',
-      marginBottom: '10px',
-    },
-  };
-  const [khoas, setKhoas] = useState([]);
-  const [data, setData] = useState([]);
-  const [searchQuery, setSearchQuery] = useState(""); // Lưu giá trị tìm kiếm
-  const [filteredData, setFilteredData] = useState(data); // Lưu dữ liệu đã lọc
-  const [selectedKhoaFilter, setSelectedKhoaFilter] = useState(null);
-  const [nganhId, setNganhId] = useState("");
-  const [openDialog, setOpenDialog] = React.useState(false);
-  const handleKhoaChange = (event, newValue) => {
-    setSelectedKhoaFilter(newValue);
-    if (!newValue) {
-      setFilteredData(data); // Nếu không chọn khoa nào, hiển thị toàn bộ dữ liệu
-    } else {
-      const filtered = data.filter((row) => row.tenKhoa === newValue.ten);
-      setFilteredData(filtered);
-    }
-  };
-  
-  const handleOpenDialog = (id) => {
-    setNganhId(id);
-    setOpenDialog(true);
-  };
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-  }
+  deleteCLO,
+  getCLOsByHocPhanId,
+  addCLO,
+  updateCLO,
+} from "@/api/api-clo";
+import { styled } from "@mui/material/styles";
+import { getAllNganhs, getHocPhansByNganhId } from "@/api/api-nganh";
 
-
-
-
-  
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-  
-  const fetchData = async () => {
-    const nganhs = await getNganhs();
-    setData(nganhs);
-    const khoa = await getAllKhoas();
-    setKhoas(khoa);
-  };
-  
-  useEffect(() => {
-    // Only set filteredData once data has been loaded
-    setFilteredData(data);
-  }, [data]);
-  
-  const filterData = (query) => {
-    if (!query.trim()) {
-      setFilteredData(data); // If search query is empty, show all data
-    } else {
-      const filtered = data.filter((row) =>
-        row.ten.toLowerCase().includes(query.toLowerCase())
-      );
-      setFilteredData(filtered);
-    }
-  };
-  const handleSearchChange = (event) => {
-    const value = event.target.value;
-    setSearchQuery(value); 
-    filterData(value); 
-  };
-
-  const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    [`&.${tableCellClasses.head}`]: {
-      backgroundColor: "#0071A6",
-      color: theme.palette.common.white,
-      borderRight: '1px solid #ddd', // Đường phân cách dọc
-
-    },
-    [`&.${tableCellClasses.body}`]: {
-      fontSize: 14,
-      padding: '5px 10px', // Thêm padding cho các hàng
-      borderRight: '1px solid #ddd', // Đường phân cách dọc
-    },
-  }));
-  
-  const StyledTableRow = styled(TableRow)(({ theme }) => ({
-    '&:nth-of-type(odd)': {
-      backgroundColor: theme.palette.action.hover,
-    },
-    '&:hover': {
-    backgroundColor:"#D3F3FF", // Màu nền khi hover
-    cursor: 'pointer', // Tùy chọn: Thêm hiệu ứng con trỏ
+// Thêm StyledTableCell cho header
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  backgroundColor: "#0071A6",
+  color: "#fff",
+  fontWeight: "normal",
+  fontSize: 16,
+  fontFamily: "Roboto, sans-serif",
+  borderRight: "1px solid #fff",
+  textAlign: "center",
+  // Nếu muốn bo góc trái/phải cho header:
+  "&:first-of-type": {
+    borderTopLeftRadius: "6px",
   },
-  }));
+  "&:last-of-type": {
+    borderTopRightRadius: "6px",
+    borderRight: 0,
+  },
+}));
 
-  const columns = [
-    { width: 50, label: "STT", dataKey: "index", align: "center" },
-    { width: 150, label: "Mã Ngành", dataKey: "maNganh", align: "center" },
-    {  label: "Tên Ngành", dataKey: "ten", align: "center" },
-    { width: 300, label: "Tên Khoa", dataKey: "tenKhoa", align: "center" },
-    { width: 150, label: "", dataKey: "actions", align: "center" },
-  ];
+const StyledBodyTableCell = styled(TableCell)(({ theme }) => ({
+  borderRight: "1px solid #ddd",
+  textAlign: "center",
+  fontSize: 15,
+  backgroundColor: "#fff",
+  color: "#222",
+  "&:last-of-type": {
+    borderRight: 0,
+  },
+}));
 
-  const VirtuosoTableComponents = {
-    Scroller: React.forwardRef((props, ref) => (
-      <TableContainer component={Paper} {...props} ref={ref} sx={{ height: "calc(100vh - 200px)" }} />
-    )),
-    
-    Table: (props) => (
-      <Table {...props} sx={{ borderCollapse: "separate", tableLayout: "fixed", backgroundColor: "white" }} />
-    ),
-    TableHead: React.forwardRef((props, ref) => <TableHead {...props} ref={ref} />),
-    TableRow: StyledTableRow, // Sử dụng StyledTableRow bạn đã định nghĩa
-    TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
-    TableCell: StyledTableCell, // Sử dụng StyledTableCell bạn đã định nghĩa
+function sortCLOsByTen(clos) {
+  return [...clos].sort((a, b) => {
+    const numA = parseInt(a.ten.replace(/\D/g, ""), 10);
+    const numB = parseInt(b.ten.replace(/\D/g, ""), 10);
+    return numA - numB;
+  });
+}
+
+export default function QuanLyCLO() {
+  const [hocPhans, setHocPhans] = useState([]);
+  const [selectedHocPhan, setSelectedHocPhan] = useState(null);
+  const [clos, setClos] = useState([]);
+  const [openAddDialog, setOpenAddDialog] = useState(false);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [selectedCLO, setSelectedCLO] = useState(null);
+  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+
+  // Form state
+  const [tenCLO, setTenCLO] = useState("");
+  const [moTaCLO, setMoTaCLO] = useState("");
+  const [errorTenCLO, setErrorTenCLO] = useState(false);
+  const [errorMoTaCLO, setErrorMoTaCLO] = useState(false);
+
+  const [nganhs, setNganhs] = useState([]);
+  const [selectedNganh, setSelectedNganh] = useState(null);
+
+  // Fetch học phần
+  useEffect(() => {
+    getAllNganhs().then(setNganhs);
+  }, []);
+
+  // Fetch CLO khi chọn học phần
+  useEffect(() => {
+    if (selectedNganh) {
+      getHocPhansByNganhId(selectedNganh.id).then(setHocPhans);
+      setSelectedHocPhan(null); // Reset học phần khi đổi ngành
+      setClos([]); // Reset CLO
+    } else {
+      setHocPhans([]);
+      setSelectedHocPhan(null);
+      setClos([]);
+    }
+  }, [selectedNganh]);
+
+  // Xử lý mở dialog thêm
+  const handleOpenAdd = () => {
+    setTenCLO("");
+    setMoTaCLO("");
+    setErrorTenCLO(false);
+    setErrorMoTaCLO(false);
+    setOpenAddDialog(true);
   };
-  
-  
-  
-  function fixedHeaderContent() {
-    return (
-      <StyledTableRow>
-        {columns.map((column) => (
-          <StyledTableCell
-            key={column.dataKey}
-            variant="head"
-            align="center" // Cố định căn giữa
-            style={{ width: column.width, textAlign: "center" }} // Đảm bảo text ở giữa
-          >
-            {column.label}
-          </StyledTableCell>
-        ))}
-      </StyledTableRow>
-    );
-  }
-  
-  
-  
-  
-  function rowContent(index, row) {
-    return (
-      <>
-        <StyledTableCell align="center">{index + 1}</StyledTableCell> {/* STT */}
-        <StyledTableCell align="center">{row.maNganh}</StyledTableCell>
-        <StyledTableCell align="left">{row.ten}</StyledTableCell>
-        <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
-        <StyledTableCell align="center" width={150}>
-          <Tooltip title="Nối PLO-Học phần">
-            <IconButton onClick={() => handleOpenDialog(row.id)} >
-              <DatasetLinkedIcon />
-            </IconButton>
-          </Tooltip>
-        </StyledTableCell>
-      </>
-    );
-  }
-  
-  
+
+  // Xử lý thêm CLO
+  const handleAddCLO = async () => {
+    if (!tenCLO.trim()) { setErrorTenCLO(true); return; }
+    if (!moTaCLO.trim()) { setErrorMoTaCLO(true); return; }
+    try {
+      await addCLO({ ten: tenCLO, moTa: moTaCLO, hocPhanId: selectedHocPhan.id });
+      setSnackbar({ open: true, message: "Thêm CLO thành công", severity: "success" });
+      setOpenAddDialog(false);
+      getCLOsByHocPhanId(selectedHocPhan.id).then((data) => setClos(sortCLOsByTen(data)));
+    } catch {
+      setSnackbar({ open: true, message: "Thêm CLO thất bại", severity: "error" });
+    }
+  };
+
+  // Xử lý mở dialog sửa
+  const handleOpenEdit = (clo) => {
+    setSelectedCLO(clo);
+    setTenCLO(clo.ten);
+    setMoTaCLO(clo.moTa);
+    setErrorTenCLO(false);
+    setErrorMoTaCLO(false);
+    setOpenEditDialog(true);
+  };
+
+  // Xử lý sửa CLO
+  const handleEditCLO = async () => {
+    if (!tenCLO.trim()) { setErrorTenCLO(true); return; }
+    if (!moTaCLO.trim()) { setErrorMoTaCLO(true); return; }
+    try {
+      await updateCLO(selectedCLO.id, { ten: tenCLO, moTa: moTaCLO, hocPhanId: selectedHocPhan.id });
+      setSnackbar({ open: true, message: "Cập nhật CLO thành công", severity: "success" });
+      setOpenEditDialog(false);
+      getCLOsByHocPhanId(selectedHocPhan.id).then((data) => setClos(sortCLOsByTen(data)));
+    } catch {
+      setSnackbar({ open: true, message: "Cập nhật CLO thất bại", severity: "error" });
+    }
+  };
+
+  // Xử lý xóa CLO
+  const handleDeleteCLO = async () => {
+    try {
+      await deleteCLO(selectedCLO.id);
+      setSnackbar({ open: true, message: "Xóa CLO thành công", severity: "success" });
+      setOpenDeleteDialog(false);
+      getCLOsByHocPhanId(selectedHocPhan.id).then((data) => setClos(sortCLOsByTen(data)));
+    } catch {
+      setSnackbar({ open: true, message: "Xóa CLO thất bại", severity: "error" });
+    }
+  };
+
+  useEffect(() => {
+    if (selectedHocPhan) {
+      getCLOsByHocPhanId(selectedHocPhan.id).then((data) => setClos(sortCLOsByTen(data)));
+    } else {
+      setClos([]);
+    }
+  }, [selectedHocPhan]);
 
   return (
     <Layout>
-      <div style={styles.main}>
-      <div style={styles.title}>
-        <span>Danh sách ngành học</span>
-        <div style={styles.btnMore}>
-          <IconButton aria-label="more actions"><MoreVertIcon/></IconButton>
-        </div>
-      </div>
-      <div style={styles.tbActions}>
-        <div style={styles.ipSearch}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              border: "2px solid #ccc", // Viền ngoài
-              borderRadius: "20px", // Bo tròn góc
-              padding: "4px 8px", // Khoảng cách nội dung
-              width: "100%", // Chiều rộng toàn khung tìm kiếm
-              maxWidth: "100%", // Đảm bảo full width
-              "&:focus-within": {
-                border: "2px solid #337AB7", // Đổi màu viền khi focus
-              },
-              height: "100%",
-            }}
-          >
-            <TextField
-              fullWidth
-              fontSize="10px"
-              placeholder="Tìm kiếm theo tên ngành..."
-              variant="standard"
-              autoComplete='off'
-              InputProps={{
-                disableUnderline: true,
-                startAdornment: (
-                  <React.Fragment>
-                    <IconButton aria-label="more actions">
-                      <SearchIcon sx={{ color: "#888" }} />
-                    </IconButton>
-                  </React.Fragment>
-                ),
-              }}
-              value={searchQuery} // Liên kết giá trị tìm kiếm với state
-              onChange={handleSearchChange} // Gọi hàm xử lý khi thay đổi
+      <Box sx={{ width: "100%", p: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+          <Typography variant="h6" fontWeight="bold">Danh sách CLO</Typography>
+        </Box>
+        <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+          <Box sx={{ width: 300 }}>
+            <Autocomplete
+              options={nganhs}
+              getOptionLabel={option => option.ten || ""}
+              value={selectedNganh}
+              onChange={(e, v) => setSelectedNganh(v)}
+              renderInput={params => <TextField {...params} label="Chọn chương trình đào tạo" variant="outlined" />}
+              noOptionsText="Không có chương trình đào tạo"
             />
           </Box>
-        </div>
-        <div style={styles.cbKhoa}>
-          <Autocomplete
+          <Box sx={{ width: 300 }}>
+            <Autocomplete
+              options={hocPhans}
+              getOptionLabel={option => option.ten || ""}
+              value={selectedHocPhan}
+              onChange={(e, v) => setSelectedHocPhan(v)}
+              renderInput={params => <TextField {...params} label="Chọn học phần" variant="outlined" />}
+              noOptionsText="Không có học phần"
+              disabled={!selectedNganh}
+            />
+          </Box>
+        </Box>
+        {selectedHocPhan && (
+          <Box>
+            <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 1 }}>
+              <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenAdd}>
+                Tạo CLO
+              </Button>
+            </Box>
+            <TableContainer component={Paper} sx={{ maxHeight: '60vh', overflowY: 'auto' }}>
+              <Table stickyHeader sx={{ tableLayout: "fixed" }}>
+                <TableHead>
+                  <TableRow>
+                    <StyledTableCell align="center" sx={{ width: 50 }}>STT</StyledTableCell>
+                    <StyledTableCell align="center" sx={{ width: 200 }}>Tên CLO</StyledTableCell>
+                    <StyledTableCell align="left">Mô tả</StyledTableCell>
+                    <StyledTableCell align="center" sx={{ width: 150 }}>Thao tác</StyledTableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {clos.map((clo, idx) => (
+                    <TableRow key={clo.id}>
+                      <StyledBodyTableCell align="center" sx={{ width: 50 }}>{idx + 1}</StyledBodyTableCell>
+                      <StyledBodyTableCell align="center" sx={{ width: 200 }}>{clo.ten}</StyledBodyTableCell>
+                      <StyledBodyTableCell align="left">{clo.moTa}</StyledBodyTableCell>
+                      <StyledBodyTableCell align="center" sx={{ width: 150 }}>
+                        <Tooltip title="Sửa CLO">
+                          <IconButton onClick={() => handleOpenEdit(clo)}><EditIcon /></IconButton>
+                        </Tooltip>
+                        <Tooltip title="Xóa CLO">
+                          <IconButton onClick={() => { setSelectedCLO(clo); setOpenDeleteDialog(true); }}><DeleteIcon /></IconButton>
+                        </Tooltip>
+                      </StyledBodyTableCell>
+                    </TableRow>
+                  ))}
+                  {clos.length === 0 && (
+                    <TableRow>
+                      <StyledBodyTableCell colSpan={4} align="center">Không có CLO nào</StyledBodyTableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
+        )}
+
+        {/* Dialog Thêm */}
+        <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)} fullWidth>
+          <DialogTitle>Thêm CLO mới</DialogTitle>
+          <DialogContent>
+            <TextField
+              autoFocus
+              margin="dense"
+              label="Tên CLO"
+              fullWidth
+              value={tenCLO}
+              onChange={e => { setTenCLO(e.target.value); setErrorTenCLO(false); }}
+              error={errorTenCLO}
+              helperText={errorTenCLO ? "Vui lòng nhập tên CLO" : ""}
+            />
+            <TextField
+              margin="dense"
+              label="Mô tả CLO"
+              fullWidth
+              value={moTaCLO}
+              onChange={e => { setMoTaCLO(e.target.value); setErrorMoTaCLO(false); }}
+              error={errorMoTaCLO}
+              helperText={errorMoTaCLO ? "Vui lòng nhập mô tả CLO" : ""}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenAddDialog(false)}>Hủy</Button>
+            <Button onClick={handleAddCLO}>Lưu</Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Dialog Sửa */}
+        <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)} fullWidth>
+          <DialogTitle>Sửa CLO</DialogTitle>
+          <DialogContent>
+            <TextField
+              autoFocus
+              margin="dense"
+              label="Tên CLO"
+              fullWidth
+              value={tenCLO}
+              onChange={e => { setTenCLO(e.target.value); setErrorTenCLO(false); }}
+              error={errorTenCLO}
+              helperText={errorTenCLO ? "Vui lòng nhập tên CLO" : ""}
+            />
+            <TextField
+              margin="dense"
+              label="Mô tả CLO"
+              fullWidth
+              value={moTaCLO}
+              onChange={e => { setMoTaCLO(e.target.value); setErrorMoTaCLO(false); }}
+              error={errorMoTaCLO}
+              helperText={errorMoTaCLO ? "Vui lòng nhập mô tả CLO" : ""}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenEditDialog(false)}>Hủy</Button>
+            <Button onClick={handleEditCLO}>Lưu</Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Dialog Xóa */}
+        <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
+          <DialogTitle>Xóa CLO</DialogTitle>
+          <DialogContent>Bạn có chắc chắn muốn xóa CLO này không?</DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenDeleteDialog(false)}>Hủy</Button>
+            <Button color="error" onClick={handleDeleteCLO}>Xóa</Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Snackbar */}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={3000}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        >
+          <MuiAlert
+            variant="filled"
+            onClose={() => setSnackbar({ ...snackbar, open: false })}
+            severity={snackbar.severity}
             sx={{ width: "100%" }}
-            options={khoas}
-            getOptionLabel={(option) => option.ten || ""}
-            required
-            value={selectedKhoaFilter}
-            onChange={handleKhoaChange}
-            renderInput={(params) => (
-              <TextField {...params} label="Chọn khoa" size="small" />
-            )}
-          />
-
-
-        </div>
-        <div style={styles.btnCreate}>
-        
-          
-        </div>
-      </div>
-      <div style={styles.table}>
-      <Paper style={{ height: "100vh", width: "100%" }}>
-
-  <TableVirtuoso style={{ width: "100%", height: "100%" }} // Đảm bảo full height
-    data={filteredData}
-    components={VirtuosoTableComponents}
-    fixedHeaderContent={fixedHeaderContent}
-    itemContent={rowContent}
-  />
-  <DialogPLOHocPhan nganhId={nganhId} open={openDialog} onClose={handleCloseDialog} />
-</Paper>
-
-      
-      </div>
-    </div>
+          >
+            {snackbar.message}
+          </MuiAlert>
+        </Snackbar>
+      </Box>
     </Layout>
   );
-};
-
-export default NganhPage;
+} 

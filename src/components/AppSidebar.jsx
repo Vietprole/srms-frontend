@@ -11,11 +11,21 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton,
-} from "@/components/ui/sidebar"
-import React, { useState, useEffect } from "react";
-import "@/utils/storage"
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
-import { FiChevronDown, FiChevronUp, FiDatabase, FiTarget, FiEdit3 } from 'react-icons/fi';
+} from "@/components/ui/sidebar";
+import  { useState, useEffect } from "react";
+import "@/utils/storage";
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@/components/ui/collapsible";
+import {
+  FiChevronDown,
+  FiChevronUp,
+  FiDatabase,
+  FiTarget,
+  FiEdit3,
+} from "react-icons/fi";
 import { useLocation } from "react-router-dom";
 
 // Import PNG icons
@@ -38,7 +48,6 @@ import CaiDatIcon from "@/assets/icons/cai-dat-icon.png";
 import DangXuatIcon from "@/assets/icons/dang-xuat-icon.png";
 import LogoDUT from "@/assets/logos/logo-dut.png";
 import { getRole } from "@/utils/storage";
-import HocKiIcon from "@/assets/icons/hocki-icon.png";
 const truongKhoaItem = [
   {
     title: "Khoa",
@@ -59,8 +68,8 @@ const truongKhoaItem = [
     title: "Đăng xuất",
     url: "/",
     icon: DangXuatIcon,
-  }
-]
+  },
+];
 
 const giangVienItem = [
   {
@@ -93,7 +102,7 @@ const giangVienItem = [
     url: "/",
     icon: DangXuatIcon,
   },
-]
+];
 
 const sinhVienItem = [
   {
@@ -115,8 +124,8 @@ const sinhVienItem = [
     title: "Đăng xuất",
     url: "/",
     icon: DangXuatIcon,
-  }
-]
+  },
+];
 
 const adminItem = [
   {
@@ -125,33 +134,33 @@ const adminItem = [
     subItems: [
       {
         title: "Khoa",
-        url: "/khoa"
+        url: "/khoa",
       },
       {
-        title: "Ngành",
-        url: "/nganh"
+        title: "Chương trình đào tạo",
+        url: "/nganh",
       },
       {
         title: "Học kỳ",
-        url: "/hocki"
+        url: "/hocki",
       },
       {
         title: "Học phần",
-        url: "/hocphan"
+        url: "/hocphan",
       },
       {
         title: "Lớp học phần",
-        url: "/lophocphan"
+        url: "/lophocphan",
       },
       {
         title: "Giảng viên",
-        url: "/giangvien"
+        url: "/giangvien",
       },
       {
         title: "Sinh viên",
-        url: "/sinhvien"
-      }
-    ]
+        url: "/sinhvien",
+      },
+    ],
   },
   {
     title: "Chuẩn đầu ra",
@@ -159,21 +168,17 @@ const adminItem = [
     subItems: [
       {
         title: "PLO",
-        url: "/plo"
+        url: "/plo",
       },
       {
         title: "Quản lý CLO",
-        url: "/chuandaura/quan-ly-clo"
-      },
-      {
-        title: "Nối học phần - PLO",
-        url: "/maphocphanplo"
+        url: "/chuandaura/quan-ly-clo",
       },
       {
         title: "Nối CLO - PLO",
-        url: "/mapclopo"
-      }
-    ]
+        url: "/mapcloplo",
+      },
+    ],
   },
   {
     title: "Quản lý điểm",
@@ -181,17 +186,17 @@ const adminItem = [
     subItems: [
       {
         title: "Công thức điểm",
-        url: "/congthucdiem"
+        url: "/congthucdiem",
       },
       {
         title: "Nhập điểm",
-        url: "/nhapdiem"
+        url: "/nhapdiem",
       },
       {
         title: "Đính chính điểm",
-        url: "/diemdinhchinh"
-      }
-    ]
+        url: "/diemdinhchinh",
+      },
+    ],
   },
   {
     title: "Xét chuẩn đầu ra",
@@ -212,7 +217,7 @@ const adminItem = [
     title: "Đăng xuất",
     url: "/",
     icon: DangXuatIcon,
-  }
+  },
 ];
 
 const phongDaoTaoItem = [
@@ -222,7 +227,7 @@ const phongDaoTaoItem = [
     icon: KhoaIcon,
   },
   {
-    title: "Ngành",
+    title: "Chương trình đào tạo",
     url: "/nganh",
     icon: NganhIcon,
   },
@@ -235,11 +240,6 @@ const phongDaoTaoItem = [
     title: "PLO",
     url: "/plo",
     icon: PLOIcon,
-  },
-  {
-    title: "Nối Học Phần - PLO",
-    url: "/maphocphanplo",
-    icon: NoiHocPhanPLOIcon,
   },
   {
     title: "Giảng viên",
@@ -291,7 +291,7 @@ const phongDaoTaoItem = [
     url: "/",
     icon: DangXuatIcon,
   },
-]
+];
 
 const nguoiPhuTrachCTDTItems = [
   {
@@ -300,11 +300,25 @@ const nguoiPhuTrachCTDTItems = [
     icon: KhoaIcon,
   },
   {
-    title: "Ngành",
+    title: "Chương trình đào tạo",
     url: "/nganh",
     icon: NganhIcon,
   },
-  
+  {
+    title: "PLO",
+    url: "/plo",
+    icon: PLOIcon,
+  },
+  {
+    title: "Quản lý CLO",
+    url: "/chuandaura/quan-ly-clo",
+    icon: PLOIcon,
+  },
+  {
+    title: "Nối CLO - PLO",
+    url: "/mapcloplo",
+    icon: NoiHocPhanPLOIcon,
+  },
   {
     title: "Hồ sơ cá nhân",
     url: "/hosocanhan",
@@ -314,7 +328,7 @@ const nguoiPhuTrachCTDTItems = [
     title: "Đăng xuất",
     url: "/",
     icon: DangXuatIcon,
-  }
+  },
 ];
 
 export function AppSidebar() {
@@ -352,15 +366,15 @@ export function AppSidebar() {
   // Thêm useEffect để theo dõi pathname và giữ menu mở
   useEffect(() => {
     // Tìm item cha chứa submenu có URL khớp với pathname hiện tại
-    const parentItem = items.find(item => 
-      item.subItems?.some(subItem => subItem.url === location.pathname)
+    const parentItem = items.find((item) =>
+      item.subItems?.some((subItem) => subItem.url === location.pathname)
     );
-    
+
     // Nếu tìm thấy item cha, set openItem để giữ menu mở
     if (parentItem) {
       setOpenItem(parentItem.title);
     }
-    
+
     // Set active submenu
     setActiveSubItem(location.pathname);
   }, [location.pathname, items]);
@@ -387,7 +401,11 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
-                <Collapsible key={item.title} open={openItem === item.title} className="w-full">
+                <Collapsible
+                  key={item.title}
+                  open={openItem === item.title}
+                  className="w-full"
+                >
                   <SidebarMenuItem>
                     <CollapsibleTrigger asChild>
                       <SidebarMenuButton
@@ -406,8 +424,12 @@ export function AppSidebar() {
                         }`}
                       >
                         <div className="flex items-center">
-                          {typeof item.icon === 'string' ? (
-                            <img src={item.icon} alt={`${item.title} icon`} className="w-6 h-6 mr-2" />
+                          {typeof item.icon === "string" ? (
+                            <img
+                              src={item.icon}
+                              alt={`${item.title} icon`}
+                              className="w-6 h-6 mr-2"
+                            />
                           ) : (
                             <span className="mr-2">{item.icon}</span>
                           )}
@@ -415,7 +437,11 @@ export function AppSidebar() {
                         </div>
                         {item.subItems && (
                           <span className="ml-auto">
-                            {openItem === item.title ? <FiChevronUp /> : <FiChevronDown />}
+                            {openItem === item.title ? (
+                              <FiChevronUp />
+                            ) : (
+                              <FiChevronDown />
+                            )}
                           </span>
                         )}
                       </SidebarMenuButton>

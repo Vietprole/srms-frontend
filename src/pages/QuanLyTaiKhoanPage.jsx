@@ -42,6 +42,7 @@ import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
 const styles = {
   main: {
@@ -143,17 +144,32 @@ export default function QuanLyTaiKhoanPage() {
   const [deletingTaiKhoan, setDeletingTaiKhoan] = React.useState(null);
   const [page, setPage] = React.useState(1);
   const rowsPerPage = 10;
+  const [filteredData, setFilteredData] = React.useState([]);
 
   const fetchData = React.useCallback(async () => {
+    try {
     const dataChucVu = await getAllChucVus();
-    // Map chucvu items to be used in ComboBox
     const mappedComboBoxItems = dataChucVu.map((chucVu) => ({
       label: chucVu.tenChucVu,
       value: chucVu.id,
     }));
     setchucVuItems(mappedComboBoxItems);
-    const data = await getTaiKhoans(chucVuId);
-    setData(data);
+      
+      const taiKhoans = await getTaiKhoans(chucVuId);
+      // Sắp xếp tài khoản theo chức vụ và tên
+      const sortedTaiKhoans = taiKhoans.sort((a, b) => {
+        // Đầu tiên sắp xếp theo tên chức vụ
+        if (a.tenChucVu < b.tenChucVu) return -1;
+        if (a.tenChucVu > b.tenChucVu) return 1;
+        // Nếu cùng chức vụ thì sắp xếp theo tên tài khoản
+        return a.ten.localeCompare(b.ten);
+      });
+      
+      setData(sortedTaiKhoans);
+      setFilteredData(sortedTaiKhoans);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
   }, [chucVuId]);
 
   React.useEffect(() => {
@@ -163,9 +179,15 @@ export default function QuanLyTaiKhoanPage() {
   const handleGoClick = () => {
     setchucVuId(comboBoxChucVuId);
     if (comboBoxChucVuId === null) {
+      // Khi hiển thị tất cả, vẫn giữ nguyên thứ tự nhóm theo chức vụ
+      setFilteredData(data);
       navigate(`/quanlytaikhoan`);
       return;
     }
+    const filtered = data
+      .filter((taiKhoan) => taiKhoan.chucVuId === comboBoxChucVuId)
+      .sort((a, b) => a.ten.localeCompare(b.ten)); // Sắp xếp theo tên trong cùng một chức vụ
+    setFilteredData(filtered);
     navigate(`/quanlytaikhoan?chucVuId=${comboBoxChucVuId}`);
   };
 
@@ -338,12 +360,22 @@ export default function QuanLyTaiKhoanPage() {
     setPage(newPage);
   };
 
-  const paginatedData = data.slice(
+  const paginatedData = filteredData.slice(
     (page - 1) * rowsPerPage,
     page * rowsPerPage
   );
 
-  const pageCount = Math.ceil(data.length / rowsPerPage);
+  const pageCount = Math.ceil(filteredData.length / rowsPerPage);
+
+  // Thêm hàm mới để tính STT cho mỗi tài khoản trong nhóm chức vụ
+  const getSTTInGroup = (row) => {
+    // Tìm tất cả các tài khoản cùng chức vụ
+    const sameRoleAccounts = filteredData.filter(
+      account => account.tenChucVu === row.tenChucVu
+    );
+    // Tìm vị trí của tài khoản hiện tại trong nhóm chức vụ
+    return sameRoleAccounts.findIndex(account => account.id === row.id) + 1;
+  };
 
   return (
     <Layout>
@@ -603,28 +635,83 @@ export default function QuanLyTaiKhoanPage() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {paginatedData.map((row, index) => (
-                  <StyledTableRow key={row.id}>
-                    <StyledTableCell align="center">
-                      {(page - 1) * rowsPerPage + index + 1}
-                    </StyledTableCell>
-                    <StyledTableCell align="center">{row.ten}</StyledTableCell>
-                    <StyledTableCell align="center">{row.username}</StyledTableCell>
-                    <StyledTableCell align="center">{row.tenChucVu}</StyledTableCell>
-                    <StyledTableCell align="center">
-                      <Tooltip title="Sửa tài khoản">
-                        <IconButton onClick={() => handleOpenEditDialog(row)}>
-                          <EditIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Xóa tài khoản">
-                        <IconButton onClick={() => handleOpenDeleteDialog(row)}>
-                          <DeleteIcon />
-                        </IconButton>
-                      </Tooltip>
-                    </StyledTableCell>
-                  </StyledTableRow>
-                ))}
+                {(() => {
+                  let currentChucVu = null;
+                  
+                  return paginatedData.map((row, index) => {
+                    // Kiểm tra xem có phải đầu nhóm chức vụ mới không
+                    const isNewChucVu = currentChucVu !== row.tenChucVu;
+                    if (isNewChucVu) {
+                      currentChucVu = row.tenChucVu;
+                      
+                      return (
+                        <React.Fragment key={`group-${row.chucVuId}`}>
+                          <TableRow>
+                            <StyledTableCell
+                              colSpan={5}
+                              sx={{
+                                backgroundColor: '#f5f5f5',
+                                fontWeight: 'bold',
+                                color: '#0071A6'
+                              }}
+                            >
+                              {row.tenChucVu}
+                            </StyledTableCell>
+                          </TableRow>
+                          <StyledTableRow key={row.id}>
+                            <StyledTableCell align="center">{getSTTInGroup(row)}</StyledTableCell>
+                            <StyledTableCell align="center">{row.ten}</StyledTableCell>
+                            <StyledTableCell align="center">{row.username}</StyledTableCell>
+                            <StyledTableCell align="center">{row.tenChucVu}</StyledTableCell>
+                            <StyledTableCell align="center">
+                              <Tooltip title="Sửa tài khoản">
+                                <IconButton onClick={() => handleOpenEditDialog(row)}>
+                                  <EditIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Đặt lại mật khẩu mặc định">
+                                <IconButton onClick={() => handleReset(row.id)}>
+                                  <RestartAltIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Xóa tài khoản">
+                                <IconButton onClick={() => handleOpenDeleteDialog(row)}>
+                                  <DeleteIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </StyledTableCell>
+                          </StyledTableRow>
+                        </React.Fragment>
+                      );
+                    }
+                    
+                    return (
+                      <StyledTableRow key={row.id}>
+                        <StyledTableCell align="center">{getSTTInGroup(row)}</StyledTableCell>
+                        <StyledTableCell align="center">{row.ten}</StyledTableCell>
+                        <StyledTableCell align="center">{row.username}</StyledTableCell>
+                        <StyledTableCell align="center">{row.tenChucVu}</StyledTableCell>
+                        <StyledTableCell align="center">
+                          <Tooltip title="Sửa tài khoản">
+                            <IconButton onClick={() => handleOpenEditDialog(row)}>
+                              <EditIcon />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Đặt lại mật khẩu mặc định">
+                            <IconButton onClick={() => handleReset(row.id)}>
+                              <RestartAltIcon />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Xóa tài khoản">
+                            <IconButton onClick={() => handleOpenDeleteDialog(row)}>
+                              <DeleteIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </StyledTableCell>
+                      </StyledTableRow>
+                    );
+                  });
+                })()}
               </TableBody>
             </Table>
           </TableContainer>

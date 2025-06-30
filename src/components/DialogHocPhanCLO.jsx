@@ -5,13 +5,11 @@ import DialogTitle from "@mui/material/DialogTitle";
 import { useEffect, useState } from "react";
 import { getNganhById } from "@/api/api-nganh";
 import Typography  from "@mui/material/Typography";
-import DialogContentText from '@mui/material/DialogContentText';
 import { Box } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import IconButton from "@mui/material/IconButton";
 import SearchIcon from "@mui/icons-material/Search";
 import Button from "@mui/material/Button";
-import DeleteIcon from '@mui/icons-material/Delete';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
@@ -21,21 +19,19 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { styled } from '@mui/material/styles';
 import Checkbox from "@mui/material/Checkbox";
-import Snackbar from '@mui/material/Snackbar';
-import MuiAlert from '@mui/material/Alert';
-import { removeHocPhanFromNganh } from "@/api/api-nganh";
-import SaveIcon from '@mui/icons-material/Save';
-import { getHocPhansByNganhId,updateHocPhanCotLois } from "@/api/api-nganh";
-import { getRole } from "@/utils/storage";
+import { getHocPhansByNganhId } from "@/api/api-nganh";
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import Autocomplete from '@mui/material/Autocomplete';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import AddIcon from '@mui/icons-material/Add';
-import DialogAddHocPhan from "./DialogAddHocPhan";
 import FormControlLabel from "@mui/material/FormControlLabel";
+import DialogCLO from "./DialogCLO";
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import Tooltip from '@mui/material/Tooltip';
+import DialogMapPLOCLO from "./DialogMapPLOCLO";
+import DatasetLinkedIcon from '@mui/icons-material/DatasetLinked';
 // eslint-disable-next-line react/prop-types
-function DialogHocPhan({ nganhId, open, onClose }) {
+function DialogHocPhanCLO({ nganhId, open, onClose }) {
   const styles = {
     main: {
       display: "flex",
@@ -113,23 +109,29 @@ function DialogHocPhan({ nganhId, open, onClose }) {
       },
     },
   };
-  const [openAddHocPhan, setOpenAddHocPhan] = useState(false);
   const [nganh, setNganh] = useState(null);
   const [hocPhanDaChon, setHocPhanDaChon] = useState([]);
-  const [selectedDeleteHocPhan, setSelectedDeleteHocPhan] = useState([]);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [tongSoTinChi, setTongSoTinChi] = useState(0);
-  const [openAlertDialog, setOpenAlertDialog] = useState(false);
   const [searchQuery, setSearchQuery] = useState(""); // Lưu giá trị tìm kiếm
   const [filteredData, setFilteredData] = useState(hocPhanDaChon); // Lưu dữ liệu đã lọc
-  const [originalData, setOriginalData] = useState([]);
-  const [userRole, setUserRole] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20); // tùy chọn mặc định
   const pageSizeOptions = [20,50,100]; // tuỳ bạn thêm số lựa chọn
   const [onlyShowCotLoi, setOnlyShowCotLoi] = useState(false);
+  const [openDialog,setOpenDialog] = useState(false); // Trạng thái mở DialogCLO
+  const [hocPhanId, setHocPhanId] = useState(null); // Lưu ID học phần để truyền vào DialogCLO
+  const [openDialogPLOCLO, setOpenDialogPLOCLO] = useState(false); // Trạng thái mở DialogMapPLOCLO
+  const handleOpenDialogPLOCLO = (row) => {
+    setHocPhanId(row.id); // Lưu ID học phần để truyền vào DialogMapPLOCLO
+    setOpenDialogPLOCLO(true);
+  };
+
+  const handleOpenDialog = (id) => {
+    setHocPhanId(id); // Lưu ID học phần để truyền vào DialogCLO
+    setOpenDialog(true);
+  };
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
 
 
   const totalItems = filteredData.length;
@@ -157,22 +159,16 @@ function DialogHocPhan({ nganhId, open, onClose }) {
     if (open && nganhId) {
       fetchData();
     }
-    const role = getRole();
-    setUserRole(role);
+
   }, [nganhId, open]);
 
   const fetchData = async () => {
     try {
       const nganhs = await getNganhById(nganhId);
       const hocphans = await getHocPhansByNganhId(nganhId);
-      const totalCredits = hocphans.reduce((total, hocPhan) => total + hocPhan.soTinChi, 0);
-      setOriginalData(hocphans);
       setHocPhanDaChon(hocphans);
       setFilteredData(hocphans);
       setNganh(nganhs);
-      setTongSoTinChi(totalCredits);
-      
-
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu ngành:", error);
     }
@@ -236,137 +232,11 @@ function DialogHocPhan({ nganhId, open, onClose }) {
     },
     height: '25px', // Reduce row height here
   }));
-  
-
-  const handleSelect = (id) => {
-    setSelectedDeleteHocPhan((prevSelected) => {
-      if (prevSelected.includes(id)) {
-        return prevSelected.filter((selectedId) => selectedId !== id); // Bỏ chọn
-      } else {
-        return [...prevSelected, id]; // Chọn
-      }
-    });
-  };
-  
-  const handleSnackbarClose = () => {
-    setOpenSnackbar(false);
-  };
-
-  const handleDeleteHocPhan = async () => {
-    if (!hasPermission()) {
-      setSnackbarSeverity("error");
-      setSnackbarMessage("Bạn không có quyền thực hiện thao tác này!");
-      setOpenSnackbar(true);
-      return;
-    }
-    let successCount = 0;
-    let failureCount = 0;
-  
-    try {
-      for (const hocPhanId of selectedDeleteHocPhan) {
-        const response = await removeHocPhanFromNganh(nganhId, hocPhanId);
-  
-        if (response.status === 204) {
-          successCount++;
-        } else {
-          failureCount++;
-        }
-      }
-      if (successCount > 0 || failureCount > 0) {
-        setSnackbarSeverity("success");
-        setSnackbarMessage(`Đã xóa thành công: ${successCount}, thất bại: ${failureCount}`);
-        setOpenSnackbar(true);
-        setSelectedDeleteHocPhan([]);
-      } else {
-        setSnackbarSeverity("info");
-        setSnackbarMessage("Không có học phần nào được chọn.");
-        setOpenSnackbar(true);
-        setSelectedDeleteHocPhan([]);
-      }
-      fetchData();
-      setOpenAlertDialog(false);
-    } catch (error) {
-      console.error("Lỗi khi xóa học phần:", error);
-      setSnackbarSeverity("error");
-      setSnackbarMessage("Có lỗi xảy ra khi xóa học phần!");
-      setOpenSnackbar(true);
-      setSelectedDeleteHocPhan([]);
-    }
-  };
-  
-  const handleOpenAlertDialog = () => {
-    setOpenAlertDialog(true);
-  };
-  const handleCloseAlertDialog = () => {
-    setOpenAlertDialog(false);
-    setSelectedDeleteHocPhan([]);
-  };
-  const handleToggleCotLoi = (hocPhanId) => {
-    // Cập nhật trạng thái laCotLoi cho cả hocPhanDaChon (nguồn dữ liệu gốc)
-    setHocPhanDaChon((prev) =>
-      prev.map((hp) =>
-        hp.id === hocPhanId ? { ...hp, laCotLoi: !hp.laCotLoi } : hp
-      )
-    );
-
-    // Cập nhật filteredData để UI thay đổi theo (nếu đang hiển thị)
-    setFilteredData((prev) =>
-      prev.map((hp) =>
-        hp.id === hocPhanId ? { ...hp, laCotLoi: !hp.laCotLoi } : hp
-      )
-    );
-  };
-  
-  const handleSaveCotLoi = async () => {
-    if (!hasPermission()) {
-      setSnackbarSeverity("error");
-      setSnackbarMessage("Bạn không có quyền thực hiện thao tác này!");
-      setOpenSnackbar(true);
-      return;
-    }
-    const updatedHocPhans = filteredData.map((hp) => ({
-      HocPhanId: hp.id,
-      LaCotLoi: hp.laCotLoi
-    }));
-  
-    try {
-      const rp=await updateHocPhanCotLois(nganhId, updatedHocPhans);
-      if(rp.status===200){
-        setSnackbarSeverity("success");
-        setSnackbarMessage("Cập nhật học phần cốt lõi thành công!");
-        setOpenSnackbar(true);
-        fetchData();
-      }
-      else{
-        setSnackbarSeverity("error");
-        setSnackbarMessage("Cập nhật học phần cốt lõi thất bại!");
-        setOpenSnackbar(true);
-      }
-
-      
-    } catch (error) {
-        setSnackbarSeverity("error");
-        setSnackbarMessage("Cập nhật học phần cốt lõi thất bại!");
-        setOpenSnackbar(true);
-        console.log("error",error);
-    }
-  };
-  const hasChanges = () => {
-    return hocPhanDaChon.some((hocPhan) => {
-      const original = originalData.find((o) => o.id === hocPhan.id);
-      return original && original.laCotLoi !== hocPhan.laCotLoi;
-    });
-  };
-  
-  
-  const hasPermission = () => {
-    return userRole === 'Admin' || userRole === 'NguoiPhuTrachCTĐT';
-  };
 
 
   return (
     <Dialog
-      maxWidth="lg"
+      maxWidth="xl"
       fullWidth
       open={open}
       onClose={handleClose}
@@ -379,20 +249,6 @@ function DialogHocPhan({ nganhId, open, onClose }) {
         <Typography component="span" color="info.main" fontWeight="bold">
           {nganh ? ` ${nganh.ten}` : " Đang tải..."}
         </Typography>
-
-        <Box sx={{ display: "flex", gap: 10, alignItems: "center", mt: 0.5 }}>
-          <DialogContentText component="span">
-            Mã ngành:
-            <Typography component="span" color="info.main" fontWeight="500"> {nganh ? nganh.maNganh : "Đang tải..."} </Typography>
-          </DialogContentText>
-          <DialogContentText component="span">
-            Tổng số tín chỉ: 
-            <Typography component="span" color="info.main" fontWeight="500"> {tongSoTinChi ? tongSoTinChi : "0"} </Typography>
-          </DialogContentText>
-          <DialogContentText component="span">
-            Khoa:<Typography component="span" color="info.main" fontWeight="500"> {nganh ? nganh.tenKhoa : "Đang tải..."}</Typography>
-          </DialogContentText>
-        </Box>
       </DialogTitle>
       <DialogContent>
         {nganh ? (
@@ -407,7 +263,7 @@ function DialogHocPhan({ nganhId, open, onClose }) {
     border: "1px solid #ccc", // giảm border dày
     borderRadius: "16px",
     padding: "2px 6px", // giảm padding
-    width: "50%",
+    width: "30%",
     height: "34px", // giảm chiều cao
     "&:focus-within": {
       border: "1px solid #337AB7",
@@ -446,67 +302,6 @@ function DialogHocPhan({ nganhId, open, onClose }) {
       sx={{ whiteSpace: "nowrap" }}
     />
   </Box>
-
-  {/* Các nút chức năng */}
-  <Button
-    sx={{ width: "180px", height: "40px" }}
-    variant="outlined"
-    color="error"
-    startIcon={<DeleteIcon />}
-    onClick={handleOpenAlertDialog}
-    disabled={!hasPermission() || selectedDeleteHocPhan.length === 0}
-  >
-    Xóa học phần
-  </Button>
-
-  <Button
-    sx={{ width: "100px", height: "40px" }}
-    variant="contained"
-    startIcon={<SaveIcon />}
-    disabled={!hasPermission() || !hasChanges()}
-    onClick={handleSaveCotLoi}
-  >
-    Lưu
-  </Button>
-
-  <Button
-    variant="contained"
-    sx={{ width: "180px", height: "40px" }}
-    startIcon={<AddIcon />}
-    onClick={() => setOpenAddHocPhan(true)}
-  >
-    Thêm học phần
-  </Button>
-
-  {/* Dialog xác nhận xóa */}
-  <Dialog open={openAlertDialog} onClose={handleCloseAlertDialog}>
-    <DialogTitle>Xác nhận xóa</DialogTitle>
-    <DialogContent>
-      <DialogContentText>
-        Bạn có chắc chắn muốn xóa học phần đã chọn khỏi ngành không?
-      </DialogContentText>
-    </DialogContent>
-    <DialogActions>
-      <Button onClick={handleCloseAlertDialog}>Hủy</Button>
-      <Button variant="contained" onClick={handleDeleteHocPhan}>Xóa</Button>
-    </DialogActions>
-  </Dialog>
-
-  {/* Dialog thêm học phần */}
-  <DialogAddHocPhan
-    nganhId={nganhId}
-    open={openAddHocPhan}
-    onClose={() => {
-      setSearchQuery("");
-      fetchData();
-      setOpenAddHocPhan(false);
-    }}
-    onSavedSuccess={(message) => {
-      setSnackbarMessage(message || "Thêm học phần thành công!");
-      setSnackbarSeverity("success");
-      setOpenSnackbar(true);
-    }}
-  />
 </Box>
 
 
@@ -533,26 +328,13 @@ function DialogHocPhan({ nganhId, open, onClose }) {
           }}
         >
           <TableRow>
-            <StyledTableCell align="center">
-              <Checkbox
-               size="small"
-                sx={{ color: "#fff" }}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setSelectedDeleteHocPhan(hocPhanDaChon.map((row) => row.id));
-                  } else {
-                    setSelectedDeleteHocPhan([]);
-                  }
-                }}
-                checked={selectedDeleteHocPhan.length === hocPhanDaChon.length}
-              />
-            </StyledTableCell>
+           
             <StyledTableCell align="center">STT</StyledTableCell>
             <StyledTableCell align="center">Mã học phần</StyledTableCell>
             <StyledTableCell align="center">Tên học phần</StyledTableCell>
-            {/* <StyledTableCell align="center">Thuộc khoa</StyledTableCell> */}
             <StyledTableCell align="center">Số tín chỉ</StyledTableCell>
             <StyledTableCell align="center">Là cốt lõi</StyledTableCell>
+            <StyledTableCell align="center">Thao tác</StyledTableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -565,24 +347,86 @@ function DialogHocPhan({ nganhId, open, onClose }) {
           ) : (
             paginatedData.map((row, index) => (
               <StyledTableRow key={row.id || index}>
-                <StyledTableCell align="center"  width={50}>
-                  <Checkbox
-                    size="small"
-                    checked={selectedDeleteHocPhan.includes(row.id)}
-                    onChange={() => handleSelect(row.id)}
-                  />
-                </StyledTableCell>
+
                 <StyledTableCell align="center" width={50}>{index + 1}</StyledTableCell>
                 <StyledTableCell align="center" width={150}>{row.maHocPhan}</StyledTableCell>
                 <StyledTableCell align="left">{row.ten}</StyledTableCell>
-                {/* <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell> */}
                 <StyledTableCell align="center" width={150}>{row.soTinChi}</StyledTableCell>
                 <StyledTableCell align="center" width={150}>
-                  <Checkbox
+                <Checkbox
+                  checked={row.laCotLoi}
+                  readOnly
+                  disableRipple
+                  sx={{
+                    color: row.laCotLoi ? "green" : "grey.400",
+                    '&.Mui-checked': {
+                      color: "green",
+                    },
+                  }}
+                />
+
+                </StyledTableCell>
+                <StyledTableCell align="center" width={150}>
+                <Tooltip
+                  title="Xem danh sách CLO của học phần"
+                  arrow
+                  componentsProps={{
+                    tooltip: {
+                      sx: {
+                        backgroundColor: "#fff", // 👉 nền trắng
+                        color: "#333",           // 👉 chữ đen
+                        fontSize: 13,
+                        boxShadow: 2,
+                        borderRadius: 1,
+                        px: 1.5,
+                        py: 1,
+                      },
+                    },
+                    arrow: {
+                      sx: {
+                        color: "#fff", // 👉 màu của mũi tên tooltip
+                      },
+                    },
+                  }}
+                >
+                  <IconButton
                     size="small"
-                    checked={row.laCotLoi}
-                    onChange={() => handleToggleCotLoi(row.id)}
-                  />
+                    onClick={() => handleOpenDialog(row.id)}
+            
+                  >
+                    <VisibilityIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip
+                    title="Nối PLO - CLO của học phần"
+                    arrow
+                    componentsProps={{
+                      tooltip: {
+                        sx: {
+                          backgroundColor: "#fff", // 👉 nền trắng
+                          color: "#333",           // 👉 chữ đen
+                          fontSize: 13,
+                          boxShadow: 2,
+                          borderRadius: 1,
+                          px: 1.5,
+                          py: 1,
+                        },
+                      },
+                      arrow: {
+                        sx: {
+                          color: "#fff", // 👉 màu của mũi tên tooltip
+                        },
+                      },
+                    }}
+                  >
+                  <IconButton
+                    size="small"
+                    onClick={() => handleOpenDialogPLOCLO(row)}
+            
+                  >
+                    <DatasetLinkedIcon fontSize="small"/>
+                  </IconButton>
+                  </Tooltip>
                 </StyledTableCell>
               </StyledTableRow>
             ))
@@ -592,7 +436,7 @@ function DialogHocPhan({ nganhId, open, onClose }) {
     </TableContainer>
   </Box>
 
-
+     
   <Box
     sx={{
       position: "sticky",
@@ -676,6 +520,11 @@ function DialogHocPhan({ nganhId, open, onClose }) {
             )}
           />
         </Box>
+        <DialogCLO
+          nganhId={hocPhanId}
+          open={openDialog}
+          onClose={() => {handleCloseDialog();}}
+        />
         <span style={{ fontSize: 14, color: "#333" }}>
           Dòng {startRow} đến {endRow} / {totalItems}
         </span>
@@ -683,7 +532,12 @@ function DialogHocPhan({ nganhId, open, onClose }) {
     </div>
   </Box>
           </Box>
-
+          <DialogMapPLOCLO
+        nganhId={nganhId}
+        hocPhanId={hocPhanId}
+        open={openDialogPLOCLO}
+        onClose={() => setOpenDialogPLOCLO(false)}
+      />
             {/*  */}
           </div>
         ) : (
@@ -693,18 +547,9 @@ function DialogHocPhan({ nganhId, open, onClose }) {
       <DialogActions>
         <Button onClick={handleClose} color="primary">Đóng</Button>
       </DialogActions>
-      <Snackbar 
-        open={openSnackbar} 
-        autoHideDuration={3000} 
-        onClose={handleSnackbarClose} 
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} 
-      >
-        <MuiAlert variant='filled' onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
-          {snackbarMessage}
-        </MuiAlert>
-      </Snackbar>
+
     </Dialog>
   );
 }
 
-export default DialogHocPhan;
+export default DialogHocPhanCLO;

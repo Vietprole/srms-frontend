@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { styled } from '@mui/material/styles';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -11,7 +10,6 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import SearchIcon from '@mui/icons-material/Search';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -26,7 +24,7 @@ import MuiAlert from '@mui/material/Alert';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Layout from './Layout';
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import {
   getSinhViens,
   deleteSinhVien,
@@ -36,55 +34,69 @@ import {
 } from "@/api/api-sinhvien";
 import { getAllKhoas } from "@/api/api-khoa";
 import { getAllNganhs } from "@/api/api-nganh";
-import { getAllLopHocPhans, getLopHocPhans } from "@/api/api-lophocphan";
 import { getGiangVienId, getRole } from "@/utils/storage";
 import { getNganhsByKhoaId } from "@/api/api-nganh"; 
+import ArrowLeftIcon from "@mui/icons-material/ArrowLeft";
+import ArrowRightIcon from "@mui/icons-material/ArrowRight";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 
 const role = getRole();
 const giangVienId = getGiangVienId();
 
 const styles = {
   main: {
-    width: '100%',
-    height: '91vh',
     display: 'flex',
     flexDirection: 'column',
-    overflowY: 'hidden',
-    padding: "10px",
+    height: '100%',
+    padding: '10px',
+    boxSizing: 'border-box',
+    overflow: 'hidden',
   },
+
   title: {
     width: '100%',
-    height: '6%',
     fontSize: '1.2em',
     fontFamily: 'Roboto',
     fontWeight: 'bold',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
+
   btnMore: {
     display: 'flex',
     justifyContent: 'flex-end',
     marginLeft: 'auto',
   },
+
   tbActions: {
     width: '100%',
-    height: '6%',
+    marginTop: 10,
     display: 'flex',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    flexDirection: 'row',
+    alignItems: 'center', // căn giữa dọc cho cả dòng
+    gap: '10px',          // khoảng cách giữa các phần tử
+    paddingBottom: '10px',
   },
+  
+
   ipSearch: {
     width: '25%',
-    height: '100%',
+    height: 40,
     justifyContent: 'flex-start',
     borderRadius: '5px',
   },
+
+  cbKhoa: {
+    width: "22%",
+    display: "flex",
+    alignItems: "center",
+    height: 40, // 👈 Thêm chiều cao cụ thể
+    marginLeft: "10px",
+  },
+  
   btnCreate: {
     width: '15%',
-    height: '100%',
+    height: 40,
     display: 'flex',
     marginLeft: 'auto',
     justifyContent: 'center',
@@ -93,15 +105,45 @@ const styles = {
     color: 'white',
     cursor: 'pointer',
   },
+
   table: {
-    width: '100%',
-    height: '98%',
+    flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    paddingTop: '10px',
-    overflowY: 'auto',
+    overflow: 'hidden',
+    width: '100%', // 👈 thêm dòng này
   },
-  filterBox: {
+  
+
+  divPagination: {
+    flexShrink: 0,
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderTop: '1px solid #eee',
+    backgroundColor: '#f5f5f5',
+    padding: '5px 10px',
+  },
+
+  squareStyle: {
+    width: 40,
+    height: 35,
+    backgroundColor: '#fff',
+    border: '1px solid #ccc',
+    borderLeft: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 14,
+    cursor: 'pointer',
+    boxSizing: 'border-box',
+    transition: 'all 0.2s ease-in-out',
+    '&:hover': {
+      backgroundColor: '#0071A6',
+      color: '#fff',
+    },
+  },
+  filters: {
     width: '22%',
     height: '80%',
     marginLeft: '10px',
@@ -133,27 +175,33 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 }));
 
 export default function SinhVienPage() {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const lopHocPhanIdParam = searchParams.get("lopHocPhanId");
   const khoaIdParam = searchParams.get("khoaId");
   const nganhIdParam = searchParams.get("nganhId");
   const [data, setData] = useState([]);
   const [khoaItems, setKhoaItems] = useState([]);
-  const [lopHocPhanItems, setLopHocPhanItems] = useState([]);
   const [nganhItems, setNganhItems] = useState([]);
   const [khoaId, setKhoaId] = useState(khoaIdParam);
   const [lopHocPhanId, setLopHocPhanId] = useState(lopHocPhanIdParam);
   const [nganhId, setNganhId] = useState(nganhIdParam);
-  const [comboBoxKhoaId, setComboBoxKhoaId] = useState(khoaIdParam);
-  const [comboBoxLopHocPhanId, setComboBoxLopHocPhanId] = useState(lopHocPhanIdParam);
-  const [comboBoxNganhId, setComboBoxNganhId] = useState(nganhIdParam);
-  const baseUrl = "/sinhvien";
+  
+  useEffect(() => {
+    setKhoaId(khoaIdParam);
+  }, [khoaIdParam]);
+  
+  useEffect(() => {
+    setLopHocPhanId(lopHocPhanIdParam);
+  }, [lopHocPhanIdParam]);
+  
+  useEffect(() => {
+    setNganhId(nganhIdParam);
+  }, [nganhIdParam]);
+  
 
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -165,6 +213,31 @@ export default function SinhVienPage() {
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [filteredData, setFilteredData] = useState([]);
 
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10); // tùy chọn mặc định
+  const pageSizeOptions = [10,20,50]; // tuỳ bạn thêm số lựa chọn
+
+  const totalItems = filteredData.length;
+  const startRow = (page - 1) * pageSize + 1;
+  const endRow = Math.min(page * pageSize, totalItems);
+  const totalPages = Math.ceil(totalItems / pageSize);
+  let pagesToShow = [];
+  
+  if (totalPages <= 4) {
+    pagesToShow = Array.from({ length: totalPages }, (_, i) => i + 1);
+  } else {
+    if (page <= 3) {
+      pagesToShow = [1, 2, 3, 'more', totalPages];
+    } else if (page >= totalPages - 2) {
+      pagesToShow = [1, 'more', totalPages - 2, totalPages - 1, totalPages];
+    } else {
+      pagesToShow = [1, 'more', page - 1, page, page + 1, 'more', totalPages];
+    }
+  }
+
+  // Lấy dữ liệu cho trang hiện tại
+  const paginatedData = filteredData.slice((page - 1) * pageSize, page * pageSize);
+
   const fetchData = useCallback(async () => {
     const dataKhoa = await getAllKhoas();
     const mappedKhoaItems = dataKhoa.map(khoa => ({ label: khoa.ten, value: khoa.id }));
@@ -175,20 +248,15 @@ export default function SinhVienPage() {
     setNganhItems(mappedNganhItems);
 
     if (role === "GiangVien" && giangVienId != 0) {
-      const data = await getLopHocPhans(null, null, giangVienId, null);
-      const mappedComboBoxItems = data.map(lopHocPhan => ({ label: lopHocPhan.ten, value: lopHocPhan.id }));
-      setLopHocPhanItems(mappedComboBoxItems);
 
       const dataSinhVien = await getSinhViens(khoaId, nganhId, lopHocPhanId);
       setData(dataSinhVien);
       setFilteredData(dataSinhVien);
       return;
     }
-    const data = await getAllLopHocPhans();
-    const mappedComboBoxItems = data.map(lopHocPhan => ({ label: lopHocPhan.ten, value: lopHocPhan.id }));
-    setLopHocPhanItems(mappedComboBoxItems);
 
     const dataSinhVien = await getSinhViens(khoaId, nganhId, lopHocPhanId);
+    console.log("dataSinhVien: ", dataSinhVien);
     setData(dataSinhVien);
     setFilteredData(dataSinhVien);
   }, [khoaId, nganhId, lopHocPhanId]);
@@ -196,36 +264,6 @@ export default function SinhVienPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  const handleGoClick = () => {
-    setKhoaId(comboBoxKhoaId);
-    setNganhId(comboBoxNganhId);
-    setLopHocPhanId(comboBoxLopHocPhanId);
-    const url = createSearchURL(baseUrl, { 
-      khoaId: comboBoxKhoaId, 
-      nganhId: comboBoxNganhId,
-      lopHocPhanId: comboBoxLopHocPhanId 
-    });
-    navigate(url);
-  };
-
-  const handleAddSinhVien = async (newSinhVien) => {
-    try {
-      await addSinhVien(newSinhVien);
-      fetchData();
-    } catch (error) {
-      
-    }
-  };
-
-  const handleUpdateSinhVien = async (updatedSinhVien) => {
-    try {
-      await updateSinhVien(updatedSinhVien);
-      fetchData();
-    } catch (error) {
-      // toast.error("Cập nhật sinh viên thất bại!");
-    }
-  };
 
   const handleDeleteSinhVien = async () => {
     try {
@@ -345,6 +383,7 @@ export default function SinhVienPage() {
   };
 
   const handleKhoaChange = async (event, newValue) => {
+    setPage(1);
     setSelectedKhoa(newValue);
     setSelectedNganh(null);
     
@@ -362,10 +401,10 @@ export default function SinhVienPage() {
     filterData(newValue, null);
   };
 
-  const handleNganhChange = (event, newValue) => {
-    setSelectedNganh(newValue);
-    filterData(selectedKhoa, newValue);
-  };
+  // const handleNganhChange = (event, newValue) => {
+  //   setSelectedNganh(newValue);
+  //   filterData(selectedKhoa, newValue);
+  // };
 
   const filterData = (khoa, nganh) => {
     let filteredData = data;
@@ -396,94 +435,120 @@ export default function SinhVienPage() {
       setNganhItems([]);
     }
   };
-
   return (
     <Layout>
       <div style={styles.main}>
         <div style={styles.title}>
           <span>Danh sách sinh viên</span>
-          <div style={styles.btnMore}>
-            <IconButton aria-label="more actions"><MoreVertIcon/></IconButton>
-          </div>
         </div>
-        
-        <div style={styles.tbActions}>
-          <div style={styles.ipSearch}>
-            <Box sx={{
-              display: "flex",
-              alignItems: "center",
-              border: "2px solid #ccc",
-              borderRadius: "20px",
-              padding: "4px 8px",
-              width: "100%",
-              maxWidth: "100%",
-              "&:focus-within": {
-                border: "2px solid #337AB7",
-              },
-              height: "100%",
-            }}>
-              <TextField
-                fullWidth
-                placeholder="Tìm kiếm theo tên sinh viên..."
-                variant="standard"
-                autoComplete='off'
-                InputProps={{
-                  disableUnderline: true,
-                  startAdornment: (
-                    <IconButton>
-                      <SearchIcon sx={{ color: "#888" }} />
-                    </IconButton>
-                  ),
-                }}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </Box>
-          </div>
+        <Box
+  sx={{
+    width: "100%",
+    mt: 1,
+    display: "flex",
+    alignItems: "center",
+    gap: 2,
+    pb: 1,
+  }}
+>
+  {/* Ô tìm kiếm */}
+  <Box sx={{ width: "25%", height: 40 }}>
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        border: "2px solid #ccc",
+        borderRadius: "20px",
+        px: 1,
+        height: "100%",
+        "&:focus-within": {
+          border: "2px solid #337AB7",
+        },
+      }}
+    >
+      <TextField
+        fullWidth
+        placeholder="Tìm kiếm theo tên sinh viên..."
+        variant="standard"
+        autoComplete="off"
+        InputProps={{
+          disableUnderline: true,
+          startAdornment: (
+            <IconButton>
+              <SearchIcon sx={{ color: "#888" }} />
+            </IconButton>
+          ),
+        }}
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+    </Box>
+  </Box>
 
-          <div style={styles.filterBox}>
-            <Autocomplete
-              options={khoaItems}
-              getOptionLabel={(option) => option.label || ""}
-              value={selectedKhoa}
-              onChange={handleKhoaChange}
-              renderInput={(params) => (
-                <TextField {...params} label="Chọn Khoa" size="small" />
-              )}
-            />
-          </div>
+  {/* Dropdown chọn Khoa */}
+  <Box sx={{ width: "22%", height: 40 }}>
+    <Autocomplete
+      options={khoaItems}
+      getOptionLabel={(option) => option.label || ""}
+      value={selectedKhoa}
+      onChange={handleKhoaChange}
+      renderInput={(params) => (
+        <TextField {...params} label="Chọn Khoa" size="small" />
+      )}
+    />
+  </Box>
 
-          {selectedKhoa && (
-            <div style={styles.filterBox}>
-              <Autocomplete
-                options={nganhItems}
-                getOptionLabel={(option) => option.label || ""}
-                value={selectedNganh}
-                onChange={(event, newValue) => {
-                  setSelectedNganh(newValue);
-                  filterData(selectedKhoa, newValue);
-                }}
-                renderInput={(params) => (
-                  <TextField {...params} label="Chọn Ngành" size="small" />
-                )}
-              />
-            </div>
-          )}
+  {/* Dropdown chọn Ngành */}
+  {selectedKhoa && (
+    <Box sx={{ width: "22%", height: 40 }}>
+      <Autocomplete
+        options={nganhItems}
+        getOptionLabel={(option) => option.label || ""}
+        value={selectedNganh}
+        onChange={(event, newValue) => {
+          setPage(1);
+          setSelectedNganh(newValue);
+          filterData(selectedKhoa, newValue);
+        }}
+        renderInput={(params) => (
+          <TextField {...params} label="Chọn Ngành" size="small" />
+        )}
+      />
+    </Box>
+  )}
+  {(role === "Admin" || role === "PhongDaoTao") && (
+    <Box
+      sx={{
+        width: "15%",
+        height: 40,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        ml: "auto",
+      }}
+    >
+      <Button
+        variant="contained"
+        onClick={handleOpenAddDialog}
+        fullWidth
+        sx={{ height: "100%" }}
+      >
+        Tạo sinh viên
+      </Button>
+    </Box>
+  )}
+</Box>
 
-          {(role === "Admin" || role === "PhongDaoTao") && (
-            <div style={styles.btnCreate}>
-              <Button 
-                variant="contained" 
-                onClick={handleOpenAddDialog}
-                sx={{width:"100%"}}
-              >
-                Tạo sinh viên
-              </Button>
-            </div>
-          )}
-        </div>
 
         <div style={styles.table}>
+        {/* <TableVirtuoso
+  data={filteredData}
+  components={VirtuosoTableComponents}
+  fixedHeaderContent={fixedHeaderContent}
+  itemContent={rowContent}
+  style={{ width: "100%", height: "calc(100vh - 00px)" }}
+/> */}
+
           <TableContainer component={Paper}>
             <Table sx={{ minWidth: 700 }} aria-label="customized table">
               <TableHead sx={{position: 'sticky', top: 0, zIndex: 1, backgroundColor: "#0071A6"}}>
@@ -500,7 +565,7 @@ export default function SinhVienPage() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredData.map((row, index) => (
+                {paginatedData.map((row, index) => (
                   <StyledTableRow key={row.id}>
                     <StyledTableCell align="center">{index + 1}</StyledTableCell>
                     <StyledTableCell align="center">{row.maSinhVien}</StyledTableCell>
@@ -511,13 +576,13 @@ export default function SinhVienPage() {
                     {(role === "Admin" || role === "PhongDaoTao") && (
                       <StyledTableCell align="center">
                         <Tooltip title="Sửa sinh viên">
-                          <IconButton onClick={() => handleOpenEditDialog(row.id)}>
-                            <EditIcon />
+                          <IconButton onClick={() => handleOpenEditDialog(row.id)} size='small'>
+                            <EditIcon fontSize='small' />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Xóa sinh viên">
-                          <IconButton onClick={() => handleOpenDeleteDialog(row.id)}>
-                            <DeleteIcon />
+                          <IconButton onClick={() => handleOpenDeleteDialog(row.id)} size='small'>
+                            <DeleteIcon fontSize='small' />
                           </IconButton>
                         </Tooltip>
                       </StyledTableCell>
@@ -528,6 +593,85 @@ export default function SinhVienPage() {
             </Table>
           </TableContainer>
         </div>
+        <div style={styles.divPagination}>
+  {/* Trái: các nút số trang */}
+  <Box display="flex" alignItems="center">
+  <Box
+    sx={{
+      ...styles.squareStyle,
+      borderLeft: '1px solid #ccc',
+      borderTopLeftRadius: '6px',
+      borderBottomLeftRadius: '6px',
+      opacity: page === 1 ? 0.5 : 1,
+      pointerEvents: page === 1 ? 'none' : 'auto',
+    }}
+    onClick={() => setPage(page - 1)}
+  >
+    <ArrowLeftIcon fontSize="small" />
+  </Box>
+
+  {pagesToShow.map((item, idx) =>
+  item === 'more' ? (
+    <Box key={`more-${idx}`} sx={{ ...styles.squareStyle, pointerEvents: 'none' }}>
+      <MoreHorizIcon fontSize="small" />
+    </Box>
+  ) : (
+    <Box
+      key={item}
+      sx={{
+        ...styles.squareStyle,
+        ...(page === item
+          ? { backgroundColor: '#0071A6', color: '#fff', fontWeight: 'bold' }
+          : {}),
+      }}
+      onClick={() => setPage(item)}
+    >
+      {item}
+    </Box>
+  )
+)}
+
+  <Box
+    sx={{
+      ...styles.squareStyle,
+      borderTopRightRadius: '6px',
+      borderBottomRightRadius: '6px',
+      opacity: page >= totalPages ? 0.5 : 1,
+      pointerEvents: page >= totalPages ? 'none' : 'auto',
+    }}
+    onClick={() => setPage(page + 1)}
+  >
+    <ArrowRightIcon fontSize="small" />
+  </Box>
+</Box>
+
+
+  {/* Phải: chọn số bản ghi + hiển thị dòng */}
+  <Box display="flex" alignItems="center" gap={2}>
+    <Box display="flex" alignItems="center" gap={1}>
+      <span style={{ fontSize: 14 }}>Số bản ghi/trang:</span>
+      <Autocomplete
+        disableClearable
+        options={pageSizeOptions}
+        size="small"
+        sx={{ width: 80, backgroundColor: "#fff", borderRadius: "4px" }}
+        value={pageSize}
+        getOptionLabel={(option) => option.toString()} // ✅ Convert số sang chuỗi
+        onChange={(event, newValue) => {
+          setPageSize(newValue);
+          setPage(1); // reset về trang 1
+        }}
+        renderInput={(params) => (
+          <TextField {...params} variant="outlined" size="small" />
+        )}
+      />
+
+    </Box>
+    <span style={{ fontSize: 14, color: '#333' }}>
+      Dòng {startRow} đến {endRow} / {totalItems}
+    </span>
+  </Box>
+</div>
 
         <Dialog open={openAddDialog} onClose={handleCloseAddDialog} fullWidth>
           <DialogTitle>Tạo sinh viên mới:</DialogTitle>

@@ -32,57 +32,67 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import Layout from '../Layout';
 import { getHocPhansByNganhId, getAllNganhs } from "@/api/api-nganh";
 import { getLopHocPhans } from "@/api/api-lophocphan";
-import { TableVirtuoso } from "react-virtuoso";
+import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
+import ArrowRightIcon from '@mui/icons-material/ArrowRight';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 function HocPhanPage() 
 {
   const styles = {
-    main:
-    {
-      width: '100%',
-      height: '91vh',
+    main: {
       display: 'flex',
       flexDirection: 'column',
-      overflowY: 'hidden',
-      padding: "10px",
+      height: '100%',
+      padding: '10px',
+      boxSizing: 'border-box',
+      overflow: 'hidden',
     },
-    title:
-    {
+  
+    title: {
       width: '100%',
-      height: '6%',
       fontSize: '1.2em',
       fontFamily: 'Roboto',
       fontWeight: 'bold',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'flex-start',
-      flexDirection: 'row',
+      justifyContent: 'space-between',
     },
-    btnMore:
-    {
+  
+    btnMore: {
       display: 'flex',
       justifyContent: 'flex-end',
       marginLeft: 'auto',
     },
-    tbActions:
-    {
+  
+    tbActions: {
       width: '100%',
-      height: '6%',
+      marginTop: 10,
       display: 'flex',
-      justifyContent: 'flex-start',
-      alignItems: 'center',
-      flexDirection: 'row',
+      alignItems: 'center', // căn giữa dọc cho cả dòng
+      gap: '10px',          // khoảng cách giữa các phần tử
+      paddingBottom: '10px',
     },
-    ipSearch:
-    {
+    
+  
+    ipSearch: {
       width: '25%',
-      height: '100%',
+      height: 40,
       justifyContent: 'flex-start',
       borderRadius: '5px',
     },
-    btnCreate:
-    {
+  
+    cbKhoa: {
+      width: "22%",
+      display: "flex",
+      alignItems: "center",
+      height: 40, // 👈 Thêm chiều cao cụ thể
+      marginLeft: "10px",
+    },
+    
+    
+  
+    btnCreate: {
       width: '15%',
-      height: '100%',
+      height: 40,
       display: 'flex',
       marginLeft: 'auto',
       justifyContent: 'center',
@@ -91,21 +101,43 @@ function HocPhanPage()
       color: 'white',
       cursor: 'pointer',
     },
-    table:
-    {
-      width: '100%',
-      height: '98%',
+  
+    table: {
+      flex: 1,
       display: 'flex',
       flexDirection: 'column',
-      paddingTop: '10px',
-      overflowY: 'auto',
+      overflow: 'hidden',
+      width: '100%', // 👈 thêm dòng này
     },
-    cbKhoa:
-    {
-      width: '22%',
-      height: '80%',
-      marginLeft: '10px',
-      marginBottom: '10px',
+    
+  
+    divPagination: {
+      flexShrink: 0,
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      borderTop: '1px solid #eee',
+      backgroundColor: '#f5f5f5',
+      padding: '5px 10px',
+    },
+  
+    squareStyle: {
+      width: 35,
+      height: 35,
+      backgroundColor: '#fff',
+      border: '1px solid #ccc',
+      borderLeft: 'none',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: 14,
+      cursor: 'pointer',
+      boxSizing: 'border-box',
+      transition: 'all 0.2s ease-in-out',
+      '&:hover': {
+        backgroundColor: '#0071A6',
+        color: '#fff',
+      },
     },
   };
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -130,7 +162,39 @@ function HocPhanPage()
   const [hocPhanId, setHocPhanId] = useState("");
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedHocPhanId, setSelectedHocPhanId] = useState(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20); // mặc định
+  const pageSizeOptions = [20,50,100]; // các lựa chọn
 
+  const totalItems = filteredData.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const startIndex = (page - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedData = filteredData.slice(startIndex, endIndex);
+  const startRow = startIndex + 1;
+  const endRow = Math.min(endIndex, totalItems);
+
+  const pagesToShow = () => {
+    const pages = [];
+    const total = totalPages;
+  
+    if (total <= 5) {
+      for (let i = 1; i <= total; i++) pages.push(i);
+    } else {
+      if (page <= 3) {
+        pages.push(1, 2, 3, 4, '...', total);
+      } else if (page >= total - 2) {
+        pages.push(1, '...', total - 3, total - 2, total - 1, total);
+      } else {
+        pages.push(1, '...', page - 1, page, page + 1, '...', total);
+      }
+    }
+  
+    return pages;
+  };
+  
+  
+  
   const handleOpenEditDialog = async(hocPhanId) => {
     const hocphan = await getHocPhanById(hocPhanId);
     if(hocphan.status===200)
@@ -186,6 +250,7 @@ function HocPhanPage()
   };
 
   const handleKhoaChange = (event, newValue) => {
+    setPage(1); // Reset page to 1 when filter changes
     setSelectedKhoaFilter(newValue);
     if (!newValue) {
       setFilteredData(data);
@@ -237,6 +302,7 @@ function HocPhanPage()
 
   
   const handleSearchChange = (event) => {
+    setPage(1); // Reset page to 1 when search query changes
     const value = event.target.value;
     setSearchQuery(value); 
     filterData(value); 
@@ -265,6 +331,14 @@ function HocPhanPage()
     cursor: 'pointer', // Tùy chọn: Thêm hiệu ứng con trỏ
   },
   }));
+   const columns = [
+    { width: 50, label: "STT", dataKey: "index", align: "center" },
+    { width: 150, label: "Mã Học Phần", dataKey: "maHocPhan", align: "center" },
+    { label: "Tên Học Phần", dataKey: "tenHocPhan", align: "left" },
+    { width: 100, label: "Số Tín Chỉ", dataKey: "soTinChi", align: "center" },
+    { width: 200, label: "Tên Khoa", dataKey: "tenKhoa", align: "center" },
+    { width: 150, label: "", dataKey: "actions", align: "center" },
+  ];
 
   const handleAddSubmit = async () => {
     if (tenHocPhan.trim() === "") {
@@ -465,79 +539,7 @@ function HocPhanPage()
       }
     }
   };
-  const columns = [
-    { width: 50, label: "STT", dataKey: "index", align: "center" },
-    { width: 150, label: "Mã Học Phần", dataKey: "maHocPhan", align: "center" },
-    { label: "Tên Học Phần", dataKey: "tenHocPhan", align: "left" },
-    { width: 100, label: "Số Tín Chỉ", dataKey: "soTinChi", align: "center" },
-    { width: 200, label: "Tên Khoa", dataKey: "tenKhoa", align: "center" },
-    { width: 150, label: "", dataKey: "actions", align: "center" },
-  ];
-  
-  const VirtuosoTableComponents = {
-    // eslint-disable-next-line react/display-name
-    Scroller: React.forwardRef((props, ref) => (
-      <TableContainer component={Paper} {...props} ref={ref} sx={{ height: "calc(100vh - 200px)", overflowY: "auto" }} />
-    )),
-    Table: (props) => (
-      <Table {...props} sx={{ borderCollapse: "separate", tableLayout: "fixed", backgroundColor: "white" }} />
-    ),
-    // eslint-disable-next-line react/display-name
-    TableHead: React.forwardRef((props, ref) => (
-      <TableHead {...props} ref={ref} sx={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#0071A6" }} />
-    )),
-    TableRow: StyledTableRow,
-    // eslint-disable-next-line react/display-name
-    TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
-    TableCell: StyledTableCell,
-  };
-  
-  function fixedHeaderContent() {
-    return (
-      <StyledTableRow>
-        {columns.map((column) => (
-          <StyledTableCell
-            key={column.dataKey}
-            variant="head"
-            align="center"
-            style={{ width: column.width, textAlign: "center" }}
-          >
-            {column.label}
-          </StyledTableCell>
-        ))}
-      </StyledTableRow>
-    );
-  }
-  
-  function rowContent(index, row) {
-    return (
-      <>
-        <StyledTableCell align="center">{index + 1}</StyledTableCell>
-        <StyledTableCell align="center">{row.maHocPhan}</StyledTableCell>
-        <StyledTableCell align="left">{row.ten}</StyledTableCell>
-        <StyledTableCell align="center">{row.soTinChi}</StyledTableCell>
-        <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
-        <StyledTableCell align="center" width={150}>
-          <Tooltip title="Sửa học phần">
-          <IconButton
-                      onClick={() => handleOpenEditDialog(row.id)}
-                    >
-              <EditIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Xóa học phần">
-              <IconButton
-                  onClick={() => handleOpenDeleteDialog(row.id)}
-              >
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
-        </StyledTableCell>
-      </>
-    );
-  }
-  
-  
+ 
 
   return (
     <Layout>
@@ -545,7 +547,7 @@ function HocPhanPage()
       <div style={styles.title}>
         <span>Danh sách học phần</span>
         <div style={styles.btnMore}>
-          <IconButton aria-label="more actions"><MoreVertIcon/></IconButton>
+          <IconButton aria-label="more actions" size='small'><MoreVertIcon fontSize='small'/></IconButton>
         </div>
       </div>
       <div style={styles.tbActions}>
@@ -678,12 +680,49 @@ function HocPhanPage()
         </div>
       </div>
       <div style={styles.table}>
-     <TableVirtuoso
+      <TableContainer component={Paper}>
+  <Table sx={{ minWidth: 700 }} aria-label="customized table">
+    <TableHead sx={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#0071A6" }}>
+      <TableRow>
+        {columns.map((col) => (
+          <StyledTableCell key={col.dataKey} align={col.align || "center"}>
+            {col.label}
+          </StyledTableCell>
+        ))}
+      </TableRow>
+    </TableHead>
+    <TableBody>
+      {paginatedData.map((row, index) => (
+        <StyledTableRow key={row.id}>
+          <StyledTableCell align="center">{(page - 1) * pageSize + index + 1}</StyledTableCell>
+          <StyledTableCell align="center">{row.maHocPhan}</StyledTableCell>
+          <StyledTableCell align="left">{row.ten}</StyledTableCell>
+          <StyledTableCell align="center">{row.soTinChi}</StyledTableCell>
+          <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
+          <StyledTableCell align="center">
+            <Tooltip title="Sửa học phần" arrow>
+              <IconButton onClick={() => handleOpenEditDialog(row.id)} size='small'>
+                <EditIcon fontSize='small' />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Xóa học phần" arrow>
+              <IconButton onClick={() => handleOpenDeleteDialog(row.id)} size='small'>
+                <DeleteIcon fontSize='small'/>
+              </IconButton>
+            </Tooltip>
+          </StyledTableCell>
+        </StyledTableRow>
+      ))}
+    </TableBody>
+  </Table>
+</TableContainer>
+
+     {/* <TableVirtuoso
       data={filteredData}
       components={VirtuosoTableComponents}
       fixedHeaderContent={fixedHeaderContent}
       itemContent={rowContent}
-    />
+    /> */}
      <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
               <DialogTitle>Xóa Học Phần</DialogTitle>
               <DialogContent>
@@ -791,6 +830,86 @@ function HocPhanPage()
       </Snackbar>
       
       </div>
+      <div style={styles.divPagination}>
+  <Box display="flex" alignItems="center">
+    {/* Previous */}
+    <Box
+      sx={{
+        ...styles.squareStyle,
+        borderLeft: '1px solid #ccc',
+        borderTopLeftRadius: '6px',
+        borderBottomLeftRadius: '6px',
+        opacity: page === 1 ? 0.5 : 1,
+        pointerEvents: page === 1 ? 'none' : 'auto',
+      }}
+      onClick={() => setPage(page - 1)}
+    >
+      <ArrowLeftIcon fontSize="small" />
+    </Box>
+
+    {/* Page buttons */}
+    {pagesToShow().map((item, idx) =>
+      item === '...' ? (
+        <Box key={`ellipsis-${idx}`} sx={{ ...styles.squareStyle, pointerEvents: 'none' }}>
+          <MoreHorizIcon fontSize="small" />
+        </Box>
+      ) : (
+        <Box
+          key={`page-${item}`}
+          sx={{
+            ...styles.squareStyle,
+            ...(page === item
+              ? { backgroundColor: '#0071A6', color: '#fff', fontWeight: 'bold' }
+              : {}),
+          }}
+          onClick={() => setPage(item)}
+        >
+          {item}
+        </Box>
+      )
+    )}
+
+    {/* Next */}
+    <Box
+      sx={{
+        ...styles.squareStyle,
+        borderTopRightRadius: '6px',
+        borderBottomRightRadius: '6px',
+        opacity: page >= totalPages ? 0.5 : 1,
+        pointerEvents: page >= totalPages ? 'none' : 'auto',
+      }}
+      onClick={() => setPage(page + 1)}
+    >
+      <ArrowRightIcon fontSize="small" />
+    </Box>
+  </Box>
+
+  {/* Selector + label */}
+  <Box display="flex" alignItems="center" gap={2}>
+    <Box display="flex" alignItems="center" gap={1}>
+      <span style={{ fontSize: 14 }}>Số bản ghi/trang:</span>
+      <Autocomplete
+        disableClearable
+        options={pageSizeOptions}
+        size="small"
+        sx={{ width: 80, backgroundColor: "#fff", borderRadius: "4px" }}
+        value={pageSize}
+        getOptionLabel={(option) => option.toString()}
+        onChange={(event, newValue) => {
+          setPageSize(newValue);
+          setPage(1);
+        }}
+        renderInput={(params) => (
+          <TextField {...params} variant="outlined" size="small" />
+        )}
+      />
+    </Box>
+    <span style={{ fontSize: 14, color: '#333' }}>
+      Dòng {startRow} đến {endRow} / {totalItems}
+    </span>
+  </Box>
+</div>
+
     </div>
     </Layout>
   );

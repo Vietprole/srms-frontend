@@ -92,7 +92,7 @@ export default function VirtualizedAutocomplete({
       onChange={onChange}
       getOptionLabel={getOptionLabel}
       renderInput={(params) => (
-        <TextField {...params} label={label} variant={variant} size={size} />
+        <TextField {...params} label={label} variant={variant} size={size} sx={{ fontSize: 12 }} />
       )}
       PopperComponent={StyledPopper}
       ListboxComponent={ListboxComponent}

@@ -84,7 +84,7 @@ export const addCLOsToCauHoi = async (cauHoiId, cloIdsList) => {
     });
     return response.data;
   } catch (error) {
-    console.log("error message: ", error.message);
+    console.log("error message: ", error.response?.data);
     throw new Error(error.response?.data || "Lỗi bất định");
   }
 }
@@ -96,7 +96,7 @@ export const updateCLOsToCauHoi = async (cauHoiId, cloIdsList) => {
     });
     return response.data;
   } catch (error) {
-    console.log("error message: ", error.message);
+    console.log("error message: ", error.response?.data);
     throw new Error(error.response?.data || "Lỗi bất định");
   }
 }

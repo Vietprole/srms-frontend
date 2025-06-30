@@ -3,9 +3,7 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import { useEffect, useState } from "react";
-import { getNganhById } from "@/api/api-nganh";
 import Typography  from "@mui/material/Typography";
-import DialogContentText from '@mui/material/DialogContentText';
 import { Box } from "@mui/material";
 import Button from "@mui/material/Button";
 import Table from '@mui/material/Table';
@@ -20,17 +18,17 @@ import Checkbox from "@mui/material/Checkbox";
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import SaveIcon from '@mui/icons-material/Save';
-import { getHocPhansByNganhId } from "@/api/api-nganh";
-import { getPLOsByNganhId, getHocPhansByPLOId, updateHocPhansToPLO } from '@/api/api-plo';
+import { getPLOsByNganhId,   } from '@/api/api-plo';
 import { useCallback } from "react";
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
+import { getCLOsByPLOId, updateCLOsToPLO } from '@/api/api-plo';
+import { getCLOsByHocPhanId } from '@/api/api-clo';
 // eslint-disable-next-line react/prop-types
-function DialogPLOHocPhan({ nganhId, open, onClose }) {
+function DialogPLOHocPhan({ nganhId, open, onClose ,hocPhanId}) {
   const styles = {
     main: {
       display: "flex",
@@ -136,190 +134,124 @@ function DialogPLOHocPhan({ nganhId, open, onClose }) {
     },
     height: '40px',
   }));
+  const [selectedHocKy, setSelectedHocKy] = useState(null); // <-- Đặt lên trước
+  const [availableHocKy, setAvailableHocKy] = useState([]);
   
-  
-  
-  const [nganh, setNganh] = useState(null);
-  const [hocPhanDaChon, setHocPhanDaChon] = useState([]);
+  const [hocPhanTheoPLO, setHocPhanTheoPLO] = useState({});
+  const [originalHocPhanTheoPLO, setOriginalHocPhanTheoPLO] = useState({});
   const [lsPLO, setLsPLO] = useState([]);
+  const [hocPhanDaChon, setHocPhanDaChon] = useState([]);
+  const [selectedPLOs, setSelectedPLOs] = useState([]);
+  
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [tongSoTinChi, setTongSoTinChi] = useState(0);
-  const [hocPhanTheoPLO, setHocPhanTheoPLO] = useState({}); // Biến tạm lưu trạng thái checkbox
-  const [originalHocPhanTheoPLO, setOriginalHocPhanTheoPLO] = useState({});
-  const [selectedPLOs, setSelectedPLOs] = useState([]); // Danh sách ID PLO được chọn
-  const [onlyCore, setOnlyCore] = useState(false);
-  const filteredHocPhan = onlyCore
-  ? hocPhanDaChon.filter((hp) => hp.laCotLoi)
-  : hocPhanDaChon;
-
+  
   const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(20);
-    const pageSizeOptions = [20, 50, 100];
-    const filteredData = filteredHocPhan; // hoặc thêm điều kiện lọc nếu cần
-    const totalItems = filteredData.length;
-    const totalPages = Math.ceil(totalItems / pageSize);
-    const startRow = (page - 1) * pageSize + 1;
-    const endRow = Math.min(page * pageSize, totalItems);
-    let pagesToShow = [];
-
-    if (totalPages <= 4) {
-      pagesToShow = Array.from({ length: totalPages }, (_, i) => i + 1);
-    } else {
-      if (page <= 3) {
-        pagesToShow = [1, 2, 3, 'more', totalPages];
-      } else if (page >= totalPages - 2) {
-        pagesToShow = [1, 'more', totalPages - 2, totalPages - 1, totalPages];
-      } else {
-        pagesToShow = [1, 'more', page - 1, page, page + 1, 'more', totalPages];
-      }
-    }
-
-    const paginatedData = filteredHocPhan.slice((page - 1) * pageSize, page * pageSize);
-
-
-
-
+  const [pageSize, setPageSize] = useState(20);
+  const pageSizeOptions = [20, 50, 100];
+  
+  // ✅ Bây giờ bạn có thể dùng selectedHocKy
+  const filteredHocPhan = hocPhanDaChon.filter(
+    (clo) => !selectedHocKy || clo.hocKy === selectedHocKy
+  );
+  
+  const totalItems = filteredHocPhan.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const startRow = (page - 1) * pageSize + 1;
+  const endRow = Math.min(page * pageSize, totalItems);
+  const paginatedData = filteredHocPhan.slice(startRow - 1, endRow);
+  
 
   
-const fetchData = useCallback(async () => {
-  try {
-    const nganhs = await getNganhById(nganhId);
-    const hocphans = await getHocPhansByNganhId(nganhId);
-    console.log("hocphans", hocphans);
-    const totalCredits = hocphans.reduce((total, hp) => total + hp.soTinChi, 0);
-    const plos = await getPLOsByNganhId(nganhId);
-    const ploHocPhanMap = {}; 
-    for (const plo of plos) {
-      try {
-        const hpTheoPLO = await getHocPhansByPLOId(plo.id);
-        ploHocPhanMap[plo.id] = hpTheoPLO.map((hp) => hp.id);
-      } catch (error) {
-        console.error(`Lỗi khi lấy học phần của PLO ${plo.id}:`, error);
-        ploHocPhanMap[plo.id] = []; // Đảm bảo có key
-      }
-    }
-
-    // Tạo bảng tổng hợp học phần với các PLO bool tương ứng
-    const mergedList = hocphans.map((hp) => {
-      const ploFlags = {};
-      for (const plo of plos) {
-        ploFlags[`plo${plo.id}`] = ploHocPhanMap[plo.id]?.includes(hp.id) || false;
-      }
-
-      return {
-        id: hp.id,
-        maHocPhan: hp.maHocPhan,
-        ten: hp.ten,
-        laCotLoi: hp.laCotLoi, // vẫn giữ boolean
-        ...ploFlags,
-      };
-      
-    });
-
-    // Set state
-    setNganh(nganhs);
-    setLsPLO(plos);
-    setHocPhanDaChon(mergedList);
-    setTongSoTinChi(totalCredits);
-
-    // Ngoài ra, nếu cần lưu trạng thái checkbox ban đầu để check thay đổi
-    const originalMap = {};
-    for (const plo of plos) {
-      originalMap[plo.id] = ploHocPhanMap[plo.id];
-    }
-
-    setHocPhanTheoPLO(originalMap);
-    setOriginalHocPhanTheoPLO(originalMap);
-  } catch (error) {
-    console.error("Lỗi khi fetch dữ liệu:", error);
+  // Tạo số trang hiển thị
+  let pagesToShow = [];
+  if (totalPages <= 4) {
+    pagesToShow = Array.from({ length: totalPages }, (_, i) => i + 1);
+  } else if (page <= 3) {
+    pagesToShow = [1, 2, 3, 'more', totalPages];
+  } else if (page >= totalPages - 2) {
+    pagesToShow = [1, 'more', totalPages - 2, totalPages - 1, totalPages];
+  } else {
+    pagesToShow = [1, 'more', page - 1, page, page + 1, 'more', totalPages];
   }
-}, [nganhId]);
+
+
+  const fetchData = useCallback(async () => {
+    if (!nganhId || !hocPhanId) return;
+  
+    try {
+      const cloList = await getCLOsByHocPhanId(hocPhanId);
+      // Rút trích danh sách học kỳ duy nhất từ cloList
+      const uniqueHocKy = Array.from(new Set(cloList.map(clo => clo.tenHocKy).filter(Boolean)));
+      setAvailableHocKy(uniqueHocKy);
+
+      const ploList = await getPLOsByNganhId(nganhId);
+  
+      const ploCloMap = {};
+      for (const plo of ploList) {
+        try {
+          const clos = await getCLOsByPLOId(plo.id);
+          ploCloMap[plo.id] = clos.map((clo) => clo.id);
+        } catch (error) {
+          console.error(`Lỗi khi lấy CLO của PLO ${plo.id}`, error);
+          ploCloMap[plo.id] = [];
+        }
+      }
+  
+      // Gán vào bảng hiển thị
+      // Gán vào bảng hiển thị
+const mergedList = cloList.map((clo) => {
+  const ploFlags = {};
+  for (const plo of ploList) {
+    ploFlags[`plo${plo.id}`] = ploCloMap[plo.id]?.includes(clo.id) || false;
+  }
+
+  return {
+    id: clo.id,
+    ten: clo.ten,
+    hocKy: clo.tenHocKy,
+    ...ploFlags,
+  };
+});
+
+// 🟢 Sắp xếp mergedList theo học kỳ (tenHocKy) để hiển thị gọn gàng khi chưa lọc
+const sortedMergedList = mergedList
+  .sort((a, b) => {
+    // So sánh theo học kỳ trước
+    if (a.hocKy < b.hocKy) return -1;
+    if (a.hocKy > b.hocKy) return 1;
+
+    // Nếu cùng học kỳ, so sánh theo tên CLO
+    return a.ten.localeCompare(b.ten);
+  });
+
+
+setHocPhanDaChon(sortedMergedList); // dùng list đã sort
+setLsPLO(ploList);
+setHocPhanTheoPLO(ploCloMap);
+setOriginalHocPhanTheoPLO(ploCloMap);
+
+    } catch (err) {
+      console.error("Lỗi khi fetch dữ liệu:", err);
+    }
+  }, [nganhId, hocPhanId]);
+  
   useEffect(() => {
-    if (open && nganhId) {
+    if (open && nganhId && hocPhanId) {
       fetchData();
     }
-  }, [fetchData, nganhId, open]);
+  }, [fetchData, open, nganhId, hocPhanId]);
 
-  
-  
-  
-  const handleClose = () => {
-    onClose();
-  };
-  
-
-  
-  const handleSnackbarClose = () => {
-    setOpenSnackbar(false);
-  };
-  
-
-  
-  
-
-  const handleTogglePLOCheckbox = (hocPhanId, ploId) => {
+  const handleTogglePLOCheckbox = (cloId, ploId) => {
     setHocPhanTheoPLO((prev) => {
-      const currentList = prev[ploId] || [];
-      const exists = currentList.includes(hocPhanId);
-      const updated = exists
-        ? currentList.filter((id) => id !== hocPhanId)
-        : [...currentList, hocPhanId];
-      return {
-        ...prev,
-        [ploId]: updated,
-      };
+      const current = prev[ploId] || [];
+      const updated = current.includes(cloId)
+        ? current.filter((id) => id !== cloId)
+        : [...current, cloId];
+      return { ...prev, [ploId]: updated };
     });
   };
-  
-  
-const handleSavePLOs = async () => {
-  let hasChanges = false;
-  for (const ploId in hocPhanTheoPLO) {
-    const current = hocPhanTheoPLO[ploId] || [];
-    const original = originalHocPhanTheoPLO?.[ploId] || [];
-
-    const currentSorted = [...current].sort();
-    const originalSorted = [...original].sort();
-
-    if (JSON.stringify(currentSorted) !== JSON.stringify(originalSorted)) {
-      hasChanges = true;
-      break;
-    }
-  }
-
-  if (!hasChanges) {
-    setSnackbarSeverity("info");
-    setSnackbarMessage("Không có thay đổi nào để lưu.");
-    setOpenSnackbar(true);
-    return;
-  }
-
-  try {
-    for (const ploId in hocPhanTheoPLO) {
-      const hocPhanIds = hocPhanTheoPLO[ploId];
-      const rp = await updateHocPhansToPLO(ploId, hocPhanIds); // Gọi API cập nhật
-      if (rp.status !== 200) {
-        throw new Error(`Lỗi khi cập nhật PLO`);
-      }
-    }
-
-    setSnackbarSeverity("success");
-    setSnackbarMessage("Cập nhật PLO - học phần thành công!");
-
-    // Sau khi lưu xong, cập nhật lại dữ liệu gốc
-    setOriginalHocPhanTheoPLO({ ...hocPhanTheoPLO });
-  } catch (err) {
-    console.error("Lỗi khi lưu:", err);
-    setSnackbarSeverity("error");
-    setSnackbarMessage("Cập nhật thất bại!");
-  } finally {
-    setOpenSnackbar(true);
-  }
-};
-  
-
   const isDifferent = (a = {}, b = {}) => {
     const allKeys = new Set([...Object.keys(a), ...Object.keys(b)]);
     for (let key of allKeys) {
@@ -331,31 +263,70 @@ const handleSavePLOs = async () => {
     }
     return false;
   };
+  
+  const hasChanges = isDifferent(hocPhanTheoPLO, originalHocPhanTheoPLO);
+  
+  
   const staticColumns = [
     { width: 50, label: "STT", dataKey: "index", align: "center", isSticky: true },
-    { width: 180, label: "Mã Học Phần", dataKey: "maHocPhan", align: "center", isSticky: true },
-    { width: 300, label: "Tên Học Phần", dataKey: "ten", align: "left", isSticky: true },
-    { width: 120, label: "Là Cốt Lõi", dataKey: "laCotLoi", align: "center", isSticky: true },
+    { width: 200, label: "Tên CLO", dataKey: "ten", align: "center", isSticky: true },
+    { width: 200, label: "Thuộc học kỳ", dataKey: "hocKy", align: "center", isSticky: true },
   ];
   
   const dynamicColumns = lsPLO
-  .filter((plo) => selectedPLOs.length === 0 || selectedPLOs.includes(plo.id)) // nếu không chọn gì thì hiện tất cả
-  .map((plo) => ({
-    width: 150,
-    label: plo.ten,
-    dataKey: `plo${plo.id}`,
-    align: "center",
-    isSticky: false,
-  }));
-
+    .filter((plo) => selectedPLOs.length === 0 || selectedPLOs.includes(plo.id))
+    .map((plo) => ({
+      width: 150,
+      label: plo.ten,
+      dataKey: `plo${plo.id}`,
+      align: "center",
+      isSticky: false,
+    }));
   
   const columns = [...staticColumns, ...dynamicColumns];
   
+  const handleClose = () => {
+    setPage(1); // Reset trang
+    setHocPhanTheoPLO({}); // Xóa trạng thái checkbox
+    setOriginalHocPhanTheoPLO({}); // Xóa bản gốc
+    setSelectedPLOs([]); // Bỏ chọn lọc PLO
+    setSnackbarMessage("");
+    setOpenSnackbar(false);
+    setSnackbarSeverity("success");
+    setLsPLO([]);
+    setHocPhanDaChon([]);
+    onClose(); // Gọi hàm đóng Dialog bên ngoài
+  };
+  
+  
 
   
+  const handleSnackbarClose = () => {
+    setOpenSnackbar(false);
+  };
+  const handleSavePLOs = async () => {
+    try {
+      for (const ploId in hocPhanTheoPLO) {
+        const hocPhanIds = hocPhanTheoPLO[ploId];
+        const response = await updateCLOsToPLO(ploId, hocPhanIds);
   
+        if (response.status !== 200) {
+          throw new Error("Lưu thất bại với PLO ID: " + ploId);
+        }
+      }
   
-  const hasChanges = isDifferent(hocPhanTheoPLO, originalHocPhanTheoPLO);
+      setOriginalHocPhanTheoPLO(hocPhanTheoPLO); // cập nhật bản gốc để so sánh thay đổi sau này
+      setSnackbarMessage("Lưu CLO-PLO thành công!");
+      setSnackbarSeverity("success");
+      setOpenSnackbar(true);
+    } catch (error) {
+      console.error("Lỗi khi lưu:", error);
+      setSnackbarMessage("Đã xảy ra lỗi khi lưu dữ liệu.");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+    }
+  };
+  
   
   return (
     <Dialog
@@ -364,34 +335,19 @@ const handleSavePLOs = async () => {
       open={open}
       onClose={handleClose}
       sx={{ "& .MuiDialog-paper": { width: "90%", maxHeight: "100%" } }}
-      TransitionProps={{
-        onExited: () => setNganh(null), // Đặt lại giá trị khi Dialog đóng hoàn toàn
-      }}
+     
     >
       <DialogTitle fontSize={"18px"} fontWeight={"bold"}>
-        Nối PLO - Học phần thuộc ngành:
+        Nối PLO - CLO 
         <Typography component="span" color="info.main" fontWeight="bold">
-          {nganh ? ` ${nganh.ten}` : " Đang tải..."}
         </Typography>
   
-        <Box sx={{ display: "flex", gap: 10, alignItems: "center", mt: 0.5 }}>
-          <DialogContentText component="span">
-            Mã ngành:
-            <Typography component="span" color="info.main" fontWeight="500"> {nganh ? nganh.maNganh : "Đang tải..."} </Typography>
-          </DialogContentText>
-          <DialogContentText component="span">
-            Tổng số tín chỉ: 
-            <Typography component="span" color="info.main" fontWeight="500"> {tongSoTinChi ? tongSoTinChi : "0"} </Typography>
-          </DialogContentText>
-          <DialogContentText component="span">
-            Khoa:<Typography component="span" color="info.main" fontWeight="500"> {nganh ? nganh.tenKhoa : "Đang tải..."}</Typography>
-          </DialogContentText>
-        </Box>
+     
       </DialogTitle>
       <DialogContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: '400px' }}>
 
 
-        {nganh ? (
+        {hocPhanId ? (
           <div >
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <div style={styles.mainAction}>
@@ -418,34 +374,37 @@ const handleSavePLOs = async () => {
         }}
       />
 
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={onlyCore}
-            onChange={(e) => {
-              setPage(1);
-              setOnlyCore(e.target.checked);
-            }}
-            color="primary"
-            size="small"
-          />
-        }
-        label="Chỉ hiện học phần cốt lõi"
+      <Autocomplete
+        size="small"
+        options={availableHocKy}
+        value={selectedHocKy}
+        onChange={(e, newValue) => setSelectedHocKy(newValue)}
+        renderInput={(params) => (
+          <TextField {...params} label="Lọc theo học kỳ" placeholder="Chọn học kỳ" />
+        )}
+        sx={{
+          width: 300,
+          "& .MuiInputBase-root": {
+            height: "60%",
+          },
+        }}
       />
+
     </Box>
   </Box>
 
   {/* Box bên phải chứa nút Lưu */}
   <Box sx={{ height: 40 }}>
-    <Button
+  <Button
       sx={{ height: "100%", minWidth: 100 }}
       variant="contained"
       startIcon={<SaveIcon />}
       disabled={!hasChanges}
-      onClick={handleSavePLOs}
+      onClick={handleSavePLOs} // ✅ Gắn hàm mới
     >
       Lưu
     </Button>
+
   </Box>
 </div>
 
@@ -458,7 +417,7 @@ const handleSavePLOs = async () => {
           <Box sx={{ flex: 1,  position: 'relative' }}>
 
 <Box sx={{ display: 'flex' }}>
-<TableContainer
+{/* <TableContainer
   component={Paper}
   sx={{
     maxHeight: 400,
@@ -573,7 +532,104 @@ const handleSavePLOs = async () => {
 </TableBody>
 
   </Table>
+</TableContainer> */}
+<TableContainer
+  component={Paper}
+  sx={{
+    maxHeight: 400,
+    overflow: 'auto',
+    position: 'relative',
+  }}
+>
+  <Table
+    stickyHeader
+    sx={{
+      tableLayout: 'fixed',
+      minWidth: columns.reduce((sum, col) => sum + col.width, 0),
+    }}
+  >
+    <TableHead>
+      <StyledTableRow>
+        {columns.map((column, colIndex) => (
+          <StyledTableCell
+            key={column.dataKey}
+            align={column.align}
+            sx={{
+              width: column.width,
+              minWidth: column.width,
+              maxWidth: column.width,
+              position: 'sticky',
+              top: 0,
+              left: column.isSticky
+                ? columns
+                    .slice(0, colIndex)
+                    .reduce((acc, c) => acc + (c.isSticky ? c.width : 0), 0)
+                : undefined,
+              zIndex: column.isSticky ? 3 : 2,
+              backgroundColor: column.isSticky ? '#f5f5f5' : '#0071A6',
+              color: column.isSticky ? '#000' : '#fff',
+              borderRight: '1px solid #ccc',
+            }}
+          >
+            {column.label}
+          </StyledTableCell>
+        ))}
+      </StyledTableRow>
+    </TableHead>
+
+    <TableBody>
+      {paginatedData.map((row, rowIndex) => {
+        const rowBgColor = rowIndex % 2 === 0 ? '#fff' : '#f5f5f5';
+
+        return (
+          <StyledTableRow key={row.id} sx={{ backgroundColor: rowBgColor }}>
+            {columns.map((column, colIndex) => {
+              let cellValue;
+
+              if (column.dataKey.startsWith('plo')) {
+                const ploId = parseInt(column.dataKey.replace('plo', ''));
+                cellValue = (
+                  <Checkbox
+                    checked={hocPhanTheoPLO?.[ploId]?.includes(row.id) || false}
+                    onChange={() => handleTogglePLOCheckbox(row.id, ploId)}
+                  />
+                );
+              } else if (column.dataKey === 'index') {
+                cellValue = startRow + rowIndex;
+              } else {
+                cellValue = row[column.dataKey] ?? '';
+              }
+
+              return (
+                <StyledTableCell
+                  key={column.dataKey}
+                  align={column.align}
+                  sx={{
+                    width: column.width,
+                    minWidth: column.width,
+                    maxWidth: column.width,
+                    position: column.isSticky ? 'sticky' : 'static',
+                    left: column.isSticky
+                      ? columns
+                          .slice(0, colIndex)
+                          .reduce((acc, c) => acc + (c.isSticky ? c.width : 0), 0)
+                      : undefined,
+                    backgroundColor: column.isSticky ? rowBgColor : 'inherit',
+                    zIndex: column.isSticky ? 1 : 1,
+                    borderRight: column.isSticky ? '1px solid #ccc' : undefined,
+                  }}
+                >
+                  {cellValue}
+                </StyledTableCell>
+              );
+            })}
+          </StyledTableRow>
+        );
+      })}
+    </TableBody>
+  </Table>
 </TableContainer>
+
 </Box>
 
 
