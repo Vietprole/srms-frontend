@@ -164,5 +164,27 @@ export const updateHocPhanCotLois = async (nganhId, updateCotLoiDTOs) => {
     throw new Error(error.response?.data || "Lỗi bất định");
   }
 };
+export const copyNganhStructure = async (targetNganhId, sourceNganhId) => {
+  try {
+    const response = await axios.post(
+      `${API_NGANH}/${targetNganhId}/copy-structure`,
+      sourceNganhId, // body là số nguyên
+      {
+        headers: {
+          Authorization: getAccessToken(),
+          "Content-Type": "application/json", // đảm bảo gửi đúng kiểu
+        },
+      }
+    );
+    return response;
+  } catch (error) {
+    console.log("Lỗi khi sao chép cấu trúc ngành: ", error.message);
+    throw new Error(error.response?.data || "Lỗi bất định");
+  }
+};
+
+
+
+
 
 

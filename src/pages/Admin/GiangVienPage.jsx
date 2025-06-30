@@ -16,7 +16,6 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import {Tooltip } from '@mui/material';
 import Box from '@mui/material/Box';
 import { useState, useEffect } from "react";
 import Autocomplete from '@mui/material/Autocomplete';
@@ -32,6 +31,9 @@ import {getAllGiangViens,addGiangVien,getGiangVienById,updateGiangVien,deleteGia
 import ArrowLeftIcon from "@mui/icons-material/ArrowLeft";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import MenuItem from '@mui/material/MenuItem';
+import Popover from '@mui/material/Popover';
+
 
 function GiangVienPage() 
 {
@@ -185,6 +187,20 @@ function GiangVienPage()
 
   // Lấy dữ liệu cho trang hiện tại
   const paginatedData = filteredData.slice((page - 1) * pageSize, page * pageSize);
+
+  const [anchorPosition, setAnchorPosition] = useState(null);
+  const [selectedRowId, setSelectedRowId] = useState(null);
+
+  const handleOpenPopover = (event, id) => {
+    setAnchorPosition({ top: event.clientY, left: event.clientX });
+    setSelectedRowId(id);
+  };
+
+  const handleClosePopover = () => {
+    setAnchorPosition(null);
+    setSelectedRowId(null);
+  };
+
 
 
   const handleOpenEditDialog  = async (giangVienId) => {
@@ -539,17 +555,42 @@ sx={{
                 <StyledTableCell align="center">{row.ten}</StyledTableCell>
                 <StyledTableCell align="center" width={450}>{row.tenKhoa}</StyledTableCell>
                 <StyledTableCell align="center" width={150}>
-                  <Tooltip title="Sửa giảng viên">
-                    <IconButton onClick={() => handleOpenEditDialog(row.id)} size='small'>
-                      <EditIcon fontSize='small' />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Xóa giảng viên">
-                    <IconButton onClick={() => handleOpenDeleteDialog(row.id)} size='small'>
-                      <DeleteIcon fontSize='small' />
-                    </IconButton>
-                  </Tooltip>
-                </StyledTableCell>
+  <IconButton size="small" onClick={(e) => handleOpenPopover(e, row.id)}>
+    <MoreHorizIcon fontSize="small" />
+  </IconButton>
+
+  {selectedRowId === row.id && (
+    <Popover
+      open={Boolean(anchorPosition)}
+      anchorReference="anchorPosition"
+      anchorPosition={anchorPosition}
+      onClose={handleClosePopover}
+      anchorOrigin={{ vertical: "top", horizontal: "left" }}
+      transformOrigin={{ vertical: "top", horizontal: "left" }}
+      PaperProps={{ sx: { p: 1.5, minWidth: 140 } }}
+    >
+      <MenuItem
+        onClick={() => {
+          handleOpenEditDialog(row.id);
+          handleClosePopover();
+        }}
+      >
+        <EditIcon fontSize="small" sx={{ mr: 1 }} />
+        Sửa giảng viên
+      </MenuItem>
+      <MenuItem
+        onClick={() => {
+          handleOpenDeleteDialog(row.id);
+          handleClosePopover();
+        }}
+      >
+        <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
+        Xóa giảng viên
+      </MenuItem>
+    </Popover>
+  )}
+</StyledTableCell>
+
               </StyledTableRow>
               
             ))}

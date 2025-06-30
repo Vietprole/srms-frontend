@@ -29,6 +29,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
+
 // eslint-disable-next-line react/prop-types
 function DialogPLOHocPhan({ nganhId, open, onClose }) {
   const styles = {
@@ -341,7 +342,7 @@ const handleSavePLOs = async () => {
   const dynamicColumns = lsPLO
   .filter((plo) => selectedPLOs.length === 0 || selectedPLOs.includes(plo.id)) // nếu không chọn gì thì hiện tất cả
   .map((plo) => ({
-    width: 150,
+    width: 80,
     label: plo.ten,
     dataKey: `plo${plo.id}`,
     align: "center",
@@ -504,8 +505,6 @@ const handleSavePLOs = async () => {
     ))}
   </StyledTableRow>
 </TableHead>
-
-
 <TableBody>
   {paginatedData.map((row, rowIndex) => {
     const rowBgColor = rowIndex % 2 === 0 ? '#fff' : '#f5f5f5';
@@ -513,7 +512,7 @@ const handleSavePLOs = async () => {
     return (
       <StyledTableRow key={row.id} sx={{ backgroundColor: rowBgColor }}>
         {columns.map((column, colIndex) => {
-            const value =
+          const value =
             column.dataKey.startsWith("plo") ? (
               <Checkbox
                 checked={
@@ -524,25 +523,21 @@ const handleSavePLOs = async () => {
                   handleTogglePLOCheckbox(row.id, parseInt(column.dataKey.replace("plo", "")));
                 }}
               />
-            )  : column.dataKey === "laCotLoi" ? (
+            ) : column.dataKey === "laCotLoi" ? (
               <Checkbox
                 checked={row.laCotLoi}
                 readOnly
                 disableRipple
                 sx={{
-                  color: row.laCotLoi ? "green" : "grey.400", // màu viền checkbox
-                  '&.Mui-checked': {
-                    color: "green", // màu checkbox khi đã check
-                  },
+                  color: row.laCotLoi ? "green" : "grey.400",
+                  '&.Mui-checked': { color: "green" },
                 }}
               />
-            )
-             : column.dataKey === "index" ? (
+            ) : column.dataKey === "index" ? (
               startRow + rowIndex
             ) : (
               row[column.dataKey]
             );
-
 
           return (
             <StyledTableCell
@@ -558,7 +553,8 @@ const handleSavePLOs = async () => {
                       .slice(0, colIndex)
                       .reduce((acc, c) => acc + (c.isSticky ? c.width : 0), 0)
                   : undefined,
-                backgroundColor: column.isSticky ? rowBgColor : 'inherit', // đồng bộ màu cho sticky
+                  backgroundColor: column.isSticky ? 'inherit' : 'inherit',
+
                 zIndex: column.isSticky ? 1 : 1,
                 borderRight: column.isSticky ? '1px solid #ccc' : undefined,
               }}
@@ -570,6 +566,20 @@ const handleSavePLOs = async () => {
       </StyledTableRow>
     );
   })}
+
+  {/* ✅ Khi không có dữ liệu */}
+  {paginatedData.length === 0 && (
+    <TableRow>
+<TableCell
+  colSpan={columns.length}
+  align="center"
+  sx={{ fontWeight: 'bold', color: 'gray' }}
+>
+  Chưa có học phần trong chương trình đào tạo
+</TableCell>
+
+    </TableRow>
+  )}
 </TableBody>
 
   </Table>

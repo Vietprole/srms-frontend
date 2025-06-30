@@ -35,7 +35,6 @@ import GiangVienIcon from "@/assets/icons/giang-vien-icon.png";
 import SinhVienIcon from "@/assets/icons/sinh-vien-icon.png";
 import HocPhanIcon from "@/assets/icons/hoc-phan-icon.png";
 import PLOIcon from "@/assets/icons/plo-icon.png";
-import NoiHocPhanPLOIcon from "@/assets/icons/noi-hoc-phan-plo-icon.png";
 import LopHocPhanIcon from "@/assets/icons/lop-hoc-phan-icon.png";
 import CongThucDiemIcon from "@/assets/icons/cong-thuc-diem-icon.png";
 import NhapDiemIcon from "@/assets/icons/nhap-diem-icon.png";
@@ -167,16 +166,12 @@ const adminItem = [
     icon: <FiTarget className="w-6 h-6" />,
     subItems: [
       {
-        title: "PLO",
+        title: "Quản lý PLO",
         url: "/plo",
       },
       {
         title: "Quản lý CLO",
         url: "/chuandaura/quan-ly-clo",
-      },
-      {
-        title: "Nối CLO - PLO",
-        url: "/mapcloplo",
       },
     ],
   },
@@ -237,7 +232,7 @@ const phongDaoTaoItem = [
     icon: HocPhanIcon,
   },
   {
-    title: "PLO",
+    title: "Quản lý PLO",
     url: "/plo",
     icon: PLOIcon,
   },
@@ -305,7 +300,7 @@ const nguoiPhuTrachCTDTItems = [
     icon: NganhIcon,
   },
   {
-    title: "PLO",
+    title: "Quản lý PLO",
     url: "/plo",
     icon: PLOIcon,
   },
@@ -313,11 +308,6 @@ const nguoiPhuTrachCTDTItems = [
     title: "Quản lý CLO",
     url: "/chuandaura/quan-ly-clo",
     icon: PLOIcon,
-  },
-  {
-    title: "Nối CLO - PLO",
-    url: "/mapcloplo",
-    icon: NoiHocPhanPLOIcon,
   },
   {
     title: "Hồ sơ cá nhân",

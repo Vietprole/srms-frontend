@@ -10,7 +10,6 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import SearchIcon from '@mui/icons-material/Search';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Dialog from '@mui/material/Dialog';
@@ -18,7 +17,6 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import { Tooltip } from '@mui/material';
 import Box from '@mui/material/Box';
 import { useState, useEffect } from "react";
 import Autocomplete from '@mui/material/Autocomplete';
@@ -53,7 +51,9 @@ import { useNavigate } from "react-router-dom";
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import DialogSinhVienInLHP from '../components/DialogSinhVienInLHP';
+import MenuItem from '@mui/material/MenuItem';
+import Popover from '@mui/material/Popover';
+
 
 const styles = {
   main: {
@@ -239,6 +239,20 @@ export default function LopHocPhanPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10); // tùy chọn mặc định
   const pageSizeOptions = [10,20,50]; // tuỳ bạn thêm số lựa chọn
+
+  const [anchorPosition, setAnchorPosition] = useState(null);
+  const [selectedRowId, setSelectedRowId] = useState(null);
+
+  const handleOpenPopover = (event, rowId) => {
+    setAnchorPosition({ top: event.clientY + 5, left: event.clientX + 5 });
+    setSelectedRowId(rowId);
+  };
+
+  const handleClosePopover = () => {
+    setAnchorPosition(null);
+    setSelectedRowId(null);
+  };
+
 
   const totalItems = filteredData.length;
   const startRow = (page - 1) * pageSize + 1;
@@ -690,9 +704,7 @@ export default function LopHocPhanPage() {
       <div style={styles.main}>
         <div style={styles.title}>
           <span>Danh sách lớp học phần</span>
-          <div style={styles.btnMore}>
-            <IconButton aria-label="more actions" size="small"><MoreVertIcon fontSize="small"/></IconButton>
-          </div>
+          
         </div>
         
         <Box
@@ -806,21 +818,47 @@ export default function LopHocPhanPage() {
           <StyledTableCell align="center">{row.tenHocKy}</StyledTableCell>
           <StyledTableCell align="center">{row.tenGiangVien}</StyledTableCell>
           <StyledTableCell align="center">
-            <Tooltip title="Sửa lớp học phần" arrow>
-              <IconButton onClick={() => handleOpenEditDialog(row.id)}  size="small">
-                <EditIcon   fontSize="small"/>
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Xem danh sách sinh viên" arrow>
-              <IconButton onClick={() => navigate(`/lophocphan/${row.id}/sinhvien`)} size="small">
-                <FormatListBulletedIcon  fontSize="small" />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Xóa lớp học phần" arrow>
-              <IconButton onClick={() => handleOpenDeleteDialog(row.id)} size="small">
-                <DeleteIcon   fontSize="small"/>
-              </IconButton>
-            </Tooltip>
+          <IconButton
+            size="small"
+            onClick={(e) => handleOpenPopover(e, row.id)}
+          >
+            <MoreHorizIcon fontSize="small" />
+          </IconButton>
+
+          {selectedRowId === row.id && (
+            <Popover
+              open={Boolean(anchorPosition)}
+              anchorReference="anchorPosition"
+              anchorPosition={anchorPosition}
+              onClose={handleClosePopover}
+              anchorOrigin={{ vertical: "top", horizontal: "left" }}
+              transformOrigin={{ vertical: "top", horizontal: "left" }}
+              PaperProps={{ sx: { p: 1.5, minWidth: 160 } }}
+            >
+              <MenuItem onClick={() => {
+                handleOpenEditDialog(row.id);
+                handleClosePopover();
+              }}>
+                <EditIcon fontSize="small" sx={{ mr: 1 }} />
+                Sửa thông tin lớp học phần
+              </MenuItem>
+              <MenuItem onClick={() => {
+                navigate(`/lophocphan/${row.id}/sinhvien`);
+                handleClosePopover();
+              }}>
+                <FormatListBulletedIcon fontSize="small" sx={{ mr: 1 }} />
+                Danh sách sinh viên
+              </MenuItem>
+              <MenuItem onClick={() => {
+                handleOpenDeleteDialog(row.id);
+                handleClosePopover();
+              }}>
+                <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
+                Xóa lớp học phần
+              </MenuItem>
+            </Popover>
+          )}
+
           </StyledTableCell>
         </StyledTableRow>
       ))}

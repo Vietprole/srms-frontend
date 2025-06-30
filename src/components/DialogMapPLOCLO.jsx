@@ -27,6 +27,8 @@ import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import { getCLOsByPLOId, updateCLOsToPLO } from '@/api/api-plo';
 import { getCLOsByHocPhanId } from '@/api/api-clo';
+import DialogContentText from "@mui/material/DialogContentText";
+import { getHocPhanById} from "@/api/api-hocphan";
 // eslint-disable-next-line react/prop-types
 function DialogPLOHocPhan({ nganhId, open, onClose ,hocPhanId}) {
   const styles = {
@@ -134,8 +136,7 @@ function DialogPLOHocPhan({ nganhId, open, onClose ,hocPhanId}) {
     },
     height: '40px',
   }));
-  const [selectedHocKy, setSelectedHocKy] = useState(null); // <-- Đặt lên trước
-  const [availableHocKy, setAvailableHocKy] = useState([]);
+  const [hocPhanData, setHocPhanData] = useState(null); // Dữ liệu học phần, nếu cần hiển thị thêm thông tin
   
   const [hocPhanTheoPLO, setHocPhanTheoPLO] = useState({});
   const [originalHocPhanTheoPLO, setOriginalHocPhanTheoPLO] = useState({});
@@ -151,16 +152,13 @@ function DialogPLOHocPhan({ nganhId, open, onClose ,hocPhanId}) {
   const [pageSize, setPageSize] = useState(20);
   const pageSizeOptions = [20, 50, 100];
   
-  // ✅ Bây giờ bạn có thể dùng selectedHocKy
-  const filteredHocPhan = hocPhanDaChon.filter(
-    (clo) => !selectedHocKy || clo.hocKy === selectedHocKy
-  );
+
   
-  const totalItems = filteredHocPhan.length;
+  const totalItems = hocPhanDaChon.length;
   const totalPages = Math.ceil(totalItems / pageSize);
   const startRow = (page - 1) * pageSize + 1;
   const endRow = Math.min(page * pageSize, totalItems);
-  const paginatedData = filteredHocPhan.slice(startRow - 1, endRow);
+  const paginatedData = hocPhanDaChon.slice(startRow - 1, endRow);
   
 
   
@@ -181,10 +179,11 @@ function DialogPLOHocPhan({ nganhId, open, onClose ,hocPhanId}) {
     if (!nganhId || !hocPhanId) return;
   
     try {
+      const hocPhanResponse = await getHocPhanById(hocPhanId);
+      console.log("hocPhanResponse:", hocPhanResponse); // Kiểm tra dữ liệu học phần
+      setHocPhanData(hocPhanResponse);
       const cloList = await getCLOsByHocPhanId(hocPhanId);
       // Rút trích danh sách học kỳ duy nhất từ cloList
-      const uniqueHocKy = Array.from(new Set(cloList.map(clo => clo.tenHocKy).filter(Boolean)));
-      setAvailableHocKy(uniqueHocKy);
 
       const ploList = await getPLOsByNganhId(nganhId);
   
@@ -270,13 +269,13 @@ setOriginalHocPhanTheoPLO(ploCloMap);
   const staticColumns = [
     { width: 50, label: "STT", dataKey: "index", align: "center", isSticky: true },
     { width: 200, label: "Tên CLO", dataKey: "ten", align: "center", isSticky: true },
-    { width: 200, label: "Thuộc học kỳ", dataKey: "hocKy", align: "center", isSticky: true },
   ];
   
   const dynamicColumns = lsPLO
     .filter((plo) => selectedPLOs.length === 0 || selectedPLOs.includes(plo.id))
     .map((plo) => ({
-      width: 150,
+      width: 80,
+      maxWidth: 120,
       label: plo.ten,
       dataKey: `plo${plo.id}`,
       align: "center",
@@ -338,11 +337,20 @@ setOriginalHocPhanTheoPLO(ploCloMap);
      
     >
       <DialogTitle fontSize={"18px"} fontWeight={"bold"}>
-        Nối PLO - CLO 
+        Nối PLO_CLO thuộc học phần  
         <Typography component="span" color="info.main" fontWeight="bold">
+          {hocPhanData ? ` ${hocPhanData.data.ten}` : " Đang tải..."}
         </Typography>
-  
-     
+
+        <Box sx={{ display: "flex", gap: 10, alignItems: "center", mt: 0.5 }}>
+          <DialogContentText component="span">
+            Mã học phần:
+            <Typography component="span" color="info.main" fontWeight="500"> {hocPhanData ? hocPhanData.data.maHocPhan : "Đang tải..."} </Typography>
+          </DialogContentText>
+          <DialogContentText component="span">
+            Khoa:<Typography component="span" color="info.main" fontWeight="500"> {hocPhanData ? hocPhanData.data.tenKhoa : "Đang tải..."}</Typography>
+          </DialogContentText>
+        </Box>
       </DialogTitle>
       <DialogContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: '400px' }}>
 
@@ -374,22 +382,7 @@ setOriginalHocPhanTheoPLO(ploCloMap);
         }}
       />
 
-      <Autocomplete
-        size="small"
-        options={availableHocKy}
-        value={selectedHocKy}
-        onChange={(e, newValue) => setSelectedHocKy(newValue)}
-        renderInput={(params) => (
-          <TextField {...params} label="Lọc theo học kỳ" placeholder="Chọn học kỳ" />
-        )}
-        sx={{
-          width: 300,
-          "& .MuiInputBase-root": {
-            height: "60%",
-          },
-        }}
-      />
-
+     
     </Box>
   </Box>
 
@@ -417,122 +410,6 @@ setOriginalHocPhanTheoPLO(ploCloMap);
           <Box sx={{ flex: 1,  position: 'relative' }}>
 
 <Box sx={{ display: 'flex' }}>
-{/* <TableContainer
-  component={Paper}
-  sx={{
-    maxHeight: 400,
-    overflow: 'auto',
-    position: 'relative',
-  }}
->
-  <Table
-    stickyHeader
-    sx={{
-      tableLayout: 'fixed',
-      minWidth: columns.reduce((sum, col) => sum + col.width, 0),
-    }}
-  >
-<TableHead>
-  <StyledTableRow>
-    {columns.map((column, colIndex) => (
-      <StyledTableCell
-        key={column.dataKey}
-        align={column.align}
-        sx={{
-          width: column.width,
-          minWidth: column.width,
-          maxWidth: column.width,
-
-          // ✅ Luôn sticky để top hoạt động
-          position: 'sticky',
-          top: 0, // giữ cố định header theo chiều dọc
-          left: column.isSticky
-            ? columns
-                .slice(0, colIndex)
-                .reduce((acc, c) => acc + (c.isSticky ? c.width : 0), 0)
-            : undefined,
-          zIndex: column.isSticky ? 3 : 2,
-          backgroundColor: column.isSticky ? '#f5f5f5' : '#0071A6',
-          color: column.isSticky ? '#000' : '#fff',
-
-          borderRight: '1px solid #ccc',
-        }}
-      >
-        {column.label}
-      </StyledTableCell>
-    ))}
-  </StyledTableRow>
-</TableHead>
-
-
-<TableBody>
-  {paginatedData.map((row, rowIndex) => {
-    const rowBgColor = rowIndex % 2 === 0 ? '#fff' : '#f5f5f5';
-
-    return (
-      <StyledTableRow key={row.id} sx={{ backgroundColor: rowBgColor }}>
-        {columns.map((column, colIndex) => {
-            const value =
-            column.dataKey.startsWith("plo") ? (
-              <Checkbox
-                checked={
-                  hocPhanTheoPLO?.[column.dataKey.replace("plo", "")]?.includes(row.id) || false
-                }
-                onChange={(e) => {
-                  e.stopPropagation();
-                  handleTogglePLOCheckbox(row.id, parseInt(column.dataKey.replace("plo", "")));
-                }}
-              />
-            )  : column.dataKey === "laCotLoi" ? (
-              <Checkbox
-                checked={row.laCotLoi}
-                readOnly
-                disableRipple
-                sx={{
-                  color: row.laCotLoi ? "green" : "grey.400", // màu viền checkbox
-                  '&.Mui-checked': {
-                    color: "green", // màu checkbox khi đã check
-                  },
-                }}
-              />
-            )
-             : column.dataKey === "index" ? (
-              startRow + rowIndex
-            ) : (
-              row[column.dataKey]
-            );
-
-
-          return (
-            <StyledTableCell
-              key={column.dataKey}
-              align={column.align}
-              sx={{
-                width: column.width,
-                minWidth: column.width,
-                maxWidth: column.width,
-                position: column.isSticky ? 'sticky' : 'static',
-                left: column.isSticky
-                  ? columns
-                      .slice(0, colIndex)
-                      .reduce((acc, c) => acc + (c.isSticky ? c.width : 0), 0)
-                  : undefined,
-                backgroundColor: column.isSticky ? rowBgColor : 'inherit', // đồng bộ màu cho sticky
-                zIndex: column.isSticky ? 1 : 1,
-                borderRight: column.isSticky ? '1px solid #ccc' : undefined,
-              }}
-            >
-              {value}
-            </StyledTableCell>
-          );
-        })}
-      </StyledTableRow>
-    );
-  })}
-</TableBody>
-
-  </Table>
-</TableContainer> */}
 <TableContainer
   component={Paper}
   sx={{
@@ -614,18 +491,26 @@ setOriginalHocPhanTheoPLO(ploCloMap);
                           .slice(0, colIndex)
                           .reduce((acc, c) => acc + (c.isSticky ? c.width : 0), 0)
                       : undefined,
-                    backgroundColor: column.isSticky ? rowBgColor : 'inherit',
-                    zIndex: column.isSticky ? 1 : 1,
+                    backgroundColor: 'inherit', // ✅ Kế thừa để hover hoạt động toàn hàng
+                    zIndex: column.isSticky ? 2 : 1,
                     borderRight: column.isSticky ? '1px solid #ccc' : undefined,
                   }}
                 >
                   {cellValue}
                 </StyledTableCell>
+
               );
             })}
           </StyledTableRow>
         );
       })}
+        {paginatedData.length === 0 && (
+    <TableRow>
+      <TableCell colSpan={columns.length} align="center">
+        Chưa có CLO trong học phần
+      </TableCell>
+    </TableRow>
+  )}
     </TableBody>
   </Table>
 </TableContainer>

@@ -31,7 +31,7 @@ import { getNganhById,addHocPhansToNganh } from "../api/api-nganh";
 import MuiAlert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
-import { getNganhsByKhoaId,getHocPhansByNganhId } from "../api/api-nganh";
+import { getNganhsByKhoaId,copyNganhStructure } from "../api/api-nganh";
 import VirtualizedAutocomplete from "./VirtualizedAutocomplete";
 // eslint-disable-next-line react/prop-types
 function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
@@ -267,9 +267,47 @@ function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
       setLoading(false);
     }
   };
+  // const handleSaveAddByNganh = async () => {
+  //   if (!selectedNganh || !selectedNganh.id) {
+  //     setSnackbarMessage("Vui lòng chọn ngành để lấy học phần.");
+  //     setSnackbarSeverity("warning");
+  //     setOpenSnackbar(true);
+  //     return;
+  //   }
+  
+  //   try {
+  //     setLoading(true);
+  //     const hocPhansFromNganh = await getHocPhansByNganhId(selectedNganh.id);
+  
+  //     // Lấy danh sách id học phần từ ngành khác
+  //     const idsFromNganh = hocPhansFromNganh.map((hp) => hp.id);
+  
+  //     // Lọc ra những ID học phần từ ngành khác có tồn tại trong bảng hiện tại
+  //     const validIds = hocPhanList
+  //       .filter((hp) => idsFromNganh.includes(hp.id))
+  //       .map((hp) => hp.id);
+  
+  //     // Gộp với danh sách đã chọn trước đó (không trùng)
+  //     const merged = Array.from(new Set([...selectedHocPhan, ...validIds]));
+  
+  //     setSelectedHocPhan(merged);
+  //     handleCloseDialog(); // Đóng dialog sau khi lấy học phần
+      
+  //     setSnackbarMessage("Đã thêm học phần từ ngành khác.");
+  //     setSnackbarSeverity("success");
+  //     setOpenSnackbar(true);
+  //   } catch (error) {
+  //     console.error("Lỗi khi lấy học phần từ ngành khác:", error);
+  //     setSnackbarMessage("Lỗi khi lấy học phần từ ngành khác.");
+  //     setSnackbarSeverity("error");
+  //     setOpenSnackbar(true);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
   const handleSaveAddByNganh = async () => {
     if (!selectedNganh || !selectedNganh.id) {
-      setSnackbarMessage("Vui lòng chọn ngành để lấy học phần.");
+      setSnackbarMessage("Vui lòng chọn đầy đủ ngành.");
       setSnackbarSeverity("warning");
       setOpenSnackbar(true);
       return;
@@ -277,34 +315,32 @@ function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
   
     try {
       setLoading(true);
-      const hocPhansFromNganh = await getHocPhansByNganhId(selectedNganh.id);
+      const response = await copyNganhStructure(nganhId, selectedNganh.id);
   
-      // Lấy danh sách id học phần từ ngành khác
-      const idsFromNganh = hocPhansFromNganh.map((hp) => hp.id);
+      if (response?.status === 200) {
+        setSnackbarMessage("Đã sao chép học phần từ ngành khác.");
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
   
-      // Lọc ra những ID học phần từ ngành khác có tồn tại trong bảng hiện tại
-      const validIds = hocPhanList
-        .filter((hp) => idsFromNganh.includes(hp.id))
-        .map((hp) => hp.id);
-  
-      // Gộp với danh sách đã chọn trước đó (không trùng)
-      const merged = Array.from(new Set([...selectedHocPhan, ...validIds]));
-  
-      setSelectedHocPhan(merged);
-      handleCloseDialog(); // Đóng dialog sau khi lấy học phần
-      
-      setSnackbarMessage("Đã thêm học phần từ ngành khác.");
-      setSnackbarSeverity("success");
-      setOpenSnackbar(true);
+        // Đóng cả dialog chọn ngành và dialog tổng
+        handleCloseDialog(); 
+        handleClose();         // 👉 Thêm dòng này để đóng dialog tổng
+      } else {
+        console.error("Phản hồi không hợp lệ: ", response);
+        setSnackbarMessage("Phản hồi không hợp lệ từ máy chủ.");
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
+      }
     } catch (error) {
-      console.error("Lỗi khi lấy học phần từ ngành khác:", error);
-      setSnackbarMessage("Lỗi khi lấy học phần từ ngành khác.");
+      console.error("Lỗi khi sao chép học phần:", error);
+      setSnackbarMessage(error.message || "Lỗi khi sao chép học phần từ ngành khác.");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     } finally {
       setLoading(false);
     }
   };
+  
   
   
 

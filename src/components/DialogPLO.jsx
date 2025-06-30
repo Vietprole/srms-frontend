@@ -36,6 +36,8 @@ import {
 } from "@/api/api-plo";
 import EditIcon from '@mui/icons-material/Edit';
 import Tooltip from '@mui/material/Tooltip';
+import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
+import DialogAddPLO from "./DialogAddPLO";
 // eslint-disable-next-line react/prop-types
 function DialogPLO({ nganhId, open, onClose }) {
   const styles = {
@@ -132,6 +134,14 @@ function DialogPLO({ nganhId, open, onClose }) {
   const moTaPLORef = useRef("");
   const [ploID, setPloID] = useState("");
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [openDialogAdd, setOpenDialogAdd] = useState(false);
+
+  const handleOpenDialogAdd = () => {
+    setOpenDialogAdd(true);
+  };
+  const handleCloseDialogAddFrom = () => {
+    setOpenDialogAdd(false);
+  };
   const handleCloseDeleteDialog = () => {
     setOpenDeleteDialog(false);
     setPloID(null);
@@ -459,12 +469,28 @@ function DialogPLO({ nganhId, open, onClose }) {
         value={searchQuery}
         onChange={handleSearchChange}
       />
+            <DialogAddPLO
+              open={openDialogAdd}
+              onClose={handleCloseDialogAddFrom}
+              nganhId={nganhId}
+              onAddSuccess={fetchData} // Callback để cập nhật dữ liệu sau khi thêm
+              />        
     </Box>
   </Box>
 
   {/* Các nút chức năng */}
 
 
+  <Button
+    variant="contained"
+    color="primary"
+    startIcon={<MoveToInboxIcon />}
+    sx={{ height: 40 }}
+    disabled={filteredData.length > 0} // Bị disable nếu có dữ liệu
+    onClick={handleOpenDialogAdd}
+  >
+    Thêm PLO từ CTĐT khác
+  </Button>
 
   <Button
     variant="contained"
