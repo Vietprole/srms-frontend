@@ -2,11 +2,11 @@ import API_BASE_URL from "./base-url";
 import axios from 'axios';
 import { getAccessToken } from "../utils/storage";
 
-const API_HOCKY = `${API_BASE_URL}/api/hocky`;
+const API_SEMESTER = `${API_BASE_URL}/api/semesters`;
 
-export const getAllHocKys = async () => {
+export const getAllSemesters = async () => {
   try {
-    const response = await axios.get(API_HOCKY, {
+    const response = await axios.get(API_SEMESTER, {
       headers: { Authorization: getAccessToken() }
     });
     return response.data;
@@ -16,10 +16,9 @@ export const getAllHocKys = async () => {
   }
 };
 
-// Function to get a single student by ID
-export const getHocKyById = async (studentId) => {
+export const getSemesterById = async (semesterId) => {
   try {
-    const response = await axios.get(`${API_HOCKY}/${studentId}`, {
+    const response = await axios.get(`${API_SEMESTER}/${semesterId}`, {
       headers: { Authorization: getAccessToken() }
     });
     return response.data;
@@ -29,13 +28,11 @@ export const getHocKyById = async (studentId) => {
   }
 };
 
-// Function to add a new student
-export const addHocKy = async (studentData) => {
+export const addSemester = async (semesterData) => {
   try {
-    const response = await axios.post(API_HOCKY, studentData, {
+    const response = await axios.post(API_SEMESTER, semesterData, {
       headers: { Authorization: getAccessToken() }
     });
-    console.log("response hocky: ", response);
     return response;
   } catch (error) {
     console.log("error message: ", error.message);
@@ -43,10 +40,9 @@ export const addHocKy = async (studentData) => {
   }
 };
 
-// Function to update an existing student
-export const updateHocKy = async (studentId, updatedData) => {
+export const updateSemester = async (semesterId, updatedData) => {
   try {
-    const response = await axios.put(`${API_HOCKY}/${studentId}`, updatedData, {
+    const response = await axios.put(`${API_SEMESTER}/${semesterId}`, updatedData, {
       headers: { Authorization: getAccessToken() }
     });
     return response.data;
@@ -56,10 +52,9 @@ export const updateHocKy = async (studentId, updatedData) => {
   }
 };
 
-// Function to delete a student
-export const deleteHocKy = async (studentId) => {
+export const deleteSemester = async (semesterId) => {
   try {
-    const response = await axios.delete(`${API_HOCKY}/${studentId}`, {
+    const response = await axios.delete(`${API_SEMESTER}/${semesterId}`, {
       headers: { Authorization: getAccessToken() }
     });
     return response.data;

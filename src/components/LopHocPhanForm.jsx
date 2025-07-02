@@ -31,7 +31,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { getAllHocKys } from "@/api/api-hocky";
+import { getAllSemesters } from "@/api/api-semester";
 import { getAllGiangViens } from "@/api/api-giangvien";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
@@ -89,7 +89,7 @@ export function LopHocPhanForm({
       }));
       setComboBoxHocPhans(mappedComboBoxHocPhans);
 
-      const comboBoxHocKys = await getAllHocKys();
+      const comboBoxHocKys = await getAllSemesters();
       const mappedComboBoxHocKys = comboBoxHocKys.map((hocky) => ({
         label: hocky.tenHienThi,
         value: hocky.id,

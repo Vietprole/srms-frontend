@@ -31,7 +31,7 @@ import {
   getLopHocPhanById,
 } from "@/api/api-lophocphan";
 import { getAllHocPhans } from "@/api/api-hocphan";
-import { getAllHocKys } from "@/api/api-hocky";
+import { getAllSemesters } from "@/api/api-semester";
 import { getAllGiangViens } from "@/api/api-giangvien";
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import { 
@@ -293,7 +293,7 @@ export default function LopHocPhanPage() {
       const [lopHocPhanData, hocPhanData, hocKyData, giangVienData] = await Promise.all([
         getLopHocPhans(null, null, null, null),  // Lấy tất cả (để backup data ban đầu)
         getAllHocPhans(),
-        getAllHocKys(),
+        getAllSemesters(),
         getAllGiangViens()
       ]);
   

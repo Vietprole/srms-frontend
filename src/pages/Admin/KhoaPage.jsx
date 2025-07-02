@@ -99,7 +99,7 @@ useEffect(() => {
     const filtered = !searchQuery.trim()
       ? data
       : data.filter((row) =>
-          row.ten.toLowerCase().includes(searchQuery.toLowerCase())
+          row.nảm.toLowerCase().includes(searchQuery.toLowerCase())
         );
   
     setFilteredData(filtered.slice(startIndex, endIndex));
@@ -118,7 +118,7 @@ useEffect(() => {
       setFilteredData(data); // If search query is empty, show all data
     } else {
       const filtered = data.filter((row) =>
-        row.ten.toLowerCase().includes(query.toLowerCase())
+        row.name.toLowerCase().includes(query.toLowerCase())
       );
       setFilteredData(filtered);
     }
@@ -453,14 +453,14 @@ useEffect(() => {
          </TableHead>
          <TableBody sx={{overflowY:"auto"}}> 
           {filteredData.map((row, index) => (
-            <StyledTableRow key={row.ten}>
+            <StyledTableRow key={row.name}>
               <StyledTableCell component="th" scope="row" align="center" width={50}>
                 {index + 1} {/* Số thứ tự */}
               </StyledTableCell>
               <StyledTableCell component="th" scope="row">
-                {row.ten}
+                {row.name}
               </StyledTableCell>
-              <StyledTableCell align="center">{row.maKhoa}</StyledTableCell>
+              <StyledTableCell align="center">{row.code}</StyledTableCell>
               {canManageKhoa && (
                 <StyledTableCell align="center" width={150}>
                   <Tooltip title="Sửa khoa">

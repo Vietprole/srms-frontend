@@ -20,8 +20,8 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import Layout from '../Layout';
-import { getAllHocKys } from '@/api/api-hocky';
-import { addHocKy } from '@/api/api-hocky';
+import { getAllSemesters } from '@/api/api-semester';
+import { addSemester } from '@/api/api-semester';
 function HocKiPage() 
 {
   const styles = {
@@ -121,12 +121,13 @@ function HocKiPage()
     setSelectedNamHocFilter(newValue);
   
     if (!newValue) {
-      setFilteredData(data); // Nếu không chọn năm học nào, hiển thị toàn bộ dữ liệu
+      setFilteredData(data);
     } else {
-      const filtered = data.filter((row) => row.namHoc && row.namHoc.toString() === newValue.value);
+      const filtered = data.filter((row) => row.year === parseInt(newValue.value.split('-')[0]));
       setFilteredData(filtered);
     }
   };
+  
   
 
   const generateSchoolYears = () => {
@@ -146,18 +147,14 @@ function HocKiPage()
   
   
   const fetchData = async () => {
-    const hocki = await getAllHocKys();
-    
-    // Sắp xếp dữ liệu từ năm mới đến năm cũ
-    const sortedData = hocki.sort((a, b) => {
-      const yearA = parseInt(a.namHoc.split('-')[0]);
-      const yearB = parseInt(b.namHoc.split('-')[0]);
-      return yearB - yearA; // Sắp xếp từ năm mới đến năm cũ
-    });
-    
+    const semesters = await getAllSemesters();
+    console.log("semesters: ", semesters);
+  
+    const sortedData = semesters.sort((a, b) => b.Year - a.Year); // vì Year là int
     setData(sortedData);
     setFilteredData(sortedData);
   };
+  
   
   
   
@@ -212,14 +209,15 @@ function HocKiPage()
       return;
     }
     const data = {
-      ten: selectedHocKy,
-      namHoc: selectedSchoolYear,
+      Name: selectedHocKy,
+      Year: selectedSchoolYear, // đã là int
     };
+    
     
     try
     {
-      const res = await addHocKy(data);
-      if(res.status === 200)
+      const res = await addSemester(data);
+      if(res.status === 201)
         {
           setSnackbarMessage("Thêm học kì thành công");
           setSnackbarSeverity("success");
@@ -326,20 +324,20 @@ function HocKiPage()
           <TableHead sx={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: "#0071A6" }}>
             <TableRow>
               <StyledTableCell align="center">STT</StyledTableCell>
-              <StyledTableCell align="center">Mã học kỳ</StyledTableCell>
-              <StyledTableCell align="center">Tên</StyledTableCell>
+              <StyledTableCell align="center">Tên học kỳ</StyledTableCell>
               <StyledTableCell align="center">Năm học</StyledTableCell>
             </TableRow>
           </TableHead>
           <TableBody sx={{ overflowY: "auto" }}>
             {Array.isArray(filteredData) && filteredData.length > 0 ? (
               filteredData.map((row, index) => (
-                <StyledTableRow key={row.maHocKy || index}>
-                  <StyledTableCell align="center" width={100}>{index + 1}</StyledTableCell>
-                  <StyledTableCell align="center" width={250}>{row.maHocKy}</StyledTableCell>
-                  <StyledTableCell align="center">{row.ten}</StyledTableCell>
-                  <StyledTableCell align="center" width={300}>{row.namHoc}</StyledTableCell>
-                </StyledTableRow>
+              <StyledTableRow key={row.Id || index}>
+                <StyledTableCell align="center" width={100}>{index + 1}</StyledTableCell>
+                <StyledTableCell align="center" width={250}>{row.name}</StyledTableCell>
+                <StyledTableCell align="center">{`${row.year}-${row.year + 1}`}</StyledTableCell>
+
+              </StyledTableRow>
+
               ))
             ) : (
               <StyledTableRow>
