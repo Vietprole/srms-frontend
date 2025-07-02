@@ -34,7 +34,7 @@ import {
 
 import Layout from "../Layout";
 import TestDialog from "@/components/DialogHocPhan";
-import { getTaiKhoans } from "@/api/api-taikhoan";
+import { getAccountsByRole } from "@/api/api-accounts";
 import { getRole, getNguoiQuanLyCTDTId } from "@/utils/storage";
 import { getNganhsByNguoiQuanLyId } from "@/api/api-nganh";
 import { useCallback } from "react";
@@ -243,7 +243,7 @@ function TestPage() {
 
   const handleClickOpenEdit = async (id) => {
     const nganh = await getNganhById(id);
-    const taikhoans = await getTaiKhoans(6); // Đợi API trả về dữ liệu
+    const taikhoans = await getAccountsByRole(6); // Đợi API trả về dữ liệu
     setTaiKhoans(taikhoans);
     setTenNganh(nganh.ten);
     setMaNganh(nganh.maNganh);
@@ -257,7 +257,7 @@ function TestPage() {
   const handleAddNganhs = async () => {
     const khoas = await getAllKhoas(); // Đợi API trả về dữ liệu
     setKhoas(khoas);
-    const taikhoans = await getTaiKhoans(6); // Đợi API trả về dữ liệu
+    const taikhoans = await getAccountsByRole(6); // Đợi API trả về dữ liệu
     setTaiKhoans(taikhoans);
     setOpenAddNganh(true);
   };

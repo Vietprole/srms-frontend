@@ -12,7 +12,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { addTaiKhoan, updateTaiKhoan } from "@/api/api-taikhoan";
+import { createAccount, updateAccount } from "@/api/api-accounts";
 import {
   Popover,
   PopoverContent,
@@ -94,10 +94,10 @@ export function TaiKhoanForm({ taiKhoan, handleAdd, handleEdit, setIsDialogOpen 
     // ✅ This will be type-safe and validated.
     if (taiKhoan) {
       console.log("taiKhoan, values", taiKhoan, values);
-      const data = await updateTaiKhoan(taiKhoan.id, values);
+      const data = await updateAccount(taiKhoan.id, values);
       handleEdit(data);
     } else {
-      const data = await addTaiKhoan(values);
+      const data = await createAccount(values);
       console.log(values);
       handleAdd(data);
       setIsDialogOpen(false);
