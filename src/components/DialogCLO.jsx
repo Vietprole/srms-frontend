@@ -429,7 +429,7 @@ function DialogCLO({ nganhId, open, onClose }) {
       }}
     >
       <DialogTitle fontSize={"18px"} fontWeight={"bold"}>
-        Danh sách các CLO thuộc chương trình đào tạo:  
+        Danh sách các CLO thuộc học phần:  
         <Typography component="span" color="info.main" fontWeight="bold">
           {nganh ? ` ${nganh.data.ten}` : " Đang tải..."}
         </Typography>

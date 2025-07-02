@@ -18,7 +18,7 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-import { Fade, Tooltip } from "@mui/material";
+import { Fade } from "@mui/material";
 import Box from "@mui/material/Box";
 import { useState, useEffect, useRef } from "react";
 import Autocomplete from "@mui/material/Autocomplete";
@@ -34,13 +34,19 @@ import {
 
 import Layout from "../Layout";
 import TestDialog from "@/components/DialogHocPhan";
-import { getTaiKhoans } from "@/api/api-taikhoan";
+import { getAccountsByRole } from "@/api/api-accounts";
 import { getRole, getNguoiQuanLyCTDTId } from "@/utils/storage";
 import { getNganhsByNguoiQuanLyId } from "@/api/api-nganh";
 import { useCallback } from "react";
 import ArrowLeftIcon from "@mui/icons-material/ArrowLeft";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import MenuItem from "@mui/material/MenuItem";
+import Popover from "@mui/material/Popover";
+import DialogPLO from "../../components/DialogPLO";
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import DialogPLOHocPhan from "../../components/DialogMappingPLO_Cource";
+import ChecklistRtlIcon from '@mui/icons-material/ChecklistRtl';
 function TestPage() {
   const styles = {
     main: {
@@ -166,6 +172,25 @@ function TestPage() {
   const [page, setPage] = useState(1);
   const [taikhoans, setTaiKhoans] = useState([]);
   const [selectedTaiKhoan, setSelectedTaiKhoan] = useState(null);
+  const [openPLO, setOpenPLO] = useState(false); // Dialog PLO nếu cần sử dụng
+  const [openDialogPLOHocPhan, setOpenDialogPLOHocPhan] = useState(false);
+
+  const handleOpenPLO = (id) => {
+    setNganhId(id); // Lưu id nganh để sử dụng trong Dialog PLO
+    setOpenPLO(true);
+  };
+  const handleClosePLO = () => {
+
+    setOpenPLO(false);
+  };
+
+  const handleOpenDialogPLOHocPhan = (id) => {
+    setNganhId(id);
+    setOpenDialogPLOHocPhan(true);
+  }
+  const handleCloseDialogPLOHocPhan = () => {
+    setOpenDialogPLOHocPhan(false);
+  }
   
   const [pageSize, setPageSize] = useState(20); // tùy chọn mặc định
   const pageSizeOptions = [20,50,100]; // tuỳ bạn thêm số lựa chọn
@@ -218,7 +243,7 @@ function TestPage() {
 
   const handleClickOpenEdit = async (id) => {
     const nganh = await getNganhById(id);
-    const taikhoans = await getTaiKhoans(6); // Đợi API trả về dữ liệu
+    const taikhoans = await getAccountsByRole(6); // Đợi API trả về dữ liệu
     setTaiKhoans(taikhoans);
     setTenNganh(nganh.ten);
     setMaNganh(nganh.maNganh);
@@ -232,7 +257,7 @@ function TestPage() {
   const handleAddNganhs = async () => {
     const khoas = await getAllKhoas(); // Đợi API trả về dữ liệu
     setKhoas(khoas);
-    const taikhoans = await getTaiKhoans(6); // Đợi API trả về dữ liệu
+    const taikhoans = await getAccountsByRole(6); // Đợi API trả về dữ liệu
     setTaiKhoans(taikhoans);
     setOpenAddNganh(true);
   };
@@ -315,6 +340,7 @@ function TestPage() {
       return;
     }
     const nganhs = await getNganhs();
+    console.log("nganhs: ", nganhs);
     setData(nganhs);
   }, [role, nguoiQuanLyCTDTId]);
 
@@ -416,7 +442,20 @@ function TestPage() {
       cursor: "pointer", // Tùy chọn: Thêm hiệu ứng con trỏ
     },
   }));
+  const [anchorPosition, setAnchorPosition] = useState(null);
+  const [selectedRowId, setSelectedRowId] = useState(null);
 
+  const handleOpenPopover = (event, rowId) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setAnchorPosition({ top: rect.bottom, left: rect.left });
+    setSelectedRowId(rowId);
+  };
+  
+  const handleClosePopover = () => {
+    setAnchorPosition(null);
+    setSelectedRowId(null);
+  };
+  
   return (
     <Layout>
       <div style={styles.main}>
@@ -463,17 +502,17 @@ function TestPage() {
           </div>
           <div style={styles.cbKhoa}>
           <Autocomplete
-  size="small" // 👉 Nhỏ gọn lại để align đẹp
-  sx={{ width: "100%" }}
-  options={khoas}
-  getOptionLabel={(option) => option.ten || ""}
-  required
-  value={selectedKhoaFilter}
-  onChange={handleKhoaChange}
-  renderInput={(params) => (
-    <TextField {...params} label="Chọn khoa" size="small" />
-  )}
-/>
+            size="small" // 👉 Nhỏ gọn lại để align đẹp
+            sx={{ width: "100%" }}
+            options={khoas}
+            getOptionLabel={(option) => option.ten || ""}
+            required
+            value={selectedKhoaFilter}
+            onChange={handleKhoaChange}
+            renderInput={(params) => (
+              <TextField {...params} label="Chọn khoa" size="small" />
+            )}
+          />
 
           </div>
           <div style={styles.btnCreate}>
@@ -555,6 +594,16 @@ function TestPage() {
           </div>
         </div>
         <div style={styles.table}>
+          <DialogPLO
+            open={openPLO}
+            onClose={handleClosePLO}
+            nganhId={nganhId}
+          />
+          <DialogPLOHocPhan
+            open={openDialogPLOHocPhan}
+            onClose={handleCloseDialogPLOHocPhan}
+            nganhId={nganhId}
+          />
           <TableContainer component={Paper}>
             <Table sx={{ minWidth: 700 }} aria-label="customized table">
               <TableHead
@@ -569,7 +618,6 @@ function TestPage() {
                   <StyledTableCell align="center">STT</StyledTableCell>
                   <StyledTableCell align="center">Mã CTĐT</StyledTableCell>
                   <StyledTableCell align="center">Tên CTĐT</StyledTableCell>
-                  {/* <StyledTableCell align="center">Tên Khoa</StyledTableCell> */}
                   <StyledTableCell align="center">
                     Người quản lí
                   </StyledTableCell>
@@ -582,69 +630,63 @@ function TestPage() {
       <StyledTableCell align="center">{(page - 1) * pageSize + index + 1}</StyledTableCell>
       <StyledTableCell align="center">{row.maNganh}</StyledTableCell>
       <StyledTableCell align="center">{row.ten}</StyledTableCell>
-      {/* <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell> */}
       <StyledTableCell align="center">{row.tenNguoiQuanLy}</StyledTableCell>
-      <StyledTableCell align="center">
-        <Tooltip
-          title="Sửa thông tin chương trình đào tạo"
-          arrow
-          componentsProps={{
-            tooltip: {
-              sx: {
-                backgroundColor: "#fff", // 👉 nền trắng
-                color: "#333",           // 👉 chữ đen
-                fontSize: 13,
-                boxShadow: 2,
-                borderRadius: 1,
-                px: 1.5,
-                py: 1,
-              },
-            },
-            arrow: {
-              sx: {
-                color: "#fff", // 👉 màu của mũi tên tooltip
-              },
-            },
-          }}
-        >
-        <IconButton
-          size="small"
-          onClick={() => handleClickOpenEdit(row.id)}
-        >
-          <EditIcon fontSize="small"/>
-        </IconButton>
-        </Tooltip>
-        <Tooltip
-          title="Sửa thông tin chương trình đào tạo"
-          arrow
-          componentsProps={{
-            tooltip: {
-              sx: {
-                backgroundColor: "#fff", // 👉 nền trắng
-                color: "#333",           // 👉 chữ đen
-                fontSize: 13,
-                boxShadow: 2,
-                borderRadius: 1,
-                px: 1.5,
-                py: 1,
-              },
-            },
-            arrow: {
-              sx: {
-                color: "#fff", // 👉 màu của mũi tên tooltip
-              },
-            },
-          }}
-        >
+        <StyledTableCell align="center">
           <IconButton
-            onClick={() => handleOpenDialog(row.id)}
             size="small"
+            onClick={(e) => handleOpenPopover(e, row.id)}
           >
-            <FormatListBulletedIcon fontSize="small"/>
+            <MoreHorizIcon fontSize="small" />
           </IconButton>
-        </Tooltip>
-        
-      </StyledTableCell>
+
+          {/* Popover chỉ hiện với row đang chọn */}
+          {selectedRowId === row.id && (
+            <Popover
+              open={Boolean(anchorPosition)}
+              anchorReference="anchorPosition"
+              anchorPosition={anchorPosition}
+              onClose={handleClosePopover}
+              anchorOrigin={{ vertical: "top", horizontal: "left" }}
+              transformOrigin={{ vertical: "top", horizontal: "left" }}
+              PaperProps={{
+                sx: { p: 1.5, minWidth: 160 }
+              }}
+            >
+              <MenuItem onClick={() => {
+                handleClickOpenEdit(row.id);
+                handleClosePopover();
+              }}>
+                <EditIcon fontSize="small" sx={{ mr: 1 }} />
+                Sửa CTĐT
+              </MenuItem>
+
+              <MenuItem onClick={() => {
+                handleOpenDialog(row.id);
+                handleClosePopover();
+              }}>
+                <FormatListBulletedIcon fontSize="small" sx={{ mr: 1 }} />
+                Xem danh sách học phần
+              </MenuItem>
+
+              <MenuItem onClick={() => {
+                handleOpenPLO(row.id);
+                handleClosePopover();
+              }}>
+                <AssignmentIcon fontSize="small" sx={{ mr: 1 }} />
+                Quản lý PLO
+              </MenuItem>
+              <MenuItem onClick={() => {
+                handleOpenDialogPLOHocPhan(row.id);
+                handleClosePopover();
+              }}>
+                <ChecklistRtlIcon fontSize="small" sx={{ mr: 1 }} />
+                Nối PLO-Học phần
+              </MenuItem>
+            </Popover>
+          )}
+        </StyledTableCell>
+
+
     </StyledTableRow>
   ))}
 
@@ -789,6 +831,7 @@ function TestPage() {
     </Box>
   )
 )}
+
 
 
 

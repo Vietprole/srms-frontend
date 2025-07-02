@@ -19,17 +19,17 @@ import Box from '@mui/material/Box';
 import Layout from "./Layout";
 import { getAllChucVus } from "@/api/api-chucvu";
 import {
-  getTaiKhoans,
-  // getAllTaiKhoans,
-  deleteTaiKhoan,
-  addTaiKhoan,
-  updateTaiKhoan,
-} from "@/api/api-taikhoan";
+  getAccountsByRole,
+  // getAllAccounts,
+  deleteAccount,
+  createAccount,
+  updateAccount,
+} from "@/api/api-accounts";
 import { ComboBox } from "@/components/ComboBox";
 import { useSearchParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { getRole } from "@/utils/storage";
-import { resetPassword } from "@/api/api-taikhoan";
+import { resetAccountPassword } from "@/api/api-accounts";
 import { useToast } from "@/hooks/use-toast";
 import HelpIcon from '@mui/icons-material/Help';
 import Dialog from '@mui/material/Dialog';
@@ -155,7 +155,7 @@ export default function QuanLyTaiKhoanPage() {
     }));
     setchucVuItems(mappedComboBoxItems);
       
-      const taiKhoans = await getTaiKhoans(chucVuId);
+      const taiKhoans = await getAccountsByRole(chucVuId);
       // Sắp xếp tài khoản theo chức vụ và tên
       const sortedTaiKhoans = taiKhoans.sort((a, b) => {
         // Đầu tiên sắp xếp theo tên chức vụ
@@ -193,7 +193,7 @@ export default function QuanLyTaiKhoanPage() {
 
   const handleReset = async (id) => {
     try {
-      await resetPassword(id);
+      await resetAccountPassword(id);
     } catch (error) {
       toast({
         title: "Có lỗi xảy ra",
@@ -245,7 +245,7 @@ export default function QuanLyTaiKhoanPage() {
     };
 
     try {
-      await addTaiKhoan(newTaiKhoan);
+      await createAccount(newTaiKhoan);
       setSnackbarMessage("Thêm tài khoản thành công");
       setSnackbarSeverity("success");
       setOpenSnackbar(true);
@@ -316,7 +316,7 @@ export default function QuanLyTaiKhoanPage() {
     }
 
     try {
-      await updateTaiKhoan(editingTaiKhoan.id, updatedTaiKhoan);
+      await updateAccount(editingTaiKhoan.id, updatedTaiKhoan);
       setSnackbarMessage("Cập nhật tài khoản thành công");
       setSnackbarSeverity("success");
       setOpenSnackbar(true);
@@ -342,7 +342,7 @@ export default function QuanLyTaiKhoanPage() {
 
   const handleDelete = async () => {
     try {
-      await deleteTaiKhoan(deletingTaiKhoan.id);
+      await deleteAccount(deletingTaiKhoan.id);
       setSnackbarMessage("Xóa tài khoản thành công");
       setSnackbarSeverity("success");
       setOpenSnackbar(true);

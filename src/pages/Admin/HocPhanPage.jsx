@@ -17,7 +17,6 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import {Tooltip } from '@mui/material';
 import Box from '@mui/material/Box';
 import { useState, useEffect,useRef } from "react";
 import Autocomplete from '@mui/material/Autocomplete';
@@ -35,6 +34,8 @@ import { getLopHocPhans } from "@/api/api-lophocphan";
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import MenuItem from '@mui/material/MenuItem';
+import Popover from '@mui/material/Popover';
 function HocPhanPage() 
 {
   const styles = {
@@ -173,6 +174,20 @@ function HocPhanPage()
   const paginatedData = filteredData.slice(startIndex, endIndex);
   const startRow = startIndex + 1;
   const endRow = Math.min(endIndex, totalItems);
+
+  const [anchorPosition, setAnchorPosition] = useState(null);
+  const [selectedRowId, setSelectedRowId] = useState(null);
+
+  const handleOpenPopover = (event, rowId) => {
+    setAnchorPosition({ top: event.clientY + 5, left: event.clientX + 5 });
+    setSelectedRowId(rowId);
+  };
+
+  const handleClosePopover = () => {
+    setAnchorPosition(null);
+    setSelectedRowId(null);
+  };
+
 
   const pagesToShow = () => {
     const pages = [];
@@ -692,28 +707,57 @@ function HocPhanPage()
       </TableRow>
     </TableHead>
     <TableBody>
-      {paginatedData.map((row, index) => (
-        <StyledTableRow key={row.id}>
-          <StyledTableCell align="center">{(page - 1) * pageSize + index + 1}</StyledTableCell>
-          <StyledTableCell align="center">{row.maHocPhan}</StyledTableCell>
-          <StyledTableCell align="left">{row.ten}</StyledTableCell>
-          <StyledTableCell align="center">{row.soTinChi}</StyledTableCell>
-          <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
-          <StyledTableCell align="center">
-            <Tooltip title="Sửa học phần" arrow>
-              <IconButton onClick={() => handleOpenEditDialog(row.id)} size='small'>
-                <EditIcon fontSize='small' />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Xóa học phần" arrow>
-              <IconButton onClick={() => handleOpenDeleteDialog(row.id)} size='small'>
-                <DeleteIcon fontSize='small'/>
-              </IconButton>
-            </Tooltip>
-          </StyledTableCell>
-        </StyledTableRow>
-      ))}
-    </TableBody>
+  {paginatedData.map((row, index) => (
+    <StyledTableRow key={row.id}>
+      <StyledTableCell align="center">{(page - 1) * pageSize + index + 1}</StyledTableCell>
+      <StyledTableCell align="center">{row.maHocPhan}</StyledTableCell>
+      <StyledTableCell align="left">{row.ten}</StyledTableCell>
+      <StyledTableCell align="center">{row.soTinChi}</StyledTableCell>
+      <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
+      <StyledTableCell align="center">
+        <IconButton
+          size="small"
+          onClick={(e) => handleOpenPopover(e, row.id)}
+        >
+          <MoreHorizIcon fontSize="small" />
+        </IconButton>
+
+        {/* Chỉ hiển thị popover nếu đúng hàng */}
+        {selectedRowId === row.id && (
+          <Popover
+            open={Boolean(anchorPosition)}
+            anchorReference="anchorPosition"
+            anchorPosition={anchorPosition}
+            onClose={handleClosePopover}
+            anchorOrigin={{ vertical: "top", horizontal: "left" }}
+            transformOrigin={{ vertical: "top", horizontal: "left" }}
+            PaperProps={{ sx: { p: 1.5, minWidth: 120 } }}
+          >
+            <MenuItem
+              onClick={() => {
+                handleOpenEditDialog(row.id);
+                handleClosePopover();
+              }}
+            >
+              <EditIcon fontSize="small" sx={{ mr: 1 }} />
+              Sửa
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                handleOpenDeleteDialog(row.id);
+                handleClosePopover();
+              }}
+            >
+              <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
+              Xóa
+            </MenuItem>
+          </Popover>
+        )}
+      </StyledTableCell>
+    </StyledTableRow>
+  ))}
+</TableBody>
+
   </Table>
 </TableContainer>
 
