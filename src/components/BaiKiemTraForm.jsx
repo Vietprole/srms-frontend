@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import vi from "date-fns/locale/vi";
 import {
   Form,
   FormControl,
@@ -18,58 +19,80 @@ import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-const formSchema = z.object({
-  id: z.number(),
-  loai: z.string().min(2, {
-    message: "Loại phải có từ 2 chữ cái trở lên",
-  }),
-  trongSo: z.coerce.number()
-  .refine((val) => !isNaN(parseFloat(val)), {
-    message: "Trọng số phải là số",
+const formSchema = z
+  .object({
+    id: z.number(),
+    type: z.string().min(2, {
+      message: "Type must be at least 2 characters.",
+    }),
+    weight: z.coerce
+      .number()
+      .refine((val) => !isNaN(parseFloat(val)), {
+        message: "Trong so must be a number",
+      })
+      .refine((val) => parseFloat(val) > 0 && parseFloat(val) <= 1, {
+        message: "Trọng số phải lớn hơn 0 và nhỏ hơn hoặc bằng 1",
+      }),
+    scoreEntryStartDate: z.date({
+      required_error: "Please select a date.",
+    }),
+    scoreEntryDeadline: z.date({
+      required_error: "Please select a date.",
+    }),
+    scoreCorrectionDeadline: z.date({
+      required_error: "Please select a date.",
+    }),
   })
-  .refine((val) => parseFloat(val) > 0 && parseFloat(val) <= 1, {
-    message: "Trọng số phải trong khoảng từ 0.1 đến 1",
-  }),
-  ngayMoNhapDiem: z.date({
-    required_error: "Vui lòng chọn ngày mở nhập điểm",
-  }),
-  hanNhapDiem: z.date({
-    required_error: "Vui lòng chọn hạn nhập điểm",
-  }),
-  hanDinhChinh: z.date({
-    required_error: "Vui lòng chọn hạn đính chính",
-  }),
-}).refine((data) => {
-  return data.hanNhapDiem > data.ngayMoNhapDiem;
-}, {
-  message: "Hạn nhập điểm phải sau ngày mở nhập điểm",
-  path: ["hanNhapDiem"],
-}).refine((data) => {
-  return data.hanDinhChinh > data.hanNhapDiem;
-}, {
-  message: "Hạn đính chính phải sau hạn nhập điểm",
-  path: ["hanDinhChinh"],
-});
+  .refine(
+    (data) => {
+      return data.scoreEntryDeadline > data.scoreEntryStartDate;
+    },
+    {
+      message: "Hạn nhập điểm phải sau ngày mở nhập điểm",
+      path: ["scoreEntryDeadline"],
+    }
+  )
+  .refine(
+    (data) => {
+      return data.scoreCorrectionDeadline > data.scoreEntryDeadline;
+    },
+    {
+      message: "Hạn đính chính phải sau hạn nhập điểm",
+      path: ["scoreCorrectionDeadline"],
+    }
+  );
 
-export function BaiKiemTraForm({ baiKiemTra, handleAdd, handleEdit, setIsDialogOpen, maxId }) {
-  const { lopHocPhanId } = useParams();
+export function BaiKiemTraForm({
+  baiKiemTra,
+  handleAdd,
+  handleEdit,
+  setIsDialogOpen,
+  maxId,
+}) {
+  const { classId } = useParams();
   // 1. Define your form.
   const form = useForm({
     resolver: zodResolver(formSchema),
-    defaultValues: baiKiemTra ? {
-      ...baiKiemTra,
-      ngayMoNhapDiem: new Date(baiKiemTra.ngayMoNhapDiem),
-      hanNhapDiem: new Date(baiKiemTra.hanNhapDiem),
-      hanDinhChinh: new Date(baiKiemTra.hanDinhChinh),
-    } : {
-      id: maxId + 1,
-      loai: "",
-      trongSo: "",
-      lopHocPhanId: lopHocPhanId,
-    },
+    defaultValues: baiKiemTra
+      ? {
+          ...baiKiemTra,
+          scoreEntryStartDate: new Date(baiKiemTra.scoreEntryStartDate),
+          scoreEntryDeadline: new Date(baiKiemTra.scoreEntryDeadline),
+          scoreCorrectionDeadline: new Date(baiKiemTra.scoreCorrectionDeadline),
+        }
+      : {
+          id: maxId + 1,
+          type: "",
+          weight: "",
+          classId: classId,
+        },
   });
 
   // 2. Define a submit handler.
@@ -97,57 +120,35 @@ export function BaiKiemTraForm({ baiKiemTra, handleAdd, handleEdit, setIsDialogO
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <FormField
           control={form.control}
-          name="loai"
+          name="type"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Loại</FormLabel>
               <FormControl>
-                <Input placeholder="GK" {...field} />
+                <Input placeholder="Giữa Kỳ" {...field} />
               </FormControl>
-              <FormDescription>
-                Loại bài kiểm tra viết tắt
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
         <FormField
           control={form.control}
-          name="trongSo"
+          name="weight"
           render={({ field }) => (
-            <FormItem className="!mt-2">
+            <FormItem>
               <FormLabel>Trọng Số</FormLabel>
               <FormControl>
                 <Input placeholder="0.3" {...field} />
               </FormControl>
-              <FormDescription>
-                Trọng số của bài kiểm tra
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        {/* <FormField
-          control={form.control}
-          name="trongSoDeXuat"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Trọng Số Đề Xuất</FormLabel>
-              <FormControl>
-                <Input placeholder="0.3" {...field} />
-              </FormControl>
-              <FormDescription>
-                This is your public display name.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        /> */}
         <FormField
           control={form.control}
-          name="ngayMoNhapDiem"
+          name="scoreEntryStartDate"
           render={({ field }) => (
-            <FormItem className="!mt-2 flex flex-col">
+            <FormItem className="flex flex-col">
               <FormLabel>Ngày Mở Nhập Điểm</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
@@ -160,7 +161,7 @@ export function BaiKiemTraForm({ baiKiemTra, handleAdd, handleEdit, setIsDialogO
                       )}
                     >
                       {field.value ? (
-                        format(field.value, "PPP")
+                        format(field.value, "dd/MM/yyyy")
                       ) : (
                         <span>Chọn ngày</span>
                       )}
@@ -174,21 +175,19 @@ export function BaiKiemTraForm({ baiKiemTra, handleAdd, handleEdit, setIsDialogO
                     selected={field.value}
                     onSelect={field.onChange}
                     initialFocus
+                    locale={vi}
                   />
                 </PopoverContent>
               </Popover>
-              <FormDescription>
-                Chọn ngày mở nhập điểm
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
         <FormField
           control={form.control}
-          name="hanNhapDiem"
+          name="scoreEntryDeadline"
           render={({ field }) => (
-            <FormItem className="!mt-2 flex flex-col">
+            <FormItem className="flex flex-col">
               <FormLabel>Hạn Nhập Điểm</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
@@ -201,7 +200,7 @@ export function BaiKiemTraForm({ baiKiemTra, handleAdd, handleEdit, setIsDialogO
                       )}
                     >
                       {field.value ? (
-                        format(field.value, "PPP")
+                        format(field.value, "dd/MM/yyyy")
                       ) : (
                         <span>Chọn ngày</span>
                       )}
@@ -216,21 +215,19 @@ export function BaiKiemTraForm({ baiKiemTra, handleAdd, handleEdit, setIsDialogO
                     // onSelect={field.onChange}
                     onSelect={(date) => field.onChange(setEndOfDay(date))}
                     initialFocus
+                    locale={vi}
                   />
                 </PopoverContent>
               </Popover>
-              <FormDescription>
-                Chọn hạn nhập điểm
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
         <FormField
           control={form.control}
-          name="hanDinhChinh"
+          name="scoreCorrectionDeadline"
           render={({ field }) => (
-            <FormItem className="!mt-2 flex flex-col">
+            <FormItem className="flex flex-col">
               <FormLabel>Hạn Đính Chính</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
@@ -243,7 +240,7 @@ export function BaiKiemTraForm({ baiKiemTra, handleAdd, handleEdit, setIsDialogO
                       )}
                     >
                       {field.value ? (
-                        format(field.value, "PPP")
+                        format(field.value, "dd/MM/yyyy")
                       ) : (
                         <span>Chọn ngày</span>
                       )}
@@ -258,17 +255,17 @@ export function BaiKiemTraForm({ baiKiemTra, handleAdd, handleEdit, setIsDialogO
                     // onSelect={field.onChange}
                     onSelect={(date) => field.onChange(setEndOfDay(date))}
                     initialFocus
+                    locale={vi}
                   />
                 </PopoverContent>
               </Popover>
-              <FormDescription>
-                Chọn hạn đính chính điểm
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <div className="flex justify-end">
+          <Button type="submit">Xác nhận</Button>
+        </div>
       </form>
     </Form>
   );

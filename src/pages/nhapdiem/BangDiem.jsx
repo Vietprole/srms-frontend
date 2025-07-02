@@ -2,11 +2,11 @@ import { useState, useEffect, useCallback } from "react";
 // import { getStudents, getGradeComponents, getQuestions, getGrades } from "@/lib/api"
 import { GradeTable } from "@/components/GradeTable";
 // import { StudentGrades, GradeComponent, Question, Grade } from "@/types/grades"
-import { getSinhViens } from "@/api/api-sinhvien";
+import { getFilteredStudents } from "@/api-new/api-student";
 import { useParams } from "react-router-dom";
-import { getBaiKiemTrasByLopHocPhanId } from "@/api/api-baikiemtra";
-import { getKetQuas } from "@/api/api-ketqua";
-import { getCauHoisByBaiKiemTraId } from "@/api/api-cauhoi";
+import { getBaiKiemTrasByLopHocPhanId } from "@/api-new/api-baikiemtra";
+import { getKetQuas } from "@/api-new/api-ketqua";
+import { getQuestionsByExamId } from "@/api-new/api-cauhoi";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 // import { set } from "react-hook-form";
@@ -17,13 +17,13 @@ export default function GradesPage() {
   const [questions, setQuestions] = useState([]);
   const { lopHocPhanId } = useParams();
   const [isConfirmed, setIsConfirmed] = useState(false);
-  const [isDiemTam, setIsDiemTam] = useState(true);
+  const [useTemporaryScore, setUseTemporaryScore] = useState(true);
 
   const fetchData = useCallback(async () => {
     // Fetch all required data
     const [students, components, allGrades] = await Promise.all([
       // getStudents(),
-      getSinhViens(null, null, lopHocPhanId),
+      getFilteredStudents(null, null, lopHocPhanId),
       // getGradeComponents(),
       getBaiKiemTrasByLopHocPhanId(lopHocPhanId),
       // getGrades(),
@@ -35,7 +35,7 @@ export default function GradesPage() {
     const questionsPromises = components.map(async (component) => ({
       componentId: component.id,
       // questions: await getQuestions(component.id),
-      questions: await getCauHoisByBaiKiemTraId(component.id),
+      questions: await getQuestionsByExamId(component.id),
     }));
     const questionsData = await Promise.all(questionsPromises);
     const questions = Object.fromEntries(
@@ -47,7 +47,7 @@ export default function GradesPage() {
     );
     setQuestions(questions);
 
-    const isConfirmed = allGrades.length > 0 && allGrades.every(grade => grade.daXacNhan);
+    const isConfirmed = allGrades.length > 0 && allGrades.every(grade => grade.isConfirmed);
     console.log("allGrades", allGrades);
     setIsConfirmed(isConfirmed);
 
@@ -57,39 +57,39 @@ export default function GradesPage() {
       // tt: index + 1, // Add tt (ordinal number) to each student
       grades: Object.fromEntries(
         components.map((component) => [
-          component.loai,
+          component.type,
           Object.fromEntries(
             (questions[component.id.toString()] || []).map((question) => {
               const grade = allGrades.find(
                 (g) =>
-                  g.sinhVienId === student.id && g.cauHoiId === question.id
+                  g.studentId === student.id && g.questionId === question.id
               );
               console.log("grade", grade);
               // return [question.id.toString(), grade?.diem || 0];
-              if (isDiemTam) {
-                return [question.id, grade?.diemTam === 0 ? 0 : grade?.diemTam || null];
+              if (useTemporaryScore) {
+                return [question.id, grade?.temporaryScore === 0 ? 0 : grade?.temporaryScore || null];
               } else {
-                return [question.id, grade?.diemChinhThuc === 0 ? 0 : grade?.diemChinhThuc || null];
+                return [question.id, grade?.officialScore === 0 ? 0 : grade?.officialScore || null];
               }
-              // return [question.id, grade?.diemTam === 0 ? 0 : grade?.diemTam || null];
-              // return [question.id, grade?.diemTam || 0];
+              // return [question.id, grade?.temporaryScore === 0 ? 0 : grade?.temporaryScore || null];
+              // return [question.id, grade?.temporaryScore || 0];
             })
           ),
         ])
       ),
-      diemChinhThucs: Object.fromEntries(
+      officialScores: Object.fromEntries(
         components.map((component) => [
-          component.loai,
+          component.type,
           Object.fromEntries(
             (questions[component.id.toString()] || []).map((question) => {
               const grade = allGrades.find(
                 (g) =>
-                  g.sinhVienId === student.id && g.cauHoiId === question.id
+                  g.studentId === student.id && g.questionId === question.id
               );
               console.log("grade", grade);
               // return [question.id.toString(), grade?.diem || 0];
-              return [question.id, grade?.diemChinhThuc === 0 ? 0 : grade?.diemChinhThuc || null];
-              // return [question.id, grade?.diemTam || 0];
+              return [question.id, grade?.officialScore === 0 ? 0 : grade?.officialScore || null];
+              // return [question.id, grade?.temporaryScore || 0];
             })
           ),
         ])
@@ -99,7 +99,7 @@ export default function GradesPage() {
       ),
     }));
     setTableData(tableData);
-  }, [lopHocPhanId, isDiemTam]);
+  }, [lopHocPhanId, useTemporaryScore]);
 
   useEffect(() => {
     fetchData();
@@ -115,8 +115,8 @@ export default function GradesPage() {
   }
 
   console.log("tableData", tableData);
-  const latestHanDinhChinh = new Date(Math.max(
-    ...components.map(component => new Date(component.hanDinhChinh))
+  const latestScoreCorrectionDeadline = new Date(Math.max(
+    ...components.map(component => new Date(component.scoreCorrectionDeadline))
   )).toLocaleDateString('vi-VN', {
     timeZone: 'Asia/Ho_Chi_Minh',
     day: '2-digit',
@@ -127,11 +127,11 @@ export default function GradesPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Bảng điểm học phần</h1>
-      <p>Hạn cuối đính chính: {latestHanDinhChinh}</p>
+      <p>Hạn cuối đính chính: {latestScoreCorrectionDeadline}</p>
       <div className="flex items-center space-x-2">
         <Label htmlFor="diem-mode">Điểm tạm</Label>
         <Switch id="diem-mode"
-          onCheckedChange={(check) => {setIsDiemTam(!check);}}
+          onCheckedChange={(check) => {setUseTemporaryScore(!check);}}
         />
         <Label htmlFor="diem-mode">Điểm chính thức</Label>
       </div>
@@ -143,6 +143,7 @@ export default function GradesPage() {
           components={components}
           questions={questions}
           isConfirmed={isConfirmed}
+          useTemporaryScore={useTemporaryScore}
         />
       )}
     </div>
