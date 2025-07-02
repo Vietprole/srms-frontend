@@ -32,7 +32,7 @@ import {
   updateSinhVien,
   getSinhVienById
 } from "@/api/api-sinhvien";
-import { getAllKhoas } from "@/api/api-khoa";
+import { getAllFaculties } from "@/api/api-faculties";
 import { getAllNganhs } from "@/api/api-nganh";
 import { getGiangVienId, getRole } from "@/utils/storage";
 import { getNganhsByKhoaId } from "@/api/api-nganh"; 
@@ -239,7 +239,7 @@ export default function SinhVienPage() {
   const paginatedData = filteredData.slice((page - 1) * pageSize, page * pageSize);
 
   const fetchData = useCallback(async () => {
-    const dataKhoa = await getAllKhoas();
+    const dataKhoa = await getAllFaculties();
     const mappedKhoaItems = dataKhoa.map(khoa => ({ label: khoa.ten, value: khoa.id }));
     setKhoaItems(mappedKhoaItems);
 

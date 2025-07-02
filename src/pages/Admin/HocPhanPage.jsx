@@ -23,8 +23,8 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import {
-  getAllKhoas
-} from "@/api/api-khoa";
+  getAllFaculties
+} from "@/api/api-faculties";
 import { getAllHocPhans,addHocPhan,getHocPhanById,updateHocPhan,deleteHocPhan } from '@/api/api-hocphan';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -287,7 +287,7 @@ function HocPhanPage()
       // Đảm bảo response từ API trả về thêm thông tin tenNganh
       setData(hocphans);
       setFilteredData(hocphans);
-      const khoa = await getAllKhoas();
+      const khoa = await getAllFaculties();
       setKhoas(khoa);
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu:", error);

@@ -16,7 +16,7 @@ import { useState, useEffect } from "react";
 import Autocomplete from "@mui/material/Autocomplete";
 // import Snackbar from "@mui/material/Snackbar";
 // import MuiAlert from "@mui/material/Alert";
-import { getAllKhoas } from "@/api/api-khoa";
+import { getAllFaculties } from "@/api/api-faculties";
 import {
   getNganhs,
 } from "@/api/api-nganh";
@@ -200,7 +200,7 @@ function TestPage() {
 
   // console.log("role, nguoiQuanLyCTDTId: ", role, nguoiQuanLyCTDTId);
   const fetchData = useCallback(async () => {
-    const khoa = await getAllKhoas();
+    const khoa = await getAllFaculties();
     console.log(role);
     setKhoas(khoa);
     if (role === "NguoiPhuTrachCTĐT" && nguoiQuanLyCTDTId !== 0) {

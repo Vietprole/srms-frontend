@@ -44,7 +44,7 @@ export default function LopHocPhanPage() {
     // const [comboBoxKhoaId, setComboBoxKhoaId] = useState(khoaIdParam);
   
     const fetchData = useCallback(async () => {
-      // const dataKhoa = await getAllKhoas();
+      // const dataKhoa = await getAllFaculties();
       // // Map khoa items to be used in ComboBox
       // const mappedComboBoxItems = dataKhoa.map(khoa => ({ label: khoa.ten, value: khoa.id }));
       // setKhoaItems(mappedComboBoxItems);

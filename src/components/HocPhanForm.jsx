@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { addHocPhan, updateHocPhan } from "@/api/api-hocphan";
-import { getAllKhoas } from "@/api/api-khoa";
+import { getAllFaculties } from "@/api/api-faculties";
 import {
   Popover,
   PopoverContent,
@@ -62,7 +62,7 @@ export function HocPhanForm({
 
   useEffect(() => {
     const fetchData = async () => {
-      const comboBoxItems = await getAllKhoas();
+      const comboBoxItems = await getAllFaculties();
       const mappedComboBoxItems = comboBoxItems.map((khoa) => ({
         label: khoa.ten,
         value: khoa.id,

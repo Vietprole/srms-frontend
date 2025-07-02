@@ -24,7 +24,7 @@ import { useState, useEffect, useRef } from "react";
 import Autocomplete from "@mui/material/Autocomplete";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
-import { getAllKhoas } from "@/api/api-khoa";
+import { getAllFaculties } from "@/api/api-faculties";
 import {
   getNganhs,
   addNganh,
@@ -255,7 +255,7 @@ function TestPage() {
   };
 
   const handleAddNganhs = async () => {
-    const khoas = await getAllKhoas(); // Đợi API trả về dữ liệu
+    const khoas = await getAllFaculties(); // Đợi API trả về dữ liệu
     setKhoas(khoas);
     const taikhoans = await getAccountsByRole(6); // Đợi API trả về dữ liệu
     setTaiKhoans(taikhoans);
@@ -332,7 +332,7 @@ function TestPage() {
   };
   // console.log("role, nguoiQuanLyCTDTId: ", role, nguoiQuanLyCTDTId);
   const fetchData = useCallback(async () => {
-    const khoa = await getAllKhoas();
+    const khoa = await getAllFaculties();
     setKhoas(khoa);
     if (role === "NguoiPhuTrachCTĐT" && nguoiQuanLyCTDTId !== 0) {
       const nganhData = await getNganhsByNguoiQuanLyId(nguoiQuanLyCTDTId);

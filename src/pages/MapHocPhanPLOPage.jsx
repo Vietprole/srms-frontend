@@ -17,7 +17,7 @@ import Box from "@mui/material/Box";
 import { useState, useEffect } from "react";
 import Autocomplete from "@mui/material/Autocomplete";
 import DatasetLinkedIcon from "@mui/icons-material/DatasetLinked";
-import { getAllKhoas } from "@/api/api-khoa";
+import { getAllFaculties } from "@/api/api-faculties";
 import { getAllNganhs } from "@/api/api-nganh";
 import Layout from "./Layout";
 import { TableVirtuoso } from "react-virtuoso";
@@ -129,7 +129,7 @@ function NganhPage() {
         const nganhData = await getAllNganhs();
         setData(nganhData);
       }
-      const khoa = await getAllKhoas();
+      const khoa = await getAllFaculties();
       setKhoas(khoa);
     };
     
