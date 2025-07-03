@@ -9,6 +9,7 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
+import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 import EditIcon from "@mui/icons-material/Edit";
 import TextField from "@mui/material/TextField";
 import SearchIcon from "@mui/icons-material/Search";
@@ -23,7 +24,7 @@ import { useState, useEffect, useRef } from "react";
 import Autocomplete from "@mui/material/Autocomplete";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
-import { getAllFaculties } from "@/api/api-faculties";
+
 
 
 import Layout from "../Layout";
@@ -35,8 +36,15 @@ import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import MenuItem from "@mui/material/MenuItem";
 import Popover from "@mui/material/Popover";
-import {getMajors,createMajor,getMajorById,updateMajor} from "@/api/api-majors";
-function TestPage() {
+import DialogPLO from "../../components/DialogPLO";
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import DialogPLOHocPhan from "../../components/DialogMappingPLO_Cource";
+import ChecklistRtlIcon from '@mui/icons-material/ChecklistRtl';
+import {getMajors} from "@/api/api-majors";
+import {getProgrammes,createProgramme,getProgrammeById,updateProgramme} from "@/api/api-programmes";
+import { getNguoiQuanLyCTDTId } from "../../utils/storage";
+import {getAccountsByRole} from "@/api/api-accounts"
+function CTDTPage() {
   const styles = {
     main: {
       display: 'flex',
@@ -147,21 +155,40 @@ function TestPage() {
   const [snackbarSeverity, setSnackbarSeverity] = React.useState("success");
   const [openAddNganh, setOpenAddNganh] = React.useState(false);
   const [openEditNganh, setOpenEditNganh] = React.useState(false);
-  const [khoas, setKhoas] = useState([]);
+
   const [data, setData] = useState([]);
   const [searchQuery, setSearchQuery] = useState(""); // Lưu giá trị tìm kiếm
   const [filteredData, setFilteredData] = useState(data); // Lưu dữ liệu đã lọc
   const [errorTenNganh, setErrorTenNganh] = useState(false);
   const [errorMaNganh, setErrorMaNganh] = useState(false);  
-  const [selectedKhoa, setSelectedKhoa] = useState(null);
   const [tenNganh, setTenNganh] = useState("");
   const [maNganh, setMaNganh] = useState("");
   const [nganhId, setNganhId] = useState("");
   const inputRef = useRef("");
-  const [selectedKhoaFilter, setSelectedKhoaFilter] = useState(null);
+  // const [selectedKhoaFilter, setSelectedKhoaFilter] = useState(null);
   const [page, setPage] = useState(1);
+  const [openPLO, setOpenPLO] = useState(false); // Dialog PLO nếu cần sử dụng
+  const [openDialogPLOHocPhan, setOpenDialogPLOHocPhan] = useState(false);// Lấy id người quản lý CTĐT từ role, mặc định là 0 nếu không có
+  const [nganhs,setNganhs] = useState([]);
+  const [selectedNganh,setSelectedNganh] =useState(null);
+  const [selectedTaiKhoan,setSelectedTaiKhoan] =useState(null);
+  const [taikhoans,setTaiKhoans]=useState([]);
+  const handleOpenPLO = (id) => {
+    setNganhId(id); // Lưu id nganh để sử dụng trong Dialog PLO
+    setOpenPLO(true);
+  };
+  const handleClosePLO = () => {
 
+    setOpenPLO(false);
+  };
 
+  const handleOpenDialogPLOHocPhan = (id) => {
+    setNganhId(id);
+    setOpenDialogPLOHocPhan(true);
+  }
+  const handleCloseDialogPLOHocPhan = () => {
+    setOpenDialogPLOHocPhan(false);
+  }
   
   const [pageSize, setPageSize] = useState(20); // tùy chọn mặc định
   const pageSizeOptions = [20,50,100]; // tuỳ bạn thêm số lựa chọn
@@ -189,61 +216,69 @@ function TestPage() {
 
 
   const role = getRole();
-
-  const handleKhoaChange = (event, newValue) => {
-    setSelectedKhoaFilter(newValue);
-    setPage(1); // 👉 Reset về trang đầu tiên
+  const nguoiQuanLyCTDTId = getNguoiQuanLyCTDTId();
   
-    if (!newValue) {
-      setFilteredData(data); 
-    } else {
-      const filtered = data.filter((row) => row.facultyName === newValue.name);
-      setFilteredData(filtered);
-    }
+
+  const handleOpenDialog = (id) => {
+    setNganhId(id);
+    setOpenDialog(true);
   };
-  
-
- 
   const handleCloseDialog = () => {
     setOpenDialog(false);
   };
 
   const handleClickOpenEdit = async (id) => {
-    const nganh = await getMajorById(id);
+    const taikhoans = await getAccountsByRole(3); // Gọi API lấy danh sách tài khoản
+    setTaiKhoans(taikhoans);
+  
+    const nganh = await getProgrammeById(id);
+    console.log(nganh);
     setTenNganh(nganh.name);
     setMaNganh(nganh.code);
-    setSelectedKhoa(nganh.facultyName);
-    inputRef.current = nganh.ten;
+    setSelectedNganh(nganh.majorName);
+    inputRef.current = nganh.name;
+  
+    // Gán sẵn người quản lý tương ứng
+    const selectedAccount = taikhoans.find(
+      (acc) => acc.id === nganh.managerAccountId
+    );
+    setSelectedTaiKhoan(selectedAccount || null); // Gán giá trị nếu có
+  
     setOpenEditNganh(true);
     setNganhId(id);
   };
+  
 
   const handleAddNganhs = async () => {
-    const khoas = await getAllFaculties(); // Đợi API trả về dữ liệu
-    setKhoas(khoas);
-    setOpenAddNganh(true);
 
+    const nganhData = await getMajors();
+    setNganhs(nganhData);
+    const taikhoans = await getAccountsByRole(3); // Đợi API trả về dữ liệu
+    setTaiKhoans(taikhoans);
+    setOpenAddNganh(true);
   };
 
   const handleCloseEditNganh = () => {
     setOpenEditNganh(false);
     setErrorTenNganh(false);
-    setSelectedKhoa(null);
+    setSelectedTaiKhoan(null);
     setTenNganh("");
     setMaNganh("");
     setNganhId("");
+    setTaiKhoans([]);
   };
 
   const handleCloseNganhs = () => {
     setOpenAddNganh(false);
     setErrorTenNganh(false);
-    setSelectedKhoa(null);
     setErrorMaNganh(false);
+    setNganhs([]);
     setMaNganh("");
+    setTaiKhoans([]);
   };
   const handleSubmit = async () => {
     if (tenNganh.trim() === "") {
-      setSnackbarMessage("Tên ngành không được để trống");
+      setSnackbarMessage("Tên chương trình đào tạo không được để trống");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       setErrorTenNganh(true);
@@ -251,14 +286,20 @@ function TestPage() {
     }
   
     if (maNganh.trim() === "") {
-      setSnackbarMessage("Mã ngành không được để trống");
+      setSnackbarMessage("Mã chương trình đào tạo không được để trống");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       return;
     }
   
-    if (selectedKhoa === null) {
-      setSnackbarMessage("Vui lòng chọn khoa");
+    if (selectedNganh === null) {
+      setSnackbarMessage("Vui lòng chọn ngành");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+      return;
+    }
+    if (selectedTaiKhoan === null) {
+      setSnackbarMessage("Vui lòng chọn ngành");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       return;
@@ -267,24 +308,25 @@ function TestPage() {
     const majorData = {
       name: tenNganh.trim(),
       code: maNganh.trim(),
-      facultyId: selectedKhoa.id,
+      majorId: selectedNganh.id,
+      managerAccountId:selectedTaiKhoan
     };
-  
+    console.log(majorData);
     try {
-      const response = await createMajor(majorData);
+      const response = await createProgramme(majorData);
       if (response.status === 201) {
-        setSnackbarMessage("Thêm ngành thành công");
+        setSnackbarMessage("Thêm chương trình đào tạo thành công");
         setSnackbarSeverity("success");
         setOpenSnackbar(true);
         fetchData(); // làm mới danh sách ngành
         handleCloseNganhs(); // đóng dialog/modal
       } else {
-        setSnackbarMessage("Lỗi không xác định khi thêm ngành");
+        setSnackbarMessage("Lỗi không xác định khi thêm chương trình đào tạo");
         setSnackbarSeverity("error");
         setOpenSnackbar(true);
       }
     } catch (error) {
-      const errorMsg = error.message || "Lỗi: Không thể thêm ngành";
+      const errorMsg = error.message || "Lỗi: Không thể thêm chương trình đào tạo";
       setSnackbarMessage(errorMsg);
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
@@ -294,17 +336,22 @@ function TestPage() {
   
   // console.log("role, nguoiQuanLyCTDTId: ", role, nguoiQuanLyCTDTId);
   const fetchData = useCallback(async () => {
-    const khoa = await getAllFaculties();
-    setKhoas(khoa);
+
   
     try {
-      const majors = await getMajors(); // đổi sang gọi major
-      console.log(majors);
-      setData(majors);
+      if (role === "NguoiPhuTrachCTĐT" && nguoiQuanLyCTDTId !== 0) {
+        const programmes = await getProgrammes({ managerAccountId: nguoiQuanLyCTDTId });
+        setData(programmes);
+      } else {
+        const programmes = await getProgrammes({});
+        setData(programmes);
+      }
+    // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      console.error("Lỗi khi tải ngành:", error.message);
+      console.log(error);
     }
-  }, []);
+  }, [role, nguoiQuanLyCTDTId]);
+  
   
   
 
@@ -334,45 +381,53 @@ function TestPage() {
 
   const handleEditSubmit = async (nganhId) => {
     const tenMoi = inputRef.current.trim();
+  
     if (tenMoi === "") {
-      setSnackbarMessage("Tên ngành không được để trống");
+      setSnackbarMessage("Tên chương trình đào tạo không được để trống");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       setErrorTenNganh(true);
       return;
     }
   
-    
+    if (selectedTaiKhoan === null) {
+      setSnackbarMessage("Vui lòng chọn người quản lý");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+      return;
+    }
   
     const nganhData = {
       name: tenMoi,
+      managerAccountId: selectedTaiKhoan.id, // 👈 Thêm dòng này để API nhận người quản lý
     };
   
     try {
-      const response = await updateMajor(nganhId, nganhData);
+      const response = await updateProgramme(nganhId, nganhData);
   
       if (response.status === 200) {
-        setSnackbarMessage("Sửa ngành thành công");
+        setSnackbarMessage("Sửa chương trình đào tạo thành công");
         setSnackbarSeverity("success");
         setOpenSnackbar(true);
-        fetchData();
+        fetchData(); // Tải lại danh sách
         handleCloseEditNganh();
       } else if (response.status === 404) {
-        setSnackbarMessage("Ngành không tồn tại");
+        setSnackbarMessage("Chương trình đào tạo không tồn tại");
         setSnackbarSeverity("error");
         setOpenSnackbar(true);
       } else {
-        setSnackbarMessage("Lỗi: Không thể sửa ngành");
+        setSnackbarMessage("Lỗi: Không thể sửa chương trình đào tạo");
         setSnackbarSeverity("error");
         setOpenSnackbar(true);
       }
+    // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      console.error("Lỗi khi cập nhật ngành:", error);
-      setSnackbarMessage("Lỗi: Không thể sửa ngành");
+      setSnackbarMessage("Lỗi: Không thể sửa chương trình đào tạo");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     }
   };
+  
   
 
   const handleSearchChange = (event) => {
@@ -423,7 +478,7 @@ function TestPage() {
     <Layout>
       <div style={styles.main}>
         <div style={styles.title}>
-          <span>Danh sách ngành học</span>
+          <span>Danh sách chương trình đào tạo</span>
         </div>
         <div style={styles.tbActions}>
           <div style={styles.ipSearch}>
@@ -445,7 +500,7 @@ function TestPage() {
               <TextField
                 fullWidth
                 fontSize="10px"
-                placeholder="Tìm kiếm theo tên ngành..."
+                placeholder="Tìm kiếm theo tên chương trình đào tạo..."
                 variant="standard"
                 autoComplete="off"
                 InputProps={{
@@ -464,18 +519,7 @@ function TestPage() {
             </Box>
           </div>
           <div style={styles.cbKhoa}>
-          <Autocomplete
-            size="small" // 👉 Nhỏ gọn lại để align đẹp
-            sx={{ width: "100%" }}
-            options={khoas}
-            getOptionLabel={(option) => option.name || ""}
-            required
-            value={selectedKhoaFilter}
-            onChange={handleKhoaChange}
-            renderInput={(params) => (
-              <TextField {...params} label="Chọn khoa" size="small" />
-            )}
-          />
+
 
           </div>
           <div style={styles.btnCreate}>
@@ -485,7 +529,7 @@ function TestPage() {
                 variant="contained"
                 onClick={handleAddNganhs}
               >
-                Tạo ngành
+                Tạo CTĐT 
               </Button>
             )}
             <Dialog
@@ -494,17 +538,34 @@ function TestPage() {
               open={openAddNganh}
               onClose={handleCloseNganhs}
             >
-              <DialogTitle>Tạo ngành mới:</DialogTitle>
+              <DialogTitle>Tạo ctđt mới:</DialogTitle>
               <DialogContent>
                 <DialogContentText>
-                  Thêm ngành mới vào hệ thống
+                  Thêm ctđt mới vào hệ thống
                 </DialogContentText>
+                <Autocomplete
+                  options={nganhs}
+                  getOptionLabel={(option) => `${option.code} - ${option.name}`}
+                  noOptionsText="Không tìm thấy ngành"
+                  required
+                  id="disable-clearable"
+                  disableClearable
+                  onChange={(event, newValue) => setSelectedNganh(newValue)} // Cập nhật state khi chọn khoa
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Chọn ngành"
+                      variant="standard"
+                    />
+                  )}
+                />
+
                 <TextField
                   autoFocus
                   required
                   id="tenNganh"
                   margin="dense"
-                  label="Tên ngành"
+                  label="Tên chương trình đào tạo"
                   fullWidth
                   variant="standard"
                   onBlur={(e) => setTenNganh(e.target.value.trim())}
@@ -520,7 +581,7 @@ function TestPage() {
                   required
                   id="maNganh"
                   margin="dense"
-                  label="Mã ngành"
+                  label="Mã chương trình đào tạo"
                   fullWidth
                   variant="standard"
                   onBlur={(e) => setMaNganh(e.target.value.trim())}
@@ -528,25 +589,30 @@ function TestPage() {
                   onInput={(e) =>
                     setErrorMaNganh(e.target.value.trim() === "")
                   }
-                  helperText="Vui lòng nhập mã ngành"
+                  helperText="Vui lòng nhập mã chương trình đào tạo"
                   autoComplete="off"
                 />
-                <Autocomplete
-                  options={khoas}
-                  getOptionLabel={(option) => option.name || ""}
-                  noOptionsText="Không tìm thấy khoa"
-                  required
-                  id="disable-clearable"
-                  disableClearable
-                  onChange={(event, newValue) => setSelectedKhoa(newValue)} // Cập nhật state khi chọn khoa
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Chọn khoa"
-                      variant="standard"
-                    />
-                  )}
-                />
+                              <Autocomplete
+                options={taikhoans}
+                getOptionLabel={(option) =>
+                  option ? `${option.id} - ${option.name}` : ""
+                }
+                noOptionsText="Không tìm thấy tài khoản"
+                required
+                disableClearable
+        
+                onChange={(event, newValue) =>
+                  setSelectedTaiKhoan(newValue?.id || null)
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Chọn người quản lý"
+                    variant="standard"
+                  />
+                )}
+              />
+                
               </DialogContent>
               <DialogActions>
                 <Button onClick={handleCloseNganhs}>Hủy</Button>
@@ -556,6 +622,16 @@ function TestPage() {
           </div>
         </div>
         <div style={styles.table}>
+          <DialogPLO
+            open={openPLO}
+            onClose={handleClosePLO}
+            nganhId={nganhId}
+          />
+          <DialogPLOHocPhan
+            open={openDialogPLOHocPhan}
+            onClose={handleCloseDialogPLOHocPhan}
+            nganhId={nganhId}
+          />
           <TableContainer component={Paper}>
             <Table sx={{ minWidth: 700 }} aria-label="customized table">
               <TableHead
@@ -568,9 +644,9 @@ function TestPage() {
               >
                 <TableRow>
                   <StyledTableCell align="center">STT</StyledTableCell>
-                  <StyledTableCell align="center">Mã ngành</StyledTableCell>
+                  <StyledTableCell align="center">Mã CTĐT</StyledTableCell>
                   <StyledTableCell align="center">Tên CTĐT</StyledTableCell>
-                  <StyledTableCell align="center">Thuộc khoa</StyledTableCell>
+                  <StyledTableCell align="center">Người quản lý</StyledTableCell>
                   <StyledTableCell align="center"></StyledTableCell>
                 </TableRow>
               </TableHead>
@@ -580,7 +656,7 @@ function TestPage() {
       <StyledTableCell align="center">{(page - 1) * pageSize + index + 1}</StyledTableCell>
       <StyledTableCell align="center">{row.code}</StyledTableCell>
       <StyledTableCell align="center">{row.name}</StyledTableCell>
-      <StyledTableCell align="center">{row.facultyName}</StyledTableCell>
+      <StyledTableCell align="center">{row.managerName}</StyledTableCell>
         <StyledTableCell align="center">
           <IconButton
             size="small"
@@ -607,10 +683,31 @@ function TestPage() {
                 handleClosePopover();
               }}>
                 <EditIcon fontSize="small" sx={{ mr: 1 }} />
-                Sửa ngành
+                Sửa CTĐT
               </MenuItem>
 
+              <MenuItem onClick={() => {
+                handleOpenDialog(row.id);
+                handleClosePopover();
+              }}>
+                <FormatListBulletedIcon fontSize="small" sx={{ mr: 1 }} />
+                Xem danh sách học phần
+              </MenuItem>
 
+              <MenuItem onClick={() => {
+                handleOpenPLO(row.id);
+                handleClosePopover();
+              }}>
+                <AssignmentIcon fontSize="small" sx={{ mr: 1 }} />
+                Quản lý PLO
+              </MenuItem>
+              <MenuItem onClick={() => {
+                handleOpenDialogPLOHocPhan(row.id);
+                handleClosePopover();
+              }}>
+                <ChecklistRtlIcon fontSize="small" sx={{ mr: 1 }} />
+                Nối PLO-Học phần
+              </MenuItem>
             </Popover>
           )}
         </StyledTableCell>
@@ -635,26 +732,26 @@ function TestPage() {
             onClose={handleCloseEditNganh}
             TransitionComponent={Fade}
           >
-            <DialogTitle>Sửa ngành:</DialogTitle>
+            <DialogTitle>Sửa chương trình đào tạo:</DialogTitle>
             <DialogContent>
-              <DialogContentText>Sửa thông tin ngành</DialogContentText>
+              <DialogContentText>Sửa thông tin chương trình đào tạo</DialogContentText>
               {/* Mã ctđt: Chỉ đọc */}
               <TextField
                 required
                 margin="dense"
-                label="Mã ngành"
+                label="Mã chương trình đào tạo"
                 fullWidth
                 variant="standard"
                 InputProps={{ readOnly: true }}
                 focused={false}
                 value={maNganh}
                 autoComplete="off"
-                helperText="Mã ngành không thể thay đổi"
+                helperText="Mã chương trình đào tạo không thể thay đổi"
               />
               <TextField
                 required
                 margin="dense"
-                label="Tên ngành"
+                label="Tên chương trình đào tạo"
                 fullWidth
                 variant="standard"
                 defaultValue={tenNganh}
@@ -662,23 +759,44 @@ function TestPage() {
                 onChange={(e) => (inputRef.current = e.target.value)} // Lưu vào ref, không setState
                 onBlur={(e) => setErrorTenNganh(e.target.value.trim() === "")}
                 helperText={
-                  errorTenNganh ? "Tên ngành không được để trống" : ""
+                  errorTenNganh ? "Tên chương trình đào tạo không được để trống" : ""
                 }
                 autoComplete="off"
               />
               <TextField
                 required
                 margin="dense"
-                label="Thuộc khoa"
+                label="Thuộc ngành"
                 fullWidth
                 variant="standard"
-                defaultValue={selectedKhoa}
-                helperText="Không thể thay đổi khoa"
+                defaultValue={selectedNganh}
+                helperText="Không thể thay đổi ngành"
                 InputProps={{ readOnly: true }}
                 focused={false}
                 autoComplete="off"
               />
-              
+              <Autocomplete
+                options={taikhoans}
+                value={selectedTaiKhoan}
+                getOptionLabel={(option) =>
+                  option ? `${option.id} - ${option.name}` : ""
+                }
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                noOptionsText="Không tìm thấy tài khoản"
+                required
+                disableClearable
+                onChange={(event, newValue) =>
+                  setSelectedTaiKhoan(newValue)
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Chọn người quản lý"
+                    variant="standard"
+                  />
+                )}
+              />
+
             </DialogContent>
             <DialogActions>
               <Button onClick={handleCloseEditNganh}>Hủy</Button>
@@ -790,4 +908,4 @@ function TestPage() {
   );
 }
 
-export default TestPage;
+export default CTDTPage;

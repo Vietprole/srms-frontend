@@ -24,7 +24,7 @@ import {
   FiChevronUp,
   FiDatabase,
   FiTarget,
-  FiEdit3,
+  // FiEdit3,
 } from "react-icons/fi";
 import { useLocation } from "react-router-dom";
 
@@ -34,13 +34,13 @@ import NganhIcon from "@/assets/icons/nganh-icon.png";
 import GiangVienIcon from "@/assets/icons/giang-vien-icon.png";
 import SinhVienIcon from "@/assets/icons/sinh-vien-icon.png";
 import HocPhanIcon from "@/assets/icons/hoc-phan-icon.png";
-import PLOIcon from "@/assets/icons/plo-icon.png";
+// import PLOIcon from "@/assets/icons/plo-icon.png";
 import LopHocPhanIcon from "@/assets/icons/lop-hoc-phan-icon.png";
-import CongThucDiemIcon from "@/assets/icons/cong-thuc-diem-icon.png";
-import NhapDiemIcon from "@/assets/icons/nhap-diem-icon.png";
-import DiemDinhChinhIcon from "@/assets/icons/diem-dinh-chinh-icon.png";
-import KetQuaIcon from "@/assets/icons/ket-qua-hoc-tap-icon.png";
-import XetChuanDauRaIcon from "@/assets/icons/xet-chuan-dau-ra-icon.png";
+// import CongThucDiemIcon from "@/assets/icons/cong-thuc-diem-icon.png";
+// import NhapDiemIcon from "@/assets/icons/nhap-diem-icon.png";
+// import DiemDinhChinhIcon from "@/assets/icons/diem-dinh-chinh-icon.png";
+// import KetQuaIcon from "@/assets/icons/ket-qua-hoc-tap-icon.png";
+// import XetChuanDauRaIcon from "@/assets/icons/xet-chuan-dau-ra-icon.png";
 import QuanLyTaiKhoanIcon from "@/assets/icons/quan-ly-tai-khoan-icon.png";
 import HoSoCaNhanIcon from "@/assets/icons/ho-so-ca-nhan-icon.png";
 import CaiDatIcon from "@/assets/icons/cai-dat-icon.png";
@@ -76,21 +76,21 @@ const giangVienItem = [
     url: "/sinhvien",
     icon: SinhVienIcon,
   },
-  {
-    title: "Nhập điểm",
-    url: "/nhapdiem",
-    icon: NhapDiemIcon,
-  },
-  {
-    title: "Điểm Đính Chính",
-    url: "/diemdinhchinh",
-    icon: DiemDinhChinhIcon,
-  },
-  {
-    title: "Xét chuẩn đầu ra",
-    url: "/xetchuandaura",
-    icon: XetChuanDauRaIcon,
-  },
+  // {
+  //   title: "Nhập điểm",
+  //   url: "/nhapdiem",
+  //   icon: NhapDiemIcon,
+  // },
+  // {
+  //   title: "Điểm Đính Chính",
+  //   url: "/diemdinhchinh",
+  //   icon: DiemDinhChinhIcon,
+  // },
+  // {
+  //   title: "Xét chuẩn đầu ra",
+  //   url: "/xetchuandaura",
+  //   icon: XetChuanDauRaIcon,
+  // },
   {
     title: "Hồ sơ cá nhân",
     url: "/hosocanhan",
@@ -104,21 +104,21 @@ const giangVienItem = [
 ];
 
 const sinhVienItem = [
-  {
-    title: "Kết quả học tập",
-    url: "/ketqua",
-    icon: KetQuaIcon,
-  },
+  // {
+  //   title: "Kết quả học tập",
+  //   url: "/ketqua",
+  //   icon: KetQuaIcon,
+  // },
   {
     title: "Hồ sơ cá nhân",
     url: "/hosocanhan",
     icon: HoSoCaNhanIcon,
   },
-  {
-    title: "Xét chuẩn đầu ra",
-    url: "/xetchuandaura",
-    icon: XetChuanDauRaIcon,
-  },
+  // {
+  //   title: "Xét chuẩn đầu ra",
+  //   url: "/xetchuandaura",
+  //   icon: XetChuanDauRaIcon,
+  // },
   {
     title: "Đăng xuất",
     url: "/",
@@ -136,8 +136,12 @@ const adminItem = [
         url: "/khoa",
       },
       {
-        title: "Chương trình đào tạo",
+        title: "Ngành",
         url: "/nganh",
+      },
+      {
+        title: "Chương trình đào tạo",
+        url: "/ctdt",
       },
       {
         title: "Học kỳ",
@@ -175,29 +179,29 @@ const adminItem = [
       },
     ],
   },
-  {
-    title: "Quản lý điểm",
-    icon: <FiEdit3 className="w-6 h-6" />,
-    subItems: [
-      {
-        title: "Công thức điểm",
-        url: "/congthucdiem",
-      },
-      {
-        title: "Nhập điểm",
-        url: "/nhapdiem",
-      },
-      {
-        title: "Đính chính điểm",
-        url: "/diemdinhchinh",
-      },
-    ],
-  },
-  {
-    title: "Xét chuẩn đầu ra",
-    url: "/xetchuandaura",
-    icon: XetChuanDauRaIcon,
-  },
+  // {
+  //   title: "Quản lý điểm",
+  //   icon: <FiEdit3 className="w-6 h-6" />,
+  //   subItems: [
+  //     {
+  //       title: "Công thức điểm",
+  //       url: "/congthucdiem",
+  //     },
+  //     {
+  //       title: "Nhập điểm",
+  //       url: "/nhapdiem",
+  //     },
+  //     {
+  //       title: "Đính chính điểm",
+  //       url: "/diemdinhchinh",
+  //     },
+  //   ],
+  // },
+  // {
+  //   title: "Xét chuẩn đầu ra",
+  //   url: "/xetchuandaura",
+  //   icon: XetChuanDauRaIcon,
+  // },
   {
     title: "Quản lý tài khoản",
     url: "/quanlytaikhoan",
@@ -223,7 +227,7 @@ const phongDaoTaoItem = [
   },
   {
     title: "Chương trình đào tạo",
-    url: "/nganh",
+    url: "/ctdt",
     icon: NganhIcon,
   },
   {
@@ -231,11 +235,11 @@ const phongDaoTaoItem = [
     url: "/hocphan",
     icon: HocPhanIcon,
   },
-  {
-    title: "Quản lý PLO",
-    url: "/plo",
-    icon: PLOIcon,
-  },
+  // {
+  //   title: "Quản lý PLO",
+  //   url: "/plo",
+  //   icon: PLOIcon,
+  // },
   {
     title: "Giảng viên",
     url: "/giangvien",
@@ -251,26 +255,26 @@ const phongDaoTaoItem = [
     url: "/lophocphan",
     icon: LopHocPhanIcon,
   },
-  {
-    title: "Công thức điểm",
-    url: "/congthucdiem",
-    icon: CongThucDiemIcon,
-  },
-  {
-    title: "Nhập điểm",
-    url: "/nhapdiem",
-    icon: NhapDiemIcon,
-  },
-  {
-    title: "Điểm Đính Chính",
-    url: "/diemdinhchinh",
-    icon: DiemDinhChinhIcon,
-  },
-  {
-    title: "Xét chuẩn đầu ra",
-    url: "/xetchuandaura",
-    icon: XetChuanDauRaIcon,
-  },
+  // {
+  //   title: "Công thức điểm",
+  //   url: "/congthucdiem",
+  //   icon: CongThucDiemIcon,
+  // },
+  // {
+  //   title: "Nhập điểm",
+  //   url: "/nhapdiem",
+  //   icon: NhapDiemIcon,
+  // },
+  // {
+  //   title: "Điểm Đính Chính",
+  //   url: "/diemdinhchinh",
+  //   icon: DiemDinhChinhIcon,
+  // },
+  // {
+  //   title: "Xét chuẩn đầu ra",
+  //   url: "/xetchuandaura",
+  //   icon: XetChuanDauRaIcon,
+  // },
   {
     title: "Hồ sơ cá nhân",
     url: "/hosocanhan",
@@ -296,19 +300,19 @@ const nguoiPhuTrachCTDTItems = [
   },
   {
     title: "Chương trình đào tạo",
-    url: "/nganh",
+    url: "/ctdt",
     icon: NganhIcon,
   },
-  {
-    title: "Quản lý PLO",
-    url: "/plo",
-    icon: PLOIcon,
-  },
-  {
-    title: "Quản lý CLO",
-    url: "/chuandaura/quan-ly-clo",
-    icon: PLOIcon,
-  },
+  // {
+  //   title: "Quản lý PLO",
+  //   url: "/plo",
+  //   icon: PLOIcon,
+  // },
+  // {
+  //   title: "Quản lý CLO",
+  //   url: "/chuandaura/quan-ly-clo",
+  //   icon: PLOIcon,
+  // },
   {
     title: "Hồ sơ cá nhân",
     url: "/hosocanhan",
