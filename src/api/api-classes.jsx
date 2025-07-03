@@ -37,7 +37,7 @@ export const getAllClasses = async (filters = {}) => {
 export const getClassById = async (id) => {
   try {
     const response = await axios.get(`${API_CLASSES}/${id}`, getAuthHeader());
-    return response.data;
+    return response;
   } catch (error) {
     console.error("getClassById error:", error);
     throw new Error(error.response?.data || "Không tìm thấy lớp học phần");
@@ -50,7 +50,7 @@ export const getClassById = async (id) => {
 export const createClass = async (classData) => {
   try {
     const response = await axios.post(API_CLASSES, classData, getAuthHeader());
-    return response.data;
+    return response;
   } catch (error) {
     console.error("createClass error:", error);
     throw new Error(error.response?.data || "Lỗi khi tạo lớp học phần");
@@ -63,7 +63,7 @@ export const createClass = async (classData) => {
 export const updateClass = async (id, updateData) => {
   try {
     const response = await axios.put(`${API_CLASSES}/${id}`, updateData, getAuthHeader());
-    return response.data;
+    return response;
   } catch (error) {
     console.error("updateClass error:", error);
     throw new Error(error.response?.data || "Lỗi khi cập nhật lớp học phần");

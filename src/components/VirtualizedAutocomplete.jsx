@@ -86,6 +86,7 @@ export default function VirtualizedAutocomplete({
 }) {
   return (
     <Autocomplete
+      fullWidth
       disableListWrap
       options={options}
       value={value}
