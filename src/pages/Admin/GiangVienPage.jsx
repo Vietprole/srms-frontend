@@ -22,8 +22,8 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import {
-  getAllKhoas
-} from "@/api/api-khoa";
+  getAllFaculties
+} from "@/api/api-faculties";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Layout from '../Layout';
@@ -251,7 +251,7 @@ function GiangVienPage()
     const giangvien = await getAllGiangViens();
     setData(giangvien);
     setFilteredData(giangvien);
-    const khoa = await getAllKhoas();
+    const khoa = await getAllFaculties();
     setKhoas(khoa);
   };
   

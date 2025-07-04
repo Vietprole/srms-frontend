@@ -2,11 +2,11 @@ import API_BASE_URL from "./base-url";
 import axios from 'axios';
 import { getAccessToken } from "../utils/storage";
 
-const API_KHOA = `${API_BASE_URL}/api/khoa`;
+const API_SEMESTER = `${API_BASE_URL}/api/semesters`;
 
-export const getAllKhoas = async () => {
+export const getAllSemesters = async () => {
   try {
-    const response = await axios.get(API_KHOA, {
+    const response = await axios.get(API_SEMESTER, {
       headers: { Authorization: getAccessToken() }
     });
     return response.data;
@@ -16,10 +16,9 @@ export const getAllKhoas = async () => {
   }
 };
 
-// Function to get a single student by ID
-export const getKhoaById = async (studentId) => {
+export const getSemesterById = async (semesterId) => {
   try {
-    const response = await axios.get(`${API_KHOA}/${studentId}`, {
+    const response = await axios.get(`${API_SEMESTER}/${semesterId}`, {
       headers: { Authorization: getAccessToken() }
     });
     return response.data;
@@ -29,25 +28,9 @@ export const getKhoaById = async (studentId) => {
   }
 };
 
-// Function to add a new student
-export const addKhoa = async (studentData) => {
+export const addSemester = async (semesterData) => {
   try {
-    const response = await axios.post(API_KHOA, studentData, {
-      headers: { Authorization: getAccessToken() }
-    });
-    console.log("response khoa: ", response);
-    return response;
-  } catch (error) {
-    console.log("error message: ", error.message);
-    // throw new Error(error.response?.data || "Lỗi bất định");
-    return "Không thể kết nối server";
-  }
-};
-
-// Function to update an existing student
-export const updateKhoa = async (studentId, updatedData) => {
-  try {
-    const response = await axios.put(`${API_KHOA}/${studentId}`, updatedData, {
+    const response = await axios.post(API_SEMESTER, semesterData, {
       headers: { Authorization: getAccessToken() }
     });
     return response;
@@ -57,10 +40,21 @@ export const updateKhoa = async (studentId, updatedData) => {
   }
 };
 
-// Function to delete a student
-export const deleteKhoa = async (studentId) => {
+export const updateSemester = async (semesterId, updatedData) => {
   try {
-    const response = await axios.delete(`${API_KHOA}/${studentId}`, {
+    const response = await axios.put(`${API_SEMESTER}/${semesterId}`, updatedData, {
+      headers: { Authorization: getAccessToken() }
+    });
+    return response.data;
+  } catch (error) {
+    console.log("error message: ", error.message);
+    throw new Error(error.response?.data || "Lỗi bất định");
+  }
+};
+
+export const deleteSemester = async (semesterId) => {
+  try {
+    const response = await axios.delete(`${API_SEMESTER}/${semesterId}`, {
       headers: { Authorization: getAccessToken() }
     });
     return response.data;

@@ -23,19 +23,16 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import {
-  getAllKhoas
-} from "@/api/api-khoa";
-import { getAllHocPhans,addHocPhan,getHocPhanById,updateHocPhan,deleteHocPhan } from '@/api/api-hocphan';
+  getAllFaculties
+} from "@/api/api-faculties";
 import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 import Layout from '../Layout';
-import { getHocPhansByNganhId, getAllNganhs } from "@/api/api-nganh";
-import { getLopHocPhans } from "@/api/api-lophocphan";
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import MenuItem from '@mui/material/MenuItem';
 import Popover from '@mui/material/Popover';
+import { getCourses,createCourse,getCourseById,updateCourse } from "@/api/api-courses";
 function HocPhanPage() 
 {
   const styles = {
@@ -156,13 +153,12 @@ function HocPhanPage()
   const [selectedKhoa, setSelectedKhoa] = useState(null);
   const [errorTenHocPhan, setErrorTenHocPhan] = useState(false);
   const [errorSoTinChi, setErrorSoTinChi] = useState(false);
+  const [errorMaHocPhan , setErrorMaHocPhan] = useState(false);
   const soTinChiRef = useRef("");
   const tenHocPhanRef = useRef("");
   const [maHocPhan, setMaHocPhan] = useState("");
   const [tenKhoa, setTenKhoa] = useState("");
   const [hocPhanId, setHocPhanId] = useState("");
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [selectedHocPhanId, setSelectedHocPhanId] = useState(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20); // mặc định
   const pageSizeOptions = [20,50,100]; // các lựa chọn
@@ -211,17 +207,18 @@ function HocPhanPage()
   
   
   const handleOpenEditDialog = async(hocPhanId) => {
-    const hocphan = await getHocPhanById(hocPhanId);
+    const hocphan = await getCourseById(hocPhanId);
+    console.log(hocphan);
     if(hocphan.status===200)
     {
      
-      setTenHocPhan(hocphan.data.ten);
-      setSoTinChi(hocphan.data.soTinChi);
-      setSelectedKhoa(hocphan.data.khoa);
-      tenHocPhanRef.current = hocphan.data.ten;
-      soTinChiRef.current = hocphan.data.soTinChi;
-      setMaHocPhan(hocphan.data.maHocPhan);
-      setTenKhoa(hocphan.data.tenKhoa);
+      setTenHocPhan(hocphan.data.name);
+      setSoTinChi(hocphan.data.credits);
+      setSelectedKhoa(hocphan.data.facultyId);
+      tenHocPhanRef.current = hocphan.data.name;
+      soTinChiRef.current = hocphan.data.credits;
+      setMaHocPhan(hocphan.data.code);
+      setTenKhoa(hocphan.data.facultyName);
       setHocPhanId(hocPhanId);
       setOpenEditDialog(true);
 
@@ -262,6 +259,8 @@ function HocPhanPage()
     setErrorTenHocPhan(false);
     setErrorSoTinChi(false);
     setOpenAddDialog(false);
+    setErrorMaHocPhan(false);
+    setMaHocPhan("");
   };
 
   const handleKhoaChange = (event, newValue) => {
@@ -270,7 +269,7 @@ function HocPhanPage()
     if (!newValue) {
       setFilteredData(data);
     } else {
-      const filtered = data.filter((row) => row.tenKhoa === newValue.ten);
+      const filtered = data.filter((row) => row.facultyName === newValue.name);
       setFilteredData(filtered);
     }
   };
@@ -283,11 +282,11 @@ function HocPhanPage()
   
   const fetchData = async () => {
     try {
-      const hocphans = await getAllHocPhans();
+      const hocphans = await getCourses();
       // Đảm bảo response từ API trả về thêm thông tin tenNganh
       setData(hocphans);
       setFilteredData(hocphans);
-      const khoa = await getAllKhoas();
+      const khoa = await getAllFaculties();
       setKhoas(khoa);
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu:", error);
@@ -305,7 +304,7 @@ function HocPhanPage()
       setFilteredData(data); // If search query is empty, show all data
     } else {
       const filtered = data.filter((row) =>
-        row.ten.toLowerCase().includes(query.toLowerCase())
+        row.name.toLowerCase().includes(query.toLowerCase())
       );
       setFilteredData(filtered);
     }
@@ -357,59 +356,68 @@ function HocPhanPage()
 
   const handleAddSubmit = async () => {
     if (tenHocPhan.trim() === "") {
-      
       setErrorTenHocPhan(true);
       setSnackbarMessage("Vui lòng nhập tên học phần");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       return;
     }
-    if(soTinChi.trim() === "")
-    {
+  
+    if (maHocPhan.trim() === "") {
+      setErrorMaHocPhan(true);
+      setSnackbarMessage("Vui lòng nhập mã học phần");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+      return;
+    }
+  
+    if (soTinChi.trim() === "") {
       setErrorSoTinChi(true);
       setSnackbarMessage("Vui lòng nhập số tín chỉ");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       return;
     }
+  
     if (!selectedKhoa) {
       setSnackbarMessage("Vui lòng chọn khoa");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       return;
     }
-    const hocphanData = {
-      ten: tenHocPhan,
-      soTinChi: soTinChi,
-      khoaId: selectedKhoa.id,
+  
+    const courseData = {
+      name: tenHocPhan,
+      code: maHocPhan,
+      credits: parseFloat(soTinChi),
+      facultyId: selectedKhoa.id,
     };
     try {
-      const rp =await addHocPhan(hocphanData);
-      if(rp.status===201)
-      {
+      const response = await createCourse(courseData);
+  
+      if (response.status === 201) {
         setSnackbarMessage("Thêm học phần thành công");
         setSnackbarSeverity("success");
         setOpenSnackbar(true);
         handleCloseDialogAddHocPhans();
         fetchData();
-      }
-      else
-      {
-        setSnackbarMessage("Thêm học phần thất bại");
+      } else {
+        setSnackbarMessage(" Thêm học phần thất bại");
         setSnackbarSeverity("error");
         setOpenSnackbar(true);
       }
     } catch (error) {
-      setSnackbarMessage(error.message);
+      setSnackbarMessage(` ${error.message}`);
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     }
   };
-  const handleSubmitEdit = async () => {
-    // Kiểm tra giá trị của soTinChiRef.current
-    const soTinChiValue = String(soTinChiRef.current || "").trim();
   
-    if (tenHocPhanRef.current.trim() === "") {
+  const handleSubmitEdit = async () => {
+    const nameValue = tenHocPhanRef.current?.trim() || "";
+    const creditsValue = String(soTinChiRef.current || "").trim();
+  
+    if (nameValue === "") {
       setErrorTenHocPhan(true);
       setSnackbarMessage("Vui lòng nhập tên học phần");
       setSnackbarSeverity("error");
@@ -417,7 +425,7 @@ function HocPhanPage()
       return;
     }
   
-    if (soTinChiValue === "") {
+    if (creditsValue === "") {
       setErrorSoTinChi(true);
       setSnackbarMessage("Vui lòng nhập số tín chỉ");
       setSnackbarSeverity("error");
@@ -426,18 +434,21 @@ function HocPhanPage()
     }
   
     const hocphanData = {
-      ten: tenHocPhanRef.current,
-      soTinChi: parseFloat(soTinChiValue) // Chuyển đổi thành số
+      name: nameValue,
+      credits: parseFloat(creditsValue),
+      // Optional: code, facultyId nếu cần sửa thêm
+      // code: maHocPhanRef.current?.trim(), // nếu có ref mã học phần
+      // facultyId: selectedKhoa?.id ?? null
     };
   
     try {
-      const response = await updateHocPhan(hocPhanId, hocphanData);
+      const response = await updateCourse(hocPhanId, hocphanData);
       if (response.status === 200) {
         setSnackbarMessage("Cập nhật học phần thành công");
         setSnackbarSeverity("success");
         setOpenSnackbar(true);
         handleCloseDialogEditHocPhans();
-        fetchData(); // Refresh data
+        fetchData(); // Refresh lại danh sách
       } else {
         setSnackbarMessage("Cập nhật học phần thất bại");
         setSnackbarSeverity("error");
@@ -449,111 +460,9 @@ function HocPhanPage()
       setOpenSnackbar(true);
     }
   };
-  
 
-  const handleOpenDeleteDialog = (hocPhanId) => {
-    setSelectedHocPhanId(hocPhanId);
-    setOpenDeleteDialog(true);
-  };
 
-  const handleCloseDeleteDialog = () => {
-    setOpenDeleteDialog(false);
-    setSelectedHocPhanId(null);
-  };
 
-  const getHocPhanNganh = async (hocPhanId) => {
-    try {
-      // Lấy danh sách tất cả ngành
-      const nganhs = await getAllNganhs();
-      const tenNganhs = []; // Mảng chứa tên các ngành mà học phần thuộc về
-      
-      // Kiểm tra từng ngành xem có chứa học phần cần xóa không
-      for (const nganh of nganhs) {
-        const hocPhansInNganh = await getHocPhansByNganhId(nganh.id);
-        const found = hocPhansInNganh.find(hp => hp.id === hocPhanId);
-        if (found) {
-          tenNganhs.push(nganh.ten); // Thêm tên ngành vào mảng
-        }
-      }
-      
-      return tenNganhs; // Trả về mảng tên các ngành, rỗng nếu không thuộc ngành nào
-    } catch (error) {
-      console.error("Lỗi khi kiểm tra ngành của học phần:", error);
-      return [];
-    }
-  };
-
-  const getHocPhanLopHocPhan = async (hocPhanId) => {
-    try {
-      const lopHocPhans = await getLopHocPhans(hocPhanId, null, null, null);
-      return lopHocPhans.map(lhp => lhp.ten);
-    } catch (error) {
-      console.error("Lỗi khi kiểm tra lớp học phần:", error);
-      return [];
-    }
-  };
-
-  const handleDeleteHocPhan = async () => {
-    try {
-      // Kiểm tra học phần thuộc những ngành nào
-      const tenNganhs = await getHocPhanNganh(selectedHocPhanId);
-      // Kiểm tra học phần thuộc những lớp học phần nào
-      const tenLopHocPhans = await getHocPhanLopHocPhan(selectedHocPhanId);
-      
-      let errorMessage = "";
-      
-      // Xử lý thông báo cho ngành
-      if (tenNganhs.length > 0) {
-        if (tenNganhs.length > 1) {
-          errorMessage += `Học phần đã được thêm vào các ngành: ${tenNganhs.join(", ")}`;
-        } else {
-          errorMessage += `Học phần đã được thêm vào ngành ${tenNganhs[0]}`;
-        }
-      }
-
-      // Xử lý thông báo cho lớp học phần
-      if (tenLopHocPhans.length > 0) {
-        if (errorMessage) {
-          errorMessage += " và ";
-        }
-        if (tenLopHocPhans.length > 1) {
-          errorMessage += `Học phần thuộc các lớp học phần: ${tenLopHocPhans.join(", ")}`;
-        } else {
-          errorMessage += `Học phần thuộc lớp học phần ${tenLopHocPhans[0]}`;
-        }
-      }
-
-      // Nếu có bất kỳ ràng buộc nào
-      if (errorMessage) {
-        errorMessage += ". Vui lòng xóa học phần khỏi các ràng buộc trước khi thao tác";
-        setSnackbarMessage(errorMessage);
-        setSnackbarSeverity("error");
-        setOpenSnackbar(true);
-        handleCloseDeleteDialog();
-        return;
-      }
-
-      // Nếu không có ràng buộc nào thì tiến hành xóa
-      await deleteHocPhan(selectedHocPhanId);
-      setSnackbarMessage("Xóa học phần thành công");
-      setSnackbarSeverity("success");
-      setOpenSnackbar(true);
-      handleCloseDeleteDialog();
-      fetchData(); // Refresh data
-    } catch (error) {
-      if (error.message.includes("404")) {
-        setSnackbarMessage("Học phần đã được xóa trước đó");
-        setSnackbarSeverity("info");
-        setOpenSnackbar(true);
-        handleCloseDeleteDialog();
-        fetchData();
-      } else {
-        setSnackbarMessage("Xóa học phần thất bại: " + error.message);
-        setSnackbarSeverity("error");
-        setOpenSnackbar(true);
-      }
-    }
-  };
  
 
   return (
@@ -607,7 +516,7 @@ function HocPhanPage()
         <Autocomplete
           sx={{ width: "100%" }}
           options={khoas}
-          getOptionLabel={(option) => option.ten || ""}
+          getOptionLabel={(option) => option.name || ""}
           required
           // disableClearable
           value={selectedKhoaFilter}
@@ -644,6 +553,20 @@ function HocPhanPage()
                         <TextField
                           autoFocus
                           required
+                          id='maHocPhan'
+                          margin="dense"
+                          label="Mã học phần"
+                          fullWidth
+                          variant="standard"
+                          onBlur={(e) => setMaHocPhan(e.target.value.trim())}
+                          error={errorMaHocPhan}
+                          onInput={(e) => setErrorMaHocPhan(e.target.value.trim() === "")}
+                          helperText="Vui lòng nhập mã học phần"
+                          autoComplete='off'
+                        />
+                        <TextField
+                          autoFocus
+                          required
                           id="soTinChi"
                           margin="dense"
                           label="Số tín chỉ"
@@ -663,7 +586,7 @@ function HocPhanPage()
                             }
                           }}
                           onBlur={(e) => setSoTinChi(e.target.value.trim())}
-                          inputProps={{ maxLength: 5 }}
+                          inputProps={{ maxLength: 3 }}
                           error={errorSoTinChi}
                           helperText={errorSoTinChi ? "Vui lòng nhập số hợp lệ" : "Vui lòng nhập số tín chỉ"}  
                           autoComplete="off"
@@ -672,7 +595,7 @@ function HocPhanPage()
 
                        <Autocomplete
                           options={khoas}
-                          getOptionLabel={(option) => option.ten || ''}
+                          getOptionLabel={(option) => option.name || ''}
                           noOptionsText="Không tìm thấy khoa"
                           required
                           id="disable-clearable"
@@ -710,10 +633,10 @@ function HocPhanPage()
   {paginatedData.map((row, index) => (
     <StyledTableRow key={row.id}>
       <StyledTableCell align="center">{(page - 1) * pageSize + index + 1}</StyledTableCell>
-      <StyledTableCell align="center">{row.maHocPhan}</StyledTableCell>
-      <StyledTableCell align="left">{row.ten}</StyledTableCell>
-      <StyledTableCell align="center">{row.soTinChi}</StyledTableCell>
-      <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
+      <StyledTableCell align="center">{row.code}</StyledTableCell>
+      <StyledTableCell align="left">{row.name}</StyledTableCell>
+      <StyledTableCell align="center">{row.credits}</StyledTableCell>
+      <StyledTableCell align="center">{row.facultyName}</StyledTableCell>
       <StyledTableCell align="center">
         <IconButton
           size="small"
@@ -742,15 +665,6 @@ function HocPhanPage()
               <EditIcon fontSize="small" sx={{ mr: 1 }} />
               Sửa
             </MenuItem>
-            <MenuItem
-              onClick={() => {
-                handleOpenDeleteDialog(row.id);
-                handleClosePopover();
-              }}
-            >
-              <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
-              Xóa
-            </MenuItem>
           </Popover>
         )}
       </StyledTableCell>
@@ -767,20 +681,7 @@ function HocPhanPage()
       fixedHeaderContent={fixedHeaderContent}
       itemContent={rowContent}
     /> */}
-     <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
-              <DialogTitle>Xóa Học Phần</DialogTitle>
-              <DialogContent>
-                <DialogContentText>
-                  Bạn có chắc chắn muốn xóa học phần này không?
-                </DialogContentText>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={handleCloseDeleteDialog}>Hủy</Button>
-                <Button onClick={handleDeleteHocPhan} color="error">
-                  Xóa
-                </Button>
-              </DialogActions>
-            </Dialog>
+
      <Dialog id='suaHocPhan' fullWidth open={openEditDialog} onClose={handleCloseDialogEditHocPhans}>
                       <DialogTitle>Sửa học phần:</DialogTitle>
                       <DialogContent>

@@ -25,11 +25,11 @@ import Tooltip  from '@mui/material/Tooltip';
 import Layout from '../Layout';
 import { useState, useEffect,useCallback } from "react";
 import {
-  getAllKhoas,
-  addKhoa,
-  updateKhoa,
-  getKhoaById
-} from "@/api/api-khoa";
+  getAllFaculties,
+  addFaculty,
+  updateFaculty,
+  getFacultyById
+} from "@/api/api-faculties";
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import EditIcon from '@mui/icons-material/Edit';
@@ -73,7 +73,7 @@ useEffect(() => {
     setOpen(true);
   };
   const handleClickOpenEdit = async (id) => {
-    const khoaData =await getKhoaById(id);
+    const khoaData =await getFacultyById(id);
     setTenKhoaEdit(khoaData.ten);
     setMaKhoaEdit(khoaData.maKhoa);
     setKhoaEditId(id);
@@ -99,7 +99,7 @@ useEffect(() => {
     const filtered = !searchQuery.trim()
       ? data
       : data.filter((row) =>
-          row.ten.toLowerCase().includes(searchQuery.toLowerCase())
+          row.nảm.toLowerCase().includes(searchQuery.toLowerCase())
         );
   
     setFilteredData(filtered.slice(startIndex, endIndex));
@@ -108,7 +108,7 @@ useEffect(() => {
   
   
   const fetchData = async () => {
-    const khoas = await getAllKhoas();
+    const khoas = await getAllFaculties();
     console.log(khoas);
     setData(khoas);
   };
@@ -118,7 +118,7 @@ useEffect(() => {
       setFilteredData(data); // If search query is empty, show all data
     } else {
       const filtered = data.filter((row) =>
-        row.ten.toLowerCase().includes(query.toLowerCase())
+        row.name.toLowerCase().includes(query.toLowerCase())
       );
       setFilteredData(filtered);
     }
@@ -310,7 +310,7 @@ useEffect(() => {
     };
   
     try {
-      const response = await updateKhoa(khoaEditId,khoaData);  // Gọi hàm updateKhoa
+      const response = await updateFaculty(khoaEditId,khoaData);  // Gọi hàm updateFaculty
       if (response.status === 200) {  
         setSnackbarMessage("Khoa đã được cập nhật thành công!");
         setSnackbarSeverity("success");
@@ -338,7 +338,7 @@ useEffect(() => {
     };
   
     try {
-      const response = await addKhoa(khoaData);  // Gọi hàm addKhoa
+      const response = await addFaculty(khoaData);  // Gọi hàm addFaculty
       if (response.status === 201) {  
         setSnackbarMessage("Khoa đã được thêm thành công!");
         setSnackbarSeverity("success");
@@ -453,14 +453,14 @@ useEffect(() => {
          </TableHead>
          <TableBody sx={{overflowY:"auto"}}> 
           {filteredData.map((row, index) => (
-            <StyledTableRow key={row.ten}>
+            <StyledTableRow key={row.name}>
               <StyledTableCell component="th" scope="row" align="center" width={50}>
                 {index + 1} {/* Số thứ tự */}
               </StyledTableCell>
               <StyledTableCell component="th" scope="row">
-                {row.ten}
+                {row.name}
               </StyledTableCell>
-              <StyledTableCell align="center">{row.maKhoa}</StyledTableCell>
+              <StyledTableCell align="center">{row.code}</StyledTableCell>
               {canManageKhoa && (
                 <StyledTableCell align="center" width={150}>
                   <Tooltip title="Sửa khoa">

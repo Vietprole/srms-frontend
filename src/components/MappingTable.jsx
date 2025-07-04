@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 // import { useParams } from 'react-router-dom';
 // import { getlistColumnItemByLopHocPhanId, getCLOsBycolumnItemId, updateCLOsToPLO } from '@/api/api-plo';
-// import { getCLOsByClassId } from '@/api/api-clo';
+// import { getCLOsByHocPhanId } from '@/api/api-clo';
 
 const ToggleCell = ({ rowItemId, columnItemId, isEditable, table, getRowItemsByColumnItemId }) => {
   const [toggled, setToggled] = useState(false);

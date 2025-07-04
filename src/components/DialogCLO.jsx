@@ -33,7 +33,7 @@ import
 import EditIcon from '@mui/icons-material/Edit';
 import Tooltip from '@mui/material/Tooltip';
 import { getCLOsByHocPhanId,addCLO,updateCLO,deleteCLO, getCLOById } from "../api/api-clo";
-import {getAllHocKys} from '@/api/api-hocky'
+import {getAllSemesters} from '@/api/api-semester'
 import VirtualizedAutocomplete from "./VirtualizedAutocomplete";
 
 // eslint-disable-next-line react/prop-types
@@ -333,7 +333,7 @@ function DialogCLO({ nganhId, open, onClose }) {
     }
   };
   const handleOpenAddDialog =async () => {
-    const hockys = await getAllHocKys();
+    const hockys = await getAllSemesters();
 
     setHockys(hockys);
     setTenPLO("");

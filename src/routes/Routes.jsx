@@ -33,6 +33,7 @@ import HocKiPage from "@/pages/Admin/HocKyPage";
 import QuanLyCLO from "@/pages/chuandaura/QuanLyCLO";
 import MapPLOCLO from "@/pages/chuandaura/MapPLOCLO";
 import StudentInCoursePage from "../pages/StudentInCoursePage";
+import CTDTPage from "../pages/Admin/CTDTPage";
 const role = getRole();
 const RoleBasedRoute = ({ giangVienElement, defaultElement }) => {
   return role === "GiangVien" ? giangVienElement : defaultElement;
@@ -54,6 +55,10 @@ const routes = [
   {
     path: "/nganh",
     element: <NganhPage />,
+  },
+  {
+    path: "/ctdt",
+    element: <CTDTPage />,
   },
   {
     path: "/giangvien",

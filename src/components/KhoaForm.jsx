@@ -13,7 +13,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { addKhoa, updateKhoa } from "@/api/api-khoa";
+import { addFaculty, updateFaculty } from "@/api/api-faculties";
 
 const formSchema = z.object({
   ten: z.string().min(2, {
@@ -44,10 +44,10 @@ export function KhoaForm({ khoa, handleAdd, handleEdit, setIsDialogOpen }) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
     if (khoa) {
-      const data = await updateKhoa(khoa.id, values);
+      const data = await updateFaculty(khoa.id, values);
       handleEdit(data);
     } else {
-      const data = await addKhoa(values);
+      const data = await addFaculty(values);
       handleAdd(data);
       setIsDialogOpen(false);
     }

@@ -4,6 +4,7 @@ import { getCLOsByClassId } from '@/api-new/api-clo';
 import { getQuestionsByExamId, getCLOsByQuestionId, updateCLOsToCauHoi } from '@/api-new/api-cauhoi';
 import { getBaiKiemTrasByLopHocPhanId } from '@/api-new/api-baikiemtra';
 import MappingTable from '@/components/MappingTable';
+import { getLopHocPhanById } from '@/api/api-lophocphan';
 
 export default function NoiCauHoiCLO() {
   const [cauHois, setCauHois] = useState([]);
@@ -15,6 +16,8 @@ export default function NoiCauHoiCLO() {
 
   const fetchData = useCallback(async () => {
     try {
+        const lopHocPhan = await getLopHocPhanById(lopHocPhanId);
+      const hocPhanId = lopHocPhan.hocPhanId;
       const baiKiemTrasData = await getBaiKiemTrasByLopHocPhanId(lopHocPhanId);
       const [cLOsData] = await Promise.all([
         getCLOsByClassId(lopHocPhanId),

@@ -64,6 +64,7 @@ import {
 
 export default function BaiKiemTraPage() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const lopHocPhanIdParam = searchParams.get("lopHocPhanId");
   const [data, setData] = useState([]);
@@ -99,6 +100,7 @@ export default function BaiKiemTraPage() {
       data = [];
     } else {
       data = await getBaiKiemTrasByLopHocPhanId(lopHocPhanId);
+      data = await getBaiKiemTrasByLopHocPhanId(lopHocPhanId);
     }
     const maxId =
       data.length > 0 ? Math.max(...data.map((item) => item.id)) : 0;
@@ -106,6 +108,12 @@ export default function BaiKiemTraPage() {
     setMaxId(maxId);
   }, [lopHocPhanId]);
 
+  // Fetch LopHocPhan data only once when component mounts
+  useEffect(() => {
+    fetchLopHocPhanData();
+  }, [fetchLopHocPhanData]);
+
+  // Fetch BaiKiemTra data whenever lopHocPhanId changes
   useEffect(() => {
     fetchClassData();
     fetchExamData();
@@ -510,7 +518,26 @@ export default function BaiKiemTraPage() {
                                   header.column.columnDef.header,
                                   header.getContext()
                                 )}
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => {
+                        return (
+                          <TableHead className="px-2" key={header.id}>
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )}
                           </TableHead>
+                        );
+                      })}
+                    </TableRow>
+                  ))}
+                </TableHeader>
                         );
                       })}
                     </TableRow>

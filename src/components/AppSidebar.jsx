@@ -304,6 +304,7 @@ const teacherItems = [
     icon: LogOut,
   },
 ];
+];
 
 const studentItems = [
   {
@@ -454,3 +455,4 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+

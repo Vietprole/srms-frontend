@@ -15,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { ChevronsUpDown } from "lucide-react";
 import { addSinhVien, updateSinhVien } from "@/api/api-sinhvien";
-import { getAllKhoas } from "@/api/api-khoa";
+import { getAllFaculties } from "@/api/api-faculties";
 import { getAllNganhs } from "@/api/api-nganh";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -51,7 +51,7 @@ export function SinhVienForm({ sinhVien, handleAdd, handleEdit, setIsDialogOpen 
 
   useEffect(() => {
     const fetchData = async () => {
-      const comboBoxKhoaItems = await getAllKhoas();
+      const comboBoxKhoaItems = await getAllFaculties();
       const mappedComboBoxKhoaItems = comboBoxKhoaItems.map(khoa => ({ label: khoa.ten, value: khoa.id }));
       setComboBoxKhoaItems(mappedComboBoxKhoaItems);
       const comboBoxNganhItems = await getAllNganhs();
