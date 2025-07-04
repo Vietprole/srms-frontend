@@ -20,8 +20,9 @@ import {
 //   },
 // };
 
-export function PercentageChart({ chartData, chartConfig, dataKey }) {
+export function PercentageChart({ chartData, chartConfig, dataKey, passedTarget = 50 }) {
   console.log("chartData: ", chartData);
+  console.log("passedTarget: ", passedTarget);
   const yAxisTicks = Array.from({ length: 11 }, (_, i) => i * 10);
   return (
     <ChartContainer config={chartConfig} className="min-h-[150px] w-full max-w-[600px] mx-auto">
@@ -54,7 +55,7 @@ export function PercentageChart({ chartData, chartConfig, dataKey }) {
           barSize={40} // Reduce bar width (default is around 32)
         />
         <ReferenceLine
-          y={50}
+          y={passedTarget}
           stroke="#ff7300"
           strokeDasharray="3 3"
           label={{

@@ -7,7 +7,7 @@ export default function Layout({ children }) {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset className="p-1">
+      <SidebarInset className="p-1 overflow-hidden">
         <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
           <Header />
           <Box sx={{ flex: 1, overflow: 'hidden' }}>

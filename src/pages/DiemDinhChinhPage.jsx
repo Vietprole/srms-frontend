@@ -1,14 +1,14 @@
 import Layout from "./Layout";
-import DataTable from "@/components/DataTable";
+import CRUDDataTable from "@/components/CRUDDataTable";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getLopHocPhans } from "@/api/api-lophocphan";
+import { getFilteredClasses } from "@/api-new/api-class";
 import {
   getDiemDinhChinhs,
   // getAllDiemDinhChinhs,
   deleteDiemDinhChinh,
   acceptDiemDinhChinh,
-} from "@/api/api-diemdinhchinh";
+} from "@/api-new/api-diemdinhchinh";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,7 +30,7 @@ import { useState, useEffect, useCallback } from "react";
 import { ComboBox } from "@/components/ComboBox";
 import { useSearchParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { getRole, getGiangVienId } from "@/utils/storage";
+import { getRole, getTeacherId } from "@/utils/storage";
 import { useToast } from "@/hooks/use-toast";
 
 export default function DiemDinhChinhPage() {
@@ -43,21 +43,23 @@ export default function DiemDinhChinhPage() {
   const [comboBoxLopHocPhanId, setComboBoxLopHocPhanId] =
     useState(lophocphanIdParam);
   const role = getRole();
-  const giangVienId = getGiangVienId() === 0 ? null : getGiangVienId();
+  const giangVienId = getTeacherId() === 0 ? null : getTeacherId();
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
-    let dataLopHocPhan = await getLopHocPhans(null, null, null, null);
+    let dataLopHocPhan = await getFilteredClasses(null, null, null, null);
     if (giangVienId) {
-      dataLopHocPhan = await getLopHocPhans(null, null, giangVienId, null);
+      dataLopHocPhan = await getFilteredClasses(null, null, giangVienId, null);
     }
     // Map lophocphan items to be used in ComboBox
     const mappedComboBoxItems = dataLopHocPhan.map((lophocphan) => ({
-      label: lophocphan.ten,
+      label: `${lophocphan.code} - ${lophocphan.name}`,
       value: lophocphan.id,
     }));
     setLopHocPhanItems(mappedComboBoxItems);
+    console.log("giangVienId", giangVienId);
     const data = await getDiemDinhChinhs(lophocphanId, giangVienId);
+    console.log("data", data);
     setData(data);
   }, [giangVienId, lophocphanId]);
 
@@ -86,26 +88,37 @@ export default function DiemDinhChinhPage() {
       });
     }
     fetchData();
-  }
-  
+  };
+
   const formatDate = (date) => {
-    return date ? new Date(date).toLocaleDateString('vi-VN', {
-      timeZone: 'Asia/Ho_Chi_Minh',
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    }) : '';
-  }
+    return date
+      ? new Date(date).toLocaleDateString("vi-VN", {
+          timeZone: "Asia/Ho_Chi_Minh",
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        })
+      : "";
+  };
 
   // function that compare date to today and return the result
   const isDatePassed = (dateString) => {
+    if (!dateString) return true;
+
+    // Convert both to UTC for proper comparison
     const today = new Date();
-    const date = new Date(dateString);
+
+    // Force interpretation in UTC
+    const date = new Date(dateString + "Z"); // Adding Z forces UTC interpretation
+
+    console.log("Deadline (local):", date.toLocaleString());
+    console.log("Today (local):", today.toLocaleString());
+
     return date.getTime() < today.getTime();
-  }
+  };
 
   const createDiemDinhChinhColumns = (handleEdit, handleDelete) => {
     const baseColumns = [
@@ -116,7 +129,45 @@ export default function DiemDinhChinhPage() {
         enableSorting: false,
       },
       {
-        accessorKey: "maSinhVien",
+        accessorKey: "classCode",
+        header: ({ column }) => {
+          return (
+            <Button
+              variant="ghost"
+              onClick={() =>
+                column.toggleSorting(column.getIsSorted() === "asc")
+              }
+            >
+              Mã Lớp Học Phần
+              <ArrowUpDown />
+            </Button>
+          );
+        },
+        cell: ({ row }) => (
+          <div className="px-4 py-2">{row.getValue("classCode")}</div>
+        ),
+      },
+      {
+        accessorKey: "className",
+        header: ({ column }) => {
+          return (
+            <Button
+              variant="ghost"
+              onClick={() =>
+                column.toggleSorting(column.getIsSorted() === "asc")
+              }
+            >
+              Tên Lớp Học Phần
+              <ArrowUpDown />
+            </Button>
+          );
+        },
+        cell: ({ row }) => (
+          <div className="px-4 py-2">{row.getValue("className")}</div>
+        ),
+      },
+      {
+        accessorKey: "studentCode",
         header: ({ column }) => {
           return (
             <Button
@@ -131,11 +182,11 @@ export default function DiemDinhChinhPage() {
           );
         },
         cell: ({ row }) => (
-          <div className="px-4 py-2">{row.getValue("maSinhVien")}</div>
+          <div className="px-4 py-2">{row.getValue("studentCode")}</div>
         ),
       },
       {
-        accessorKey: "tenSinhVien",
+        accessorKey: "studentName",
         header: ({ column }) => {
           return (
             <Button
@@ -150,11 +201,11 @@ export default function DiemDinhChinhPage() {
           );
         },
         cell: ({ row }) => (
-          <div className="px-4 py-2">{row.getValue("tenSinhVien")}</div>
+          <div className="px-4 py-2">{row.getValue("studentName")}</div>
         ),
       },
       {
-        accessorKey: "loaiBaiKiemTra",
+        accessorKey: "examType",
         header: ({ column }) => {
           return (
             <Button
@@ -169,11 +220,11 @@ export default function DiemDinhChinhPage() {
           );
         },
         cell: ({ row }) => (
-          <div className="px-4 py-2">{row.getValue("loaiBaiKiemTra")}</div>
+          <div className="px-4 py-2">{row.getValue("examType")}</div>
         ),
       },
       {
-        accessorKey: "tenCauHoi",
+        accessorKey: "questionName",
         header: ({ column }) => {
           return (
             <Button
@@ -188,11 +239,11 @@ export default function DiemDinhChinhPage() {
           );
         },
         cell: ({ row }) => (
-          <div className="px-4 py-2">{row.getValue("tenCauHoi")}</div>
+          <div className="px-4 py-2">{row.getValue("questionName")}</div>
         ),
       },
       {
-        accessorKey: "diemCu",
+        accessorKey: "oldScore",
         header: ({ column }) => {
           return (
             <Button
@@ -207,14 +258,17 @@ export default function DiemDinhChinhPage() {
           );
         },
         cell: ({ row }) => {
-          if (row.getValue("diemCu") === null || row.getValue("diemCu") === -1) {
+          if (
+            row.getValue("oldScore") === null ||
+            row.getValue("oldScore") === -1
+          ) {
             return <div className="px-4 py-2">Chưa nhập</div>;
           }
-          return <div className="px-4 py-2">{row.getValue("diemCu")}</div>;
+          return <div className="px-4 py-2">{row.getValue("oldScore")}</div>;
         },
       },
       {
-        accessorKey: "diemMoi",
+        accessorKey: "newScore",
         header: ({ column }) => {
           return (
             <Button
@@ -229,7 +283,45 @@ export default function DiemDinhChinhPage() {
           );
         },
         cell: ({ row }) => (
-          <div className="px-4 py-2">{row.getValue("diemMoi")}</div>
+          <div className="px-4 py-2">{row.getValue("newScore")}</div>
+        ),
+      },
+      {
+        accessorKey: "oldTotalScore",
+        header: ({ column }) => {
+          return (
+            <Button
+              variant="ghost"
+              onClick={() =>
+                column.toggleSorting(column.getIsSorted() === "asc")
+              }
+            >
+              Điểm Tổng Cũ
+              <ArrowUpDown />
+            </Button>
+          );
+        },
+        cell: ({ row }) => (
+          <div className="px-4 py-2">{row.getValue("oldTotalScore")}</div>
+        ),
+      },
+      {
+        accessorKey: "newTotalScore",
+        header: ({ column }) => {
+          return (
+            <Button
+              variant="ghost"
+              onClick={() =>
+                column.toggleSorting(column.getIsSorted() === "asc")
+              }
+            >
+              Điểm Tổng Mới
+              <ArrowUpDown />
+            </Button>
+          );
+        },
+        cell: ({ row }) => (
+          <div className="px-4 py-2">{row.getValue("newTotalScore")}</div>
         ),
       },
     ];
@@ -239,7 +331,7 @@ export default function DiemDinhChinhPage() {
         enableHiding: false,
         cell: ({ row }) => {
           const item = row.original;
-          if (isDatePassed(item.hanDinhChinh)) {
+          if (isDatePassed(item.scoreCorrectionDeadline)) {
             return <div className="px-4 py-2">Hết hạn đính chính</div>;
           }
           return (
@@ -300,10 +392,10 @@ export default function DiemDinhChinhPage() {
           );
         },
       },
-    ]
+    ];
     const adminColumns = [
       {
-        accessorKey: "thoiDiemMo",
+        accessorKey: "openAt",
         header: ({ column }) => {
           return (
             <Button
@@ -318,12 +410,12 @@ export default function DiemDinhChinhPage() {
           );
         },
         cell: ({ row }) => {
-          const date = formatDate(row.getValue("thoiDiemMo"));
+          const date = formatDate(row.getValue("openAt"));
           return <div className="px-4 py-2">{date}</div>;
         },
       },
       {
-        accessorKey: "tenGiangVien",
+        accessorKey: "teacherName",
         header: ({ column }) => {
           return (
             <Button
@@ -338,11 +430,11 @@ export default function DiemDinhChinhPage() {
           );
         },
         cell: ({ row }) => (
-          <div className="px-4 py-2">{row.getValue("tenGiangVien")}</div>
+          <div className="px-4 py-2">{row.getValue("teacherName")}</div>
         ),
       },
       {
-        accessorKey: "thoiDiemDuyet",
+        accessorKey: "approveAt",
         header: ({ column }) => {
           return (
             <Button
@@ -357,12 +449,12 @@ export default function DiemDinhChinhPage() {
           );
         },
         cell: ({ row }) => {
-          const date = formatDate(row.getValue("thoiDiemDuyet"));
+          const date = formatDate(row.getValue("approveAt"));
           return <div className="px-4 py-2">{date}</div>;
         },
       },
       {
-        accessorKey: "tenNguoiDuyet",
+        accessorKey: "approveByUserName",
         header: ({ column }) => {
           return (
             <Button
@@ -377,7 +469,7 @@ export default function DiemDinhChinhPage() {
           );
         },
         cell: ({ row }) => (
-          <div className="px-4 py-2">{row.getValue("tenNguoiDuyet")}</div>
+          <div className="px-4 py-2">{row.getValue("approveByUserName")}</div>
         ),
       },
       {
@@ -409,7 +501,10 @@ export default function DiemDinhChinhPage() {
                         Điểm Đính Chính sẽ trở thành Điểm Chính Thức
                       </DialogDescription>
                     </DialogHeader>
-                    <p>Điểm Đính Chính đã duyệt sẽ trở thành Điểm Chính Thức, bạn có chắc muốn duyệt Điểm Đính Chính này?</p>
+                    <p>
+                      Điểm Đính Chính đã duyệt sẽ trở thành Điểm Chính Thức, bạn
+                      có chắc muốn duyệt Điểm Đính Chính này?
+                    </p>
                     <DialogFooter>
                       <Button
                         type="submit"
@@ -425,16 +520,16 @@ export default function DiemDinhChinhPage() {
           );
         },
       },
-    ]
-    if (role === "GiangVien") return [...baseColumns, ...giangVienColumns];
+    ];
+    if (role === "Teacher") return [...baseColumns, ...giangVienColumns];
     if (role === "Admin") return [...baseColumns, ...adminColumns];
-    if (role === "PhongDaoTao") return [...baseColumns, ...adminColumns];
+    if (role === "AcademicAffairs") return [...baseColumns, ...adminColumns];
     return baseColumns;
   };
 
   return (
     <Layout>
-      <div className="w-full">
+      <div className="overflow-x-auto">
         <div className="flex">
           <ComboBox
             items={lophocphanItems}
@@ -444,17 +539,19 @@ export default function DiemDinhChinhPage() {
           />
           <Button onClick={handleGoClick}>Go</Button>
         </div>
-        <DataTable
-          entity="DiemDinhChinh"
-          createColumns={createDiemDinhChinhColumns}
-          data={data}
-          setData={setData}
-          fetchData={fetchData}
-          deleteItem={deleteDiemDinhChinh}
-          columnToBeFiltered={"tenSinhVien"}
-          ItemForm={DiemDinhChinhForm}
-          hasCreateButton={false}
-        />
+        <div className="">
+          <CRUDDataTable
+            entity="DiemDinhChinh"
+            createColumns={createDiemDinhChinhColumns}
+            data={data}
+            setData={setData}
+            fetchData={fetchData}
+            deleteItem={deleteDiemDinhChinh}
+            columnToBeFiltered={"studentName"}
+            ItemForm={DiemDinhChinhForm}
+            hasCreateButton={false}
+          />
+        </div>
       </div>
     </Layout>
   );

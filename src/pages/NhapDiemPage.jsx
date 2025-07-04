@@ -2,13 +2,18 @@ import { useEffect, useState } from "react";
 import { useOutlet, useNavigate } from "react-router-dom";
 import Layout from "./Layout";
 import { getAllClasses, getFilteredClasses } from "../api-new/api-class";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 // import DefaultComponent from "./nhapdiem/DefaultComponent";
 import { getRole, getTeacherId } from "@/utils/storage";
 import { useParams } from "react-router-dom";
-import {ComboBox} from "@/components/ComboBox";
+import { ComboBox } from "@/components/ComboBox";
 import { useLocation } from "react-router-dom";
 
 const routes = [
@@ -25,7 +30,7 @@ const routes = [
   //   value: "tao-clo",
   // },
   // {
-  //   label: "Nối PI - CLO",
+  //   label: "Nối PLO - CLO",
   //   value: "noi-plo-clo",
   // },
   {
@@ -47,10 +52,17 @@ export default function NhapDiemPage() {
   const location = useLocation();
   const currentPath = location.pathname;
   const [lopHocPhans, setLopHocPhans] = useState([]);
-  const [itemId, setItemId] = useState(currentPath !== "/nhapdiem" ? currentPath.split("/")[3] : null);
-  console.log("currentPath", currentPath.split("/")[3], currentPath !== "/nhapdiem" ? currentPath : null)
+  const [itemId, setItemId] = useState(
+    currentPath !== "/nhapdiem" ? currentPath.split("/")[3] : null
+  );
+  console.log(
+    "currentPath",
+    currentPath.split("/")[3],
+    currentPath !== "/nhapdiem" ? currentPath : null
+  );
   const [lopHocPhanId, setLopHocPhanId] = useState(lopHocPhanIdParam || null);
-  const [comboBoxLopHocPhanId, setComboBoxLopHocPhanId] = useState(lopHocPhanIdParam);
+  const [comboBoxLopHocPhanId, setComboBoxLopHocPhanId] =
+    useState(lopHocPhanIdParam);
   const [comboBoxItemId, setComboBoxItemId] = useState(null);
   const [items, setItems] = useState(routes);
   const navigate = useNavigate();
@@ -63,12 +75,18 @@ export default function NhapDiemPage() {
     const fetchLopHocPhans = async () => {
       if (role === "Teacher" && giangVienId != 0) {
         const data = await getFilteredClasses(null, null, giangVienId, null);
-        const mappedComboBoxItems = data.map(lopHocPhan => ({ label: `${lopHocPhan.code} - ${lopHocPhan.name}`, value: lopHocPhan.id }));
+        const mappedComboBoxItems = data.map((lopHocPhan) => ({
+          label: `${lopHocPhan.code} - ${lopHocPhan.name}`,
+          value: lopHocPhan.id,
+        }));
         setLopHocPhans(mappedComboBoxItems);
         return;
       }
       const data = await getAllClasses();
-      const mappedComboBoxItems = data.map(lopHocPhan => ({ label: `${lopHocPhan.code} - ${lopHocPhan.name}`, value: lopHocPhan.id }));
+      const mappedComboBoxItems = data.map((lopHocPhan) => ({
+        label: `${lopHocPhan.code} - ${lopHocPhan.name}`,
+        value: lopHocPhan.id,
+      }));
       setLopHocPhans(mappedComboBoxItems);
     };
 
@@ -78,7 +96,7 @@ export default function NhapDiemPage() {
   const handleRoute = () => {
     // setLopHocPhanId(comboBoxLopHocPhanId);
     // console.log("comboBoxLopHocPhanId", comboBoxLopHocPhanId);
-    console.log(`/nhapdiem/${lopHocPhanId}/${itemId}`)
+    console.log(`/nhapdiem/${lopHocPhanId}/${itemId}`);
     if (lopHocPhanId && itemId) {
       navigate(`/nhapdiem/${lopHocPhanId}/${itemId}`);
     }
@@ -88,36 +106,38 @@ export default function NhapDiemPage() {
 
   return (
     <Layout>
-      <div className="flex space-x-4">
-        <div>
-          <h2>Chọn lớp học phần: </h2>
-          <ComboBox 
-            items={lopHocPhans} 
-            setItemId={setLopHocPhanId} 
-            initialItemId={lopHocPhanId} 
-            placeholder="Chọn lớp học phần"
-            width="600px"
-          />
-        </div>
-        <div>
-          <h2>Chọn hành động: </h2>
-          <ComboBox 
-            items={items} 
-            setItemId={setItemId} 
-            initialItemId={itemId} 
-            placeholder="Tên hành động"
-            width="200px"
-            height="185px"
-          />
-        </div>
+      <div className="overflow-y-auto h-full">
+        <div className="flex space-x-4">
+          <div>
+            <h2>Chọn lớp học phần: </h2>
+            <ComboBox
+              items={lopHocPhans}
+              setItemId={setLopHocPhanId}
+              initialItemId={lopHocPhanId}
+              placeholder="Chọn lớp học phần"
+              width="600px"
+            />
+          </div>
+          <div>
+            <h2>Chọn hành động: </h2>
+            <ComboBox
+              items={items}
+              setItemId={setItemId}
+              initialItemId={itemId}
+              placeholder="Tên hành động"
+              width="200px"
+              height="185px"
+            />
+          </div>
 
-        <div className="flex items-end">
-          <Button onClick={handleRoute} disabled={!itemId}>
-            Go
-          </Button>
+          <div className="flex items-end">
+            <Button onClick={handleRoute} disabled={!itemId}>
+              Go
+            </Button>
+          </div>
         </div>
+        {outlet}
       </div>
-      {outlet}
     </Layout>
   );
 }
