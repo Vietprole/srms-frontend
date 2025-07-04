@@ -79,7 +79,7 @@ export default function QuanLyCauHoi() {
   const [rowSelection, setRowSelection] = useState({});
   const [maxId, setMaxId] = useState(0);
   const columnToBeFiltered = "name";
-  const entity = "Câu Hỏi";
+  const entity = "Bài/câu hỏi đánh giá";
   const ItemForm = CauHoiForm;
 
   const fetchData = useCallback(async () => {
@@ -117,26 +117,26 @@ export default function QuanLyCauHoi() {
     setMaxId(maxId + 1);
     console.log("maxId 96 ", maxId);
     setData([...data, newItem]);
-    toast.success("Tạo câu hỏi thành công");
+    toast.success("Tạo bài/câu hỏi đánh giá thành công");
   };
 
   const handleEdit = (editedItem) => {
     setData(
       data.map((item) => (item.id === editedItem.id ? editedItem : item))
     );
-    toast.success("Sửa câu hỏi thành công");
+    toast.success("Sửa bài/câu hỏi đánh giá thành công");
   };
 
   const handleDelete = async (itemId) => {
     setData(data.filter((item) => item.id !== itemId));
-    toast.success("Xoá câu hỏi thành công");
+    toast.success("Xoá bài/câu hỏi đánh giá thành công");
   };
 
   const handleSave = async () => {
     const tens = data.map((item) => item.name);
     const uniqueTens = new Set(tens);
     if (tens.length !== uniqueTens.size) {
-      toast.error("Không được trùng tên câu hỏi");
+      toast.error("Không được trùng tên bài/câu hỏi đánh giá");
       return;
     }
 
@@ -149,7 +149,7 @@ export default function QuanLyCauHoi() {
     console.log("sum - 10 = ", sum - 10);
     if (Math.abs(sum - 10) > 0.0001) {
       console.log("toast here");
-      toast.error("Tổng trọng số phải bằng 10");
+      toast.error("Tổng điểm bài/câu hỏi đánh giá (thang 10) phải bằng 10");
       return;
     }
 
@@ -159,7 +159,7 @@ export default function QuanLyCauHoi() {
       await fetchData();
       return;
     }
-    // toast.success("Danh sách câu hỏi đã được lưu");
+    // toast.success("Danh sách bài/câu hỏi đánh giá đã được lưu");
     await fetchData();
   };
 
@@ -204,7 +204,7 @@ export default function QuanLyCauHoi() {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Trọng Số
+            Điểm bài/câu hỏi đánh giá (thang 10)
             <ArrowUpDown />
           </Button>
         );
@@ -221,7 +221,7 @@ export default function QuanLyCauHoi() {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Thang Điểm
+            Điểm tối đa của bài/câu hỏi đánh giá
             <ArrowUpDown />
           </Button>
         );
@@ -249,13 +249,13 @@ export default function QuanLyCauHoi() {
               <Dialog>
                 <DialogTrigger asChild>
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                    Sửa Câu Hỏi
+                    Sửa Bài/câu hỏi đánh giá
                   </DropdownMenuItem>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>Sửa câu hỏi</DialogTitle>
-                    <DialogDescription>Sửa câu hỏi hiện tại</DialogDescription>
+                    <DialogTitle>Sửa bài/câu hỏi đánh giá</DialogTitle>
+                    <DialogDescription>Sửa bài/câu hỏi đánh giá hiện tại</DialogDescription>
                   </DialogHeader>
                   <CauHoiForm cauHoi={item} handleEdit={handleEdit} />
                 </DialogContent>
@@ -263,15 +263,15 @@ export default function QuanLyCauHoi() {
               <Dialog>
                 <DialogTrigger asChild>
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                    Xóa Câu Hỏi
+                    Xóa Bài/câu hỏi đánh giá
                   </DropdownMenuItem>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>Xóa câu hỏi</DialogTitle>
-                    <DialogDescription>Xóa câu hỏi hiện tại</DialogDescription>
+                    <DialogTitle>Xóa bài/câu hỏi đánh giá</DialogTitle>
+                    <DialogDescription>Xóa bài/câu hỏi đánh giá hiện tại</DialogDescription>
                   </DialogHeader>
-                  <p>Bạn có chắc muốn xóa câu hỏi này?</p>
+                  <p>Bạn có chắc muốn xóa bài/câu hỏi đánh giá này?</p>
                   <DialogFooter>
                     <Button type="submit" onClick={() => handleDelete(item.id)}>
                       Xóa
@@ -314,7 +314,7 @@ export default function QuanLyCauHoi() {
           items={baiKiemTraItems}
           setItemId={setComboBoxExamId}
           initialItemId={comboBoxExamId}
-          placeholder="Chọn bài kiểm tra"
+          placeholder="Chọn thành phần đánh giá"
         />
         <Button onClick={handleGoClick}>Go</Button>
       </div>
@@ -383,7 +383,7 @@ export default function QuanLyCauHoi() {
                 </DialogContent>
               </Dialog>
               <Button disabled={!lopHocPhanId || !examId} onClick={handleSave}>
-                Lưu Câu Hỏi
+                Lưu Bài/câu hỏi đánh giá
               </Button>
             </div>
           </div>

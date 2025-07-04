@@ -11,7 +11,7 @@ const getAuthHeader = () => ({
 });
 
 /**
- * Lấy danh sách bài kiểm tra, có thể lọc theo classId
+ * Lấy danh sách thành phần đánh giá, có thể lọc theo classId
  * @param {number} classId 
  */
 export const getExams = async (classId) => {
@@ -21,12 +21,12 @@ export const getExams = async (classId) => {
     return response.data;
   } catch (error) {
     console.error("getExams error:", error);
-    throw new Error(error.response?.data || "Lỗi khi lấy danh sách bài kiểm tra");
+    throw new Error(error.response?.data || "Lỗi khi lấy danh sách thành phần đánh giá");
   }
 };
 
 /**
- * Lấy thông tin chi tiết bài kiểm tra theo id
+ * Lấy thông tin chi tiết thành phần đánh giá theo id
  * @param {number} id 
  */
 export const getExamById = async (id) => {
@@ -35,12 +35,12 @@ export const getExamById = async (id) => {
     return response.data;
   } catch (error) {
     console.error("getExamById error:", error);
-    throw new Error(error.response?.data || "Không tìm thấy bài kiểm tra");
+    throw new Error(error.response?.data || "Không tìm thấy thành phần đánh giá");
   }
 };
 
 /**
- * Tạo mới bài kiểm tra
+ * Tạo mới thành phần đánh giá
  * @param {CreateExamDTO} examData 
  */
 export const createExam = async (examData) => {
@@ -49,12 +49,12 @@ export const createExam = async (examData) => {
     return response.data;
   } catch (error) {
     console.error("createExam error:", error);
-    throw new Error(error.response?.data || "Lỗi khi tạo bài kiểm tra");
+    throw new Error(error.response?.data || "Lỗi khi tạo thành phần đánh giá");
   }
 };
 
 /**
- * Cập nhật bài kiểm tra
+ * Cập nhật thành phần đánh giá
  * @param {number} id 
  * @param {UpdateExamDTO} examData 
  */
@@ -64,12 +64,12 @@ export const updateExam = async (id, examData) => {
     return response.data;
   } catch (error) {
     console.error("updateExam error:", error);
-    throw new Error(error.response?.data || "Lỗi khi cập nhật bài kiểm tra");
+    throw new Error(error.response?.data || "Lỗi khi cập nhật thành phần đánh giá");
   }
 };
 
 /**
- * Xoá bài kiểm tra
+ * Xoá thành phần đánh giá
  * @param {number} id 
  */
 export const deleteExam = async (id) => {
@@ -77,12 +77,12 @@ export const deleteExam = async (id) => {
     await axios.delete(`${API_EXAMS}/${id}`, getAuthHeader());
   } catch (error) {
     console.error("deleteExam error:", error);
-    throw new Error(error.response?.data || "Lỗi khi xoá bài kiểm tra");
+    throw new Error(error.response?.data || "Lỗi khi xoá thành phần đánh giá");
   }
 };
 
 /**
- * Cập nhật danh sách câu hỏi cho bài kiểm tra
+ * Cập nhật danh sách bài/câu hỏi đánh giá cho thành phần đánh giá
  * @param {number} id 
  * @param {CreateQuestionDTO[]} questions 
  */
@@ -92,6 +92,6 @@ export const updateExamQuestions = async (id, questions) => {
     return response.data;
   } catch (error) {
     console.error("updateExamQuestions error:", error);
-    throw new Error(error.response?.data || "Lỗi khi cập nhật câu hỏi");
+    throw new Error(error.response?.data || "Lỗi khi cập nhật bài/câu hỏi đánh giá");
   }
 };

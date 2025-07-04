@@ -231,6 +231,8 @@ export default function XetChuanDauRaPage() {
     fetchProgrammeData();
   }, [nganhId, useTemporaryScore, studentId]);
 
+  console.log("nganhId: ", nganhId);
+
   React.useEffect(() => {
     const fetchChartData = async () => {
       const chartData = await getPLOPassedPercentages(
@@ -366,7 +368,7 @@ export default function XetChuanDauRaPage() {
   return (
     <Layout>
       <div className="overflow-y-auto h-full">
-        <h1>Tính điểm đạt chuẩn đầu ra của Ngành của Sinh Viên</h1>
+        <h1>Tính điểm đạt chuẩn đầu ra của CTĐT của Sinh Viên</h1>
         <div className="flex gap-1">
           <ComboBox
             items={comboBoxItems}

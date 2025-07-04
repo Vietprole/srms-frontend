@@ -129,13 +129,13 @@ function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
     try {
       const nganhData = await getNganhsByKhoaId(nganh.khoaId);
   
-      // ⚠️ Bỏ ngành hiện tại (nganh.id) khỏi danh sách
+      // ⚠️ Bỏ ctđt hiện tại (nganh.id) khỏi danh sách
       const filtered = nganhData.filter((item) => item.id !== nganh.id);
   
       setNganhList(filtered);
     } catch (error) {
-      console.error("Lỗi khi lấy danh sách ngành:", error);
-      setSnackbarMessage("Lỗi khi lấy danh sách ngành.");
+      console.error("Lỗi khi lấy danh sách ctđt:", error);
+      setSnackbarMessage("Lỗi khi lấy danh sách ctđt.");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     }
@@ -168,7 +168,7 @@ function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
       setNganh(nganhData);
       setHocPhanList(hocPhans);
     } catch (error) {
-      console.error("Lỗi khi load dữ liệu học phần/ngành:", error);
+      console.error("Lỗi khi load dữ liệu học phần/ctđt:", error);
     } finally {
       setLoading(false);
     }
@@ -269,7 +269,7 @@ function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
   };
   // const handleSaveAddByNganh = async () => {
   //   if (!selectedNganh || !selectedNganh.id) {
-  //     setSnackbarMessage("Vui lòng chọn ngành để lấy học phần.");
+  //     setSnackbarMessage("Vui lòng chọn ctđt để lấy học phần.");
   //     setSnackbarSeverity("warning");
   //     setOpenSnackbar(true);
   //     return;
@@ -279,10 +279,10 @@ function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
   //     setLoading(true);
   //     const hocPhansFromNganh = await getHocPhansByNganhId(selectedNganh.id);
   
-  //     // Lấy danh sách id học phần từ ngành khác
+  //     // Lấy danh sách id học phần từ ctđt khác
   //     const idsFromNganh = hocPhansFromNganh.map((hp) => hp.id);
   
-  //     // Lọc ra những ID học phần từ ngành khác có tồn tại trong bảng hiện tại
+  //     // Lọc ra những ID học phần từ ctđt khác có tồn tại trong bảng hiện tại
   //     const validIds = hocPhanList
   //       .filter((hp) => idsFromNganh.includes(hp.id))
   //       .map((hp) => hp.id);
@@ -293,12 +293,12 @@ function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
   //     setSelectedHocPhan(merged);
   //     handleCloseDialog(); // Đóng dialog sau khi lấy học phần
       
-  //     setSnackbarMessage("Đã thêm học phần từ ngành khác.");
+  //     setSnackbarMessage("Đã thêm học phần từ ctđt khác.");
   //     setSnackbarSeverity("success");
   //     setOpenSnackbar(true);
   //   } catch (error) {
-  //     console.error("Lỗi khi lấy học phần từ ngành khác:", error);
-  //     setSnackbarMessage("Lỗi khi lấy học phần từ ngành khác.");
+  //     console.error("Lỗi khi lấy học phần từ ctđt khác:", error);
+  //     setSnackbarMessage("Lỗi khi lấy học phần từ ctđt khác.");
   //     setSnackbarSeverity("error");
   //     setOpenSnackbar(true);
   //   } finally {
@@ -307,7 +307,7 @@ function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
   // };
   const handleSaveAddByNganh = async () => {
     if (!selectedNganh || !selectedNganh.id) {
-      setSnackbarMessage("Vui lòng chọn đầy đủ ngành.");
+      setSnackbarMessage("Vui lòng chọn đầy đủ ctđt.");
       setSnackbarSeverity("warning");
       setOpenSnackbar(true);
       return;
@@ -318,11 +318,11 @@ function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
       const response = await copyNganhStructure(nganhId, selectedNganh.id);
   
       if (response?.status === 200) {
-        setSnackbarMessage("Đã sao chép học phần từ ngành khác.");
+        setSnackbarMessage("Đã sao chép học phần từ ctđt khác.");
         setSnackbarSeverity("success");
         setOpenSnackbar(true);
   
-        // Đóng cả dialog chọn ngành và dialog tổng
+        // Đóng cả dialog chọn ctđt và dialog tổng
         handleCloseDialog(); 
         handleClose();         // 👉 Thêm dòng này để đóng dialog tổng
       } else {
@@ -333,7 +333,7 @@ function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
       }
     } catch (error) {
       console.error("Lỗi khi sao chép học phần:", error);
-      setSnackbarMessage(error.message || "Lỗi khi sao chép học phần từ ngành khác.");
+      setSnackbarMessage(error.message || "Lỗi khi sao chép học phần từ ctđt khác.");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     } finally {
@@ -347,7 +347,7 @@ function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
   return (
     <Dialog maxWidth="lg" fullWidth open={open} onClose={handleClose}>
       <DialogTitle fontSize={"18px"} fontWeight={"bold"}>
-        Thêm học phần vào ngành:
+        Thêm học phần vào ctđt:
         <Typography component="span" color="info.main" fontWeight="bold">
           {nganh ? ` ${nganh.ten}` : " Đang tải..."}
         </Typography>
@@ -421,7 +421,7 @@ function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
                     value={selectedNganh}
                     onChange={(event, newValue) => setSelectedNganh(newValue)}
                     getOptionLabel={(option) => `${option.maNganh} - ${option.ten}`}
-                    label="Chọn ngành"
+                    label="Chọn ctđt"
                     noOptionsText="Không tìm thấy"
                     variant="outlined"
                     size="small"

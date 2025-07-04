@@ -498,7 +498,7 @@ export default function SinhVienPage() {
     />
   </Box>
 
-  {/* Dropdown chọn Ngành */}
+  {/* Dropdown chọn CTĐT */}
   {selectedKhoa && (
     <Box sx={{ width: "22%", height: 40 }}>
       <Autocomplete
@@ -511,7 +511,7 @@ export default function SinhVienPage() {
           filterData(selectedKhoa, newValue);
         }}
         renderInput={(params) => (
-          <TextField {...params} label="Chọn Ngành" size="small" />
+          <TextField {...params} label="Chọn CTĐT" size="small" />
         )}
       />
     </Box>
@@ -557,7 +557,7 @@ export default function SinhVienPage() {
                   <StyledTableCell align="center">Mã sinh viên</StyledTableCell>
                   <StyledTableCell align="center">Tên sinh viên</StyledTableCell>
                   <StyledTableCell align="center">Khoa</StyledTableCell>
-                  <StyledTableCell align="center">Ngành</StyledTableCell>
+                  <StyledTableCell align="center">CTĐT</StyledTableCell>
                   <StyledTableCell align="center">Năm nhập học</StyledTableCell>
                   {(role === "Admin" || role === "PhongDaoTao") && (
                     <StyledTableCell align="center">Thao tác</StyledTableCell>
@@ -718,11 +718,11 @@ export default function SinhVienPage() {
                 renderInput={(params) => (
                   <TextField 
                     {...params} 
-                    label="Chọn ngành" 
+                    label="Chọn ctđt" 
                     variant="standard"
                     margin="dense"
                     required
-                    helperText="Ngành sinh viên nhập học"
+                    helperText="CTĐT sinh viên nhập học"
                   />
                 )}
               />
@@ -792,11 +792,11 @@ export default function SinhVienPage() {
                 renderInput={(params) => (
                   <TextField 
                     {...params} 
-                    label="Chọn ngành" 
+                    label="Chọn ctđt" 
                     variant="standard"
                     margin="dense"
                     required
-                    helperText="Ngành sinh viên nhập học"
+                    helperText="CTĐT sinh viên nhập học"
                   />
                 )}
               />

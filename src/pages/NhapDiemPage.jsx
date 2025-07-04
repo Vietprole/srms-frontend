@@ -19,7 +19,7 @@ import { useLocation } from "react-router-dom";
 const routes = [
   {
     value: "quan-ly-cau-hoi",
-    label: "Quản lý Câu hỏi",
+    label: "Quản lý Bài/câu hỏi đánh giá",
   },
   {
     label: "Bảng Điểm",
@@ -34,7 +34,7 @@ const routes = [
   //   value: "noi-plo-clo",
   // },
   {
-    label: "Nối Câu Hỏi - CLO",
+    label: "Nối Bài/câu hỏi đánh giá - CLO",
     value: "noi-cau-hoi-clo",
   },
   {
@@ -125,7 +125,7 @@ export default function NhapDiemPage() {
               setItemId={setItemId}
               initialItemId={itemId}
               placeholder="Tên hành động"
-              width="200px"
+              width="300px"
               height="185px"
             />
           </div>

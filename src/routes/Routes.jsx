@@ -57,7 +57,7 @@ const routes = [
     element: <NganhPage />,
   },
   {
-    path: "/ctdt",
+    path: "/programme",
     element: <CTDTPage />,
   },
   {
@@ -77,7 +77,7 @@ const routes = [
     element: <PLOPage />,
   },
   {
-    path: "/mapcloplo",
+    path: "/mapploclo",
     element: <NoiCLOPLO />,
   },
   {
@@ -93,7 +93,15 @@ const routes = [
     element: <NhapDiemPage />,
     children: [
       { path: ":lopHocPhanId/quan-ly-cau-hoi", element: <QuanLyCauHoi /> },
-      { path: ":lopHocPhanId/bang-diem", element: <RoleBasedRoute giangVienElement={<BangDiemGiangVienPage />} defaultElement={<BangDiem/>} /> },
+      {
+        path: ":lopHocPhanId/bang-diem",
+        element: (
+          <RoleBasedRoute
+            giangVienElement={<BangDiemGiangVienPage />}
+            defaultElement={<BangDiem />}
+          />
+        ),
+      },
       { path: ":lopHocPhanId/tao-clo", element: <TaoCLO /> },
       { path: ":lopHocPhanId/noi-plo-clo", element: <NoiCLOPLO /> },
       { path: ":lopHocPhanId/noi-cau-hoi-clo", element: <NoiCauHoiCLO /> },
@@ -105,12 +113,14 @@ const routes = [
   },
   {
     path: "/chuandaura",
-    children: [
-      { path: "quan-ly-clo", element: <QuanLyCLO /> },
-    ],
+    children: [{ path: "quan-ly-clo", element: <QuanLyCLO /> }],
   },
   {
-    path: "/hocki",
+    path: "/clo",
+    element: <QuanLyCLO />,
+  },
+  {
+    path: "/semester",
     element: <HocKiPage />,
   },
   {
@@ -144,12 +154,12 @@ const routes = [
   {
     path: "/test",
     element: <TestPage />,
-  },  
+  },
   {
     path: "/lophocphan/:courseId/sinhvien",
     element: <StudentInCoursePage />,
   },
-]
+];
 const router = createBrowserRouter(routes, {
   future: {
     v7_fetcherPersist: true,
@@ -157,6 +167,6 @@ const router = createBrowserRouter(routes, {
     v7_partialHydration: true,
     v7_relativeSplatPath: true,
     v7_skipActionErrorRevalidation: true,
-  }
+  },
 });
 export default router;

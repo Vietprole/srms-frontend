@@ -125,7 +125,7 @@ const createColumns = (PIs, diemDat) => [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Trọng số
+          Điểm bài/câu hỏi đánh giá (thang 10)
           <ArrowUpDown />
         </Button>
       );

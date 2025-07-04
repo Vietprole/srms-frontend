@@ -170,7 +170,7 @@ function DialogHocPhanCLO({ nganhId, open, onClose }) {
       setFilteredData(hocphans);
       setNganh(nganhs);
     } catch (error) {
-      console.error("Lỗi khi lấy dữ liệu ngành:", error);
+      console.error("Lỗi khi lấy dữ liệu ctđt:", error);
     }
   };
 
@@ -245,7 +245,7 @@ function DialogHocPhanCLO({ nganhId, open, onClose }) {
       }}
     >
       <DialogTitle fontSize={"18px"} fontWeight={"bold"}>
-        Danh sách học phần thuộc ngành:  
+        Danh sách học phần thuộc ctđt:  
         <Typography component="span" color="info.main" fontWeight="bold">
           {nganh ? ` ${nganh.ten}` : " Đang tải..."}
         </Typography>
@@ -341,7 +341,7 @@ function DialogHocPhanCLO({ nganhId, open, onClose }) {
           {filteredData.length === 0 ? (
             <TableRow>
               <StyledTableCell colSpan={7} align="center">
-                Chưa có học phần được thêm vào ngành
+                Chưa có học phần được thêm vào ctđt
               </StyledTableCell>
             </TableRow>
           ) : (

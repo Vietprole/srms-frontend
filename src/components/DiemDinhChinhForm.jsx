@@ -66,8 +66,8 @@ export function DiemDinhChinhForm({ diemDinhChinh, handleAdd, handleEdit, setIsD
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <div>Trọng số: {diemDinhChinh.trongSo}</div>
-        <div>Thang điểm: {diemDinhChinh.thangDiem}</div>
+        <div>Điểm bài/câu hỏi đánh giá (thang 10): {diemDinhChinh.trongSo}</div>
+        <div>Điểm tối đa của bài/câu hỏi đánh giá: {diemDinhChinh.thangDiem}</div>
         <FormField
           control={form.control}
           name="diemMoi"

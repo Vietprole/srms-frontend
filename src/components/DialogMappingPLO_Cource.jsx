@@ -370,14 +370,14 @@ const handleSavePLOs = async () => {
       }}
     >
       <DialogTitle fontSize={"18px"} fontWeight={"bold"}>
-        Nối PLO - Học phần thuộc ngành:
+        Nối PLO - Học phần thuộc ctđt:
         <Typography component="span" color="info.main" fontWeight="bold">
           {nganh ? ` ${nganh.ten}` : " Đang tải..."}
         </Typography>
   
         <Box sx={{ display: "flex", gap: 10, alignItems: "center", mt: 0.5 }}>
           <DialogContentText component="span">
-            Mã ngành:
+            Mã ctđt:
             <Typography component="span" color="info.main" fontWeight="500"> {nganh ? nganh.maNganh : "Đang tải..."} </Typography>
           </DialogContentText>
           <DialogContentText component="span">

@@ -64,7 +64,7 @@ export const StudentResult = ({ studentId }) => {
         <Label htmlFor="diem-mode">Điểm chính thức</Label>
       </div>
       <div className="text-md">
-        Cách thức hiển thị điểm: điểm/thang điểm &nbsp;&nbsp; trọng số
+        Cách thức hiển thị điểm: điểm/điểm tối đa của bài/câu hỏi đánh giá &nbsp;&nbsp; điểm bài/câu hỏi đánh giá (thang 10)
       </div>
       {/* <div>
         <span className="text-blue-600">Điểm màu xanh dương</span>: giảng viên chưa xác nhận điểm này

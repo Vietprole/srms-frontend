@@ -207,7 +207,7 @@ export function SinhVienForm({ sinhVien, handleAdd, handleEdit, setIsDialogOpen 
           name="nganhId"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>Chọn Ngành</FormLabel>
+              <FormLabel>Chọn CTĐT</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
@@ -260,7 +260,7 @@ export function SinhVienForm({ sinhVien, handleAdd, handleEdit, setIsDialogOpen 
                 </PopoverContent>
               </Popover>
               <FormDescription>
-                Ngành sinh viên nhập học
+                CTĐT sinh viên nhập học
               </FormDescription>
               <FormMessage />
             </FormItem>

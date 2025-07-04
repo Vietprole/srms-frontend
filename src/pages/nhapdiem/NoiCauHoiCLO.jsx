@@ -16,8 +16,8 @@ export default function NoiCauHoiCLO() {
 
   const fetchData = useCallback(async () => {
     try {
-        const lopHocPhan = await getLopHocPhanById(lopHocPhanId);
-      const hocPhanId = lopHocPhan.hocPhanId;
+      //   const lopHocPhan = await getLopHocPhanById(lopHocPhanId);
+      // const hocPhanId = lopHocPhan.hocPhanId;
       const baiKiemTrasData = await getBaiKiemTrasByLopHocPhanId(lopHocPhanId);
       const [cLOsData] = await Promise.all([
         getCLOsByClassId(lopHocPhanId),

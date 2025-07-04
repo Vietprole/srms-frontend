@@ -111,7 +111,7 @@ export function PLOForm({ pLO, handleAdd, handleEdit, setIsDialogOpen }) {
           name="nganhId"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>Chọn Ngành</FormLabel>
+              <FormLabel>Chọn CTĐT</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
@@ -127,7 +127,7 @@ export function PLOForm({ pLO, handleAdd, handleEdit, setIsDialogOpen }) {
                         ? comboBoxItems.find(
                             (item) => item.value === field.value
                           )?.label
-                        : "Chọn Ngành..."}
+                        : "Chọn CTĐT..."}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </FormControl>
@@ -163,7 +163,7 @@ export function PLOForm({ pLO, handleAdd, handleEdit, setIsDialogOpen }) {
                 </PopoverContent>
               </Popover>
               <FormDescription>
-                Chọn Ngành mà PLO thuộc về
+                Chọn CTĐT mà PLO thuộc về
               </FormDescription>
               <FormMessage />
             </FormItem>

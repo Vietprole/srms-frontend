@@ -209,7 +209,7 @@ function DialogCLO({ nganhId, open, onClose }) {
       setPlos(data); // lưu dữ liệu gốc
       setFilteredData(data); // dùng để hiển thị
     } catch (error) {
-      console.error("Lỗi khi lấy dữ liệu ngành:", error);
+      console.error("Lỗi khi lấy dữ liệu ctđt:", error);
     }
   };
   

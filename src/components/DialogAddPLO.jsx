@@ -120,7 +120,7 @@ function DialogPLO({ nganhId, open, onClose ,onAddSuccess}) {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [filteredData, setFilteredData] = useState(""); // Lưu dữ liệu đã lọc
   const [khoas, setKhoas] = useState([]);
-  const [selectedNganh, setSelectedNganh] = useState(null); // Lưu ngành đã chọn
+  const [selectedNganh, setSelectedNganh] = useState(null); // Lưu ctđt đã chọn
   const [selectedPLOIds, setSelectedPLOIds] = useState([]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20); // tùy chọn mặc định
@@ -166,7 +166,7 @@ function DialogPLO({ nganhId, open, onClose ,onAddSuccess}) {
       setSelectedPLOIds(data.map((plo) => plo.id)); // ✅ Reset và auto check all
       setPage(1);
     } catch (error) {
-      console.error("Lỗi khi lấy dữ liệu ngành:", error);
+      console.error("Lỗi khi lấy dữ liệu ctđt:", error);
       setFilteredData([]);
       setSelectedPLOIds([]);
     }
@@ -220,7 +220,7 @@ function DialogPLO({ nganhId, open, onClose ,onAddSuccess}) {
   };
   const handleSaveSelectedPLOs = async () => {
     if (!selectedNganh || selectedPLOIds.length === 0) {
-      setSnackbarMessage("Vui lòng chọn ngành và ít nhất một PLO để lưu.");
+      setSnackbarMessage("Vui lòng chọn ctđt và ít nhất một PLO để lưu.");
       setSnackbarSeverity("warning");
       setOpenSnackbar(true);
       return;
@@ -284,7 +284,7 @@ function DialogPLO({ nganhId, open, onClose ,onAddSuccess}) {
       }}
     >
       <DialogTitle fontSize={"18px"} fontWeight={"bold"}>
-        Thêm mới PLO từ ngành:  
+        Thêm mới PLO từ ctđt:  
         <Typography component="span" color="info.main" fontWeight="bold">
         </Typography>
 
@@ -310,7 +310,7 @@ function DialogPLO({ nganhId, open, onClose ,onAddSuccess}) {
     renderInput={(params) => (
       <TextField
         {...params}
-        label="Chọn ngành"
+        label="Chọn ctđt"
         variant="outlined"
         size="small"
         sx={{ width: "100%", backgroundColor: "#fff" }}

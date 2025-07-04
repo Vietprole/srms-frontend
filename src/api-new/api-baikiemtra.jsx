@@ -46,7 +46,7 @@ export const addBaiKiemTra = async (baikiemtraData) => {
     const response = await axios.post(API_EXAM, baikiemtraData, {
       headers: { Authorization: getAccessToken() },
     });
-    toast.success("Tạo Bài kiểm tra thành công");
+    toast.success("Tạo Thành phần đánh giá thành công");
     return response.data;
   } catch (error) {
     console.log("error message: ", error.message);
@@ -60,7 +60,7 @@ export const updateBaiKiemTra = async (examId, updatedData) => {
     const response = await axios.put(`${API_EXAM}/${examId}`, updatedData, {
       headers: { Authorization: getAccessToken() },
     });
-    toast.success("Sửa Bài kiểm tra thành công");
+    toast.success("Sửa Thành phần đánh giá thành công");
     return response.data;
   } catch (error) {
     console.log("error message: ", error.message);
@@ -74,7 +74,7 @@ export const deleteBaiKiemTra = async (examId) => {
     const response = await axios.delete(`${API_EXAM}/${examId}`, {
       headers: { Authorization: getAccessToken() },
     });
-    toast.success("Xoá Bài kiểm tra thành công");
+    toast.success("Xoá Thành phần đánh giá thành công");
     return response.data;
   } catch (error) {
     console.log("error message: ", error.message);
@@ -91,7 +91,7 @@ export const updateQuestions = async (examId, cauHois) => {
         headers: { Authorization: getAccessToken() },
       }
     );
-    toast.success("Cập nhật câu hỏi cho bài kiểm tra thành công");
+    toast.success("Cập nhật bài/câu hỏi đánh giá cho thành phần đánh giá thành công");
     return response.data;
   } catch (error) {
     console.log("error message: ", error.response?.data);

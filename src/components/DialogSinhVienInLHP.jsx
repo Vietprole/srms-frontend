@@ -174,7 +174,7 @@ function DialogSinhVienInLHP({ nganhId, open, onClose }) {
       
 
     } catch (error) {
-      console.error("Lỗi khi lấy dữ liệu ngành:", error);
+      console.error("Lỗi khi lấy dữ liệu ctđt:", error);
     }
   };
 
@@ -374,14 +374,14 @@ function DialogSinhVienInLHP({ nganhId, open, onClose }) {
       }}
     >
       <DialogTitle fontSize={"18px"} fontWeight={"bold"}>
-        Danh sách học phần thuộc ngành:  
+        Danh sách học phần thuộc ctđt:  
         <Typography component="span" color="info.main" fontWeight="bold">
           {nganh ? ` ${nganh.ten}` : " Đang tải..."}
         </Typography>
 
         <Box sx={{ display: "flex", gap: 10, alignItems: "center", mt: 0.5 }}>
           <DialogContentText component="span">
-            Mã ngành:
+            Mã ctđt:
             <Typography component="span" color="info.main" fontWeight="500"> {nganh ? nganh.maNganh : "Đang tải..."} </Typography>
           </DialogContentText>
           <DialogContentText component="span">
@@ -482,7 +482,7 @@ function DialogSinhVienInLHP({ nganhId, open, onClose }) {
     <DialogTitle>Xác nhận xóa</DialogTitle>
     <DialogContent>
       <DialogContentText>
-        Bạn có chắc chắn muốn xóa học phần đã chọn khỏi ngành không?
+        Bạn có chắc chắn muốn xóa học phần đã chọn khỏi ctđt không?
       </DialogContentText>
     </DialogContent>
     <DialogActions>
@@ -558,7 +558,7 @@ function DialogSinhVienInLHP({ nganhId, open, onClose }) {
           {filteredData.length === 0 ? (
             <TableRow>
               <StyledTableCell colSpan={7} align="center">
-                Chưa có học phần được thêm vào ngành
+                Chưa có học phần được thêm vào ctđt
               </StyledTableCell>
             </TableRow>
           ) : (

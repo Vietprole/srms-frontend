@@ -46,19 +46,19 @@ const formSchema = z.object({
   weight: z.coerce
     .number()
     .refine((val) => !isNaN(parseFloat(val)), {
-      message: "Trọng số phải là một số",
+      message: "Điểm bài/câu hỏi đánh giá (thang 10) phải là một số",
     })
     .refine((val) => parseFloat(val) >= 0.1 && parseFloat(val) <= 10, {
-      message: "Trọng số phải trong khoảng 0.1 đến 10",
+      message: "Điểm bài/câu hỏi đánh giá (thang 10) phải trong khoảng 0.1 đến 10",
     }),
 
   scale: z.coerce
     .number()
     .refine((val) => !isNaN(parseFloat(val)), {
-      message: "Thang điểm phải là một số",
+      message: "Điểm tối đa của bài/câu hỏi đánh giá phải là một số",
     })
     .refine((val) => parseFloat(val) > 0, {
-      message: "Thang điểm phải lớn hơn 0",
+      message: "Điểm tối đa của bài/câu hỏi đánh giá phải lớn hơn 0",
     }),
 
   examId: z.coerce
@@ -150,7 +150,7 @@ export function CauHoiForm({
                 <Input placeholder="Câu 1a" {...field} />
               </FormControl>
               <FormDescription>
-                Tên của câu hỏi không được trùng nhau trong một bài kiểm tra
+                Tên của bài/câu hỏi đánh giá không được trùng nhau trong một thành phần đánh giá
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -161,12 +161,12 @@ export function CauHoiForm({
           name="weight"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Trọng Số</FormLabel>
+              <FormLabel>Điểm bài/câu hỏi đánh giá (thang 10)</FormLabel>
               <FormControl>
                 <Input placeholder="1.5" {...field} />
               </FormControl>
               <FormDescription>
-                Là tỉ lệ điểm trên thang 10 của bài kiểm tra
+                Là tỉ lệ điểm trên thang 10 của thành phần đánh giá
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -177,11 +177,11 @@ export function CauHoiForm({
           name="scale"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Thang Điểm</FormLabel>
+              <FormLabel>Điểm tối đa của bài/câu hỏi đánh giá</FormLabel>
               <FormControl>
                 <Input placeholder="1.5" {...field} />
               </FormControl>
-              <FormDescription>Là điểm số tối đa của câu hỏi</FormDescription>
+              <FormDescription>Là điểm số tối đa của bài/câu hỏi đánh giá</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -191,7 +191,7 @@ export function CauHoiForm({
           name="examId"
           render={({ field }) => (
             <FormItem className=" flex flex-col">
-              <FormLabel>Chọn Bài Kiểm Tra</FormLabel>
+              <FormLabel>Chọn Thành phần đánh giá</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
@@ -208,7 +208,7 @@ export function CauHoiForm({
                         ? comboBoxItems.find(
                             (item) => item.value === field.value
                           )?.label
-                        : "Chọn Bài kiểm tra"}
+                        : "Chọn Thành phần đánh giá"}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </FormControl>
@@ -244,7 +244,7 @@ export function CauHoiForm({
                 </PopoverContent>
               </Popover>
               <FormDescription>
-                Chọn bài kiểm tra mà câu hỏi thuộc về
+                Chọn thành phần đánh giá mà bài/câu hỏi đánh giá thuộc về
               </FormDescription>
               <FormMessage />
             </FormItem>

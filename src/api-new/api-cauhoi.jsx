@@ -33,7 +33,7 @@ export const addCauHoi = async (newData) => {
     const response = await axios.post(API_QUESTION, newData, {
       headers: { Authorization: getAccessToken() },
     });
-    toast.success("Tạo Câu hỏi thành công");
+    toast.success("Tạo Bài/câu hỏi đánh giá thành công");
     return response.data;
   } catch (error) {
     console.log("error message: ", error.message);
@@ -46,7 +46,7 @@ export const updateCauHoi = async (id, updatedData) => {
     const response = await axios.put(`${API_QUESTION}/${id}`, updatedData, {
       headers: { Authorization: getAccessToken() },
     });
-    toast.success("Sửa Câu hỏi thành công");
+    toast.success("Sửa Bài/câu hỏi đánh giá thành công");
     return response.data;
   } catch (error) {
     console.log("error message: ", error.message);
@@ -59,7 +59,7 @@ export const deleteCauHoi = async (id) => {
     const response = await axios.delete(`${API_QUESTION}/${id}`, {
       headers: { Authorization: getAccessToken() },
     });
-    toast.success("Xoá Câu hỏi thành công");
+    toast.success("Xoá Bài/câu hỏi đánh giá thành công");
     return response.data;
   } catch (error) {
     console.log("error message: ", error.message);
@@ -88,7 +88,7 @@ export const addCLOsToCauHoi = async (questionId, cloIdsList) => {
         headers: { Authorization: getAccessToken() },
       }
     );
-    toast.success("Thêm CLO cho câu hỏi thành công");
+    toast.success("Thêm CLO cho bài/câu hỏi đánh giá thành công");
     return response.data;
   } catch (error) {
     console.log("error message: ", error.message);
@@ -105,7 +105,7 @@ export const updateCLOsToCauHoi = async (questionId, cloIdsList) => {
         headers: { Authorization: getAccessToken() },
       }
     );
-    toast.success("Cập nhật câu hỏi đóng góp vào CLO thành công");
+    toast.success("Cập nhật bài/câu hỏi đánh giá đóng góp vào CLO thành công");
     return response.data;
   } catch (error) {
     console.log("error message: ", error.message);
@@ -121,7 +121,7 @@ export const removeCLOsFromCauHoi = async (questionId, cloId) => {
         headers: { Authorization: getAccessToken() },
       }
     );
-    toast.success("Xoá CLO khỏi câu hỏi thành công");
+    toast.success("Xoá CLO khỏi bài/câu hỏi đánh giá thành công");
     return response.data;
   } catch (error) {
     console.log("error message: ", error.message);

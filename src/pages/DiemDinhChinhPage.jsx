@@ -214,7 +214,7 @@ export default function DiemDinhChinhPage() {
                 column.toggleSorting(column.getIsSorted() === "asc")
               }
             >
-              Loại Bài Kiểm Tra
+              Loại Thành phần đánh giá
               <ArrowUpDown />
             </Button>
           );
@@ -233,7 +233,7 @@ export default function DiemDinhChinhPage() {
                 column.toggleSorting(column.getIsSorted() === "asc")
               }
             >
-              Tên Câu Hỏi
+              Tên Bài/câu hỏi đánh giá
               <ArrowUpDown />
             </Button>
           );

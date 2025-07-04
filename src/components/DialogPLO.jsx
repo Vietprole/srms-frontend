@@ -3,7 +3,7 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import { useEffect, useState,useRef } from "react";
-import { getNganhById } from "@/api/api-nganh";
+import { getProgrammeById } from "@/api/api-programmes";
 import Typography  from "@mui/material/Typography";
 import DialogContentText from '@mui/material/DialogContentText';
 import { Box } from "@mui/material";
@@ -28,12 +28,12 @@ import Autocomplete from '@mui/material/Autocomplete';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import AddIcon from '@mui/icons-material/Add';
 import {
-  addPLO,
+  createPLO,
   updatePLO,
   getPLOById,
   deletePLO,
-  getPLOsByNganhId,
-} from "@/api/api-plo";
+  getPLOs,
+} from "@/api/api-plos";
 import EditIcon from '@mui/icons-material/Edit';
 import Tooltip from '@mui/material/Tooltip';
 import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
@@ -209,13 +209,13 @@ function DialogPLO({ nganhId, open, onClose }) {
 
   const fetchData = async () => {
     try {
-      const nganhs = await getNganhById(nganhId);
-      const data = await getPLOsByNganhId(nganhId);
+      const nganhs = await getProgrammeById(nganhId);
+      const data = await getPLOs(nganhId, null);
       setNganh(nganhs);
       setPlos(data); // lưu dữ liệu gốc
       setFilteredData(data); // dùng để hiển thị
     } catch (error) {
-      console.error("Lỗi khi lấy dữ liệu ngành:", error);
+      console.error("Lỗi khi lấy dữ liệu ctđt:", error);
     }
   };
   
@@ -308,7 +308,7 @@ function DialogPLO({ nganhId, open, onClose }) {
       nganhId: nganhId,
     };
     try {
-      const rp = await addPLO(ploData);
+      const rp = await createPLO(ploData);
       if (rp.status === 201) {
         setSnackbarMessage("Thêm PLO thành công");
         setSnackbarSeverity("success");
@@ -417,14 +417,14 @@ function DialogPLO({ nganhId, open, onClose }) {
       }}
     >
       <DialogTitle fontSize={"18px"} fontWeight={"bold"}>
-        Danh sách các PLO thuộc ngành:  
+        Danh sách các PLO thuộc CTĐT:  
         <Typography component="span" color="info.main" fontWeight="bold">
           {nganh ? ` ${nganh.ten}` : " Đang tải..."}
         </Typography>
 
         <Box sx={{ display: "flex", gap: 10, alignItems: "center", mt: 0.5 }}>
           <DialogContentText component="span">
-            Mã ngành:
+            Mã CTĐT:
             <Typography component="span" color="info.main" fontWeight="500"> {nganh ? nganh.maNganh : "Đang tải..."} </Typography>
           </DialogContentText>
           <DialogContentText component="span">

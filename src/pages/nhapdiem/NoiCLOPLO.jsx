@@ -339,8 +339,8 @@ export default function NoiCLOPLO() {
                 value={selectedNganhFilter}
                 onChange={handleNganhChange}
                 getOptionLabel={(option) => ` ${option.ten}`}
-                label="Chọn ngành"
-                noOptionsText="Không tìm thấy ngành" // Thông báo nếu không có kết quả
+                label="Chọn ctđt"
+                noOptionsText="Không tìm thấy ctđt" // Thông báo nếu không có kết quả
               />
             </div>
             <div style={styles.cbKhoa}>

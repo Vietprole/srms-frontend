@@ -174,8 +174,8 @@ export default function DiemCLO() {
 
   React.useEffect(() => {
     const fetchData = async () => {
-              const lopHocPhan = await getLopHocPhanById(lopHocPhanId);
-            const hocPhanId = lopHocPhan.hocPhanId;
+            //   const lopHocPhan = await getLopHocPhanById(lopHocPhanId);
+            // const hocPhanId = lopHocPhan.hocPhanId;
       const [sinhViens, CLOs] = await Promise.all([
         getFilteredStudents(null, null, lopHocPhanId),
         getCLOsByClassId(lopHocPhanId),

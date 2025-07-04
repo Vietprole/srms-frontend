@@ -38,7 +38,7 @@ const formSchema = z
         message: "Trong so must be a number",
       })
       .refine((val) => parseFloat(val) > 0 && parseFloat(val) <= 1, {
-        message: "Trọng số phải lớn hơn 0 và nhỏ hơn hoặc bằng 1",
+        message: "Điểm bài/câu hỏi đánh giá (thang 10) phải lớn hơn 0 và nhỏ hơn hoặc bằng 1",
       }),
     scoreEntryStartDate: z.date({
       required_error: "Please select a date.",
@@ -136,7 +136,7 @@ export function BaiKiemTraForm({
           name="weight"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Trọng Số</FormLabel>
+              <FormLabel>Điểm bài/câu hỏi đánh giá (thang 10)</FormLabel>
               <FormControl>
                 <Input placeholder="0.3" {...field} />
               </FormControl>

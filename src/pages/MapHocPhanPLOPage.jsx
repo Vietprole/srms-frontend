@@ -182,8 +182,8 @@ function NganhPage() {
 
   const columns = [
     { width: 50, label: "STT", dataKey: "index", align: "center" },
-    { width: 150, label: "Mã Ngành", dataKey: "maNganh", align: "center" },
-    { label: "Tên Ngành", dataKey: "ten", align: "center" },
+    { width: 150, label: "Mã CTĐT", dataKey: "maNganh", align: "center" },
+    { label: "Tên CTĐT", dataKey: "ten", align: "center" },
     { width: 300, label: "Tên Khoa", dataKey: "tenKhoa", align: "center" },
     { width: 150, label: "", dataKey: "actions", align: "center" },
   ];
@@ -258,7 +258,7 @@ function NganhPage() {
     <Layout>
       <div style={styles.main}>
         <div style={styles.title}>
-          <span>Danh sách ngành học</span>
+          <span>Danh sách ctđt học</span>
           <div style={styles.btnMore}>
             <IconButton aria-label="more actions">
               <MoreVertIcon />
@@ -285,7 +285,7 @@ function NganhPage() {
               <TextField
                 fullWidth
                 fontSize="10px"
-                placeholder="Tìm kiếm theo tên ngành..."
+                placeholder="Tìm kiếm theo tên ctđt..."
                 variant="standard"
                 autoComplete="off"
                 InputProps={{

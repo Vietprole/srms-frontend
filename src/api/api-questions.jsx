@@ -11,7 +11,7 @@ const getAuthHeader = () => ({
 });
 
 /**
- * Lấy danh sách câu hỏi, có thể lọc theo examId
+ * Lấy danh sách bài/câu hỏi đánh giá, có thể lọc theo examId
  */
 export const getQuestions = async (examId) => {
   const params = examId ? `?examId=${examId}` : "";
@@ -19,59 +19,59 @@ export const getQuestions = async (examId) => {
     const res = await axios.get(`${API_QUESTIONS}${params}`, getAuthHeader());
     return res.data;
   } catch (err) {
-    throw new Error(err.response?.data || "Lỗi khi lấy danh sách câu hỏi");
+    throw new Error(err.response?.data || "Lỗi khi lấy danh sách bài/câu hỏi đánh giá");
   }
 };
 
 /**
- * Lấy câu hỏi theo ID
+ * Lấy bài/câu hỏi đánh giá theo ID
  */
 export const getQuestionById = async (id) => {
   try {
     const res = await axios.get(`${API_QUESTIONS}/${id}`, getAuthHeader());
     return res.data;
   } catch (err) {
-    throw new Error(err.response?.data || "Không tìm thấy câu hỏi");
+    throw new Error(err.response?.data || "Không tìm thấy bài/câu hỏi đánh giá");
   }
 };
 
 /**
- * Tạo câu hỏi mới
+ * Tạo bài/câu hỏi đánh giá mới
  */
 export const createQuestion = async (data) => {
   try {
     const res = await axios.post(API_QUESTIONS, data, getAuthHeader());
     return res.data;
   } catch (err) {
-    throw new Error(err.response?.data || "Lỗi khi tạo câu hỏi");
+    throw new Error(err.response?.data || "Lỗi khi tạo bài/câu hỏi đánh giá");
   }
 };
 
 /**
- * Cập nhật câu hỏi
+ * Cập nhật bài/câu hỏi đánh giá
  */
 export const updateQuestion = async (id, data) => {
   try {
     const res = await axios.put(`${API_QUESTIONS}/${id}`, data, getAuthHeader());
     return res.data;
   } catch (err) {
-    throw new Error(err.response?.data || "Lỗi khi cập nhật câu hỏi");
+    throw new Error(err.response?.data || "Lỗi khi cập nhật bài/câu hỏi đánh giá");
   }
 };
 
 /**
- * Xoá câu hỏi
+ * Xoá bài/câu hỏi đánh giá
  */
 export const deleteQuestion = async (id) => {
   try {
     await axios.delete(`${API_QUESTIONS}/${id}`, getAuthHeader());
   } catch (err) {
-    throw new Error(err.response?.data || "Lỗi khi xoá câu hỏi");
+    throw new Error(err.response?.data || "Lỗi khi xoá bài/câu hỏi đánh giá");
   }
 };
 
 /**
- * Lấy CLOs được liên kết với câu hỏi
+ * Lấy CLOs được liên kết với bài/câu hỏi đánh giá
  */
 export const getCLOsOfQuestion = async (id) => {
   try {
@@ -83,13 +83,13 @@ export const getCLOsOfQuestion = async (id) => {
 };
 
 /**
- * Cập nhật danh sách CLO liên kết với câu hỏi
+ * Cập nhật danh sách CLO liên kết với bài/câu hỏi đánh giá
  */
 export const updateCLOsOfQuestion = async (id, cloIds) => {
   try {
     const res = await axios.put(`${API_QUESTIONS}/${id}/clo`, cloIds, getAuthHeader());
     return res.data;
   } catch (err) {
-    throw new Error(err.response?.data || "Lỗi khi cập nhật CLO cho câu hỏi");
+    throw new Error(err.response?.data || "Lỗi khi cập nhật CLO cho bài/câu hỏi đánh giá");
   }
 };
