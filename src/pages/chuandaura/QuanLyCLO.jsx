@@ -14,22 +14,16 @@ import {  Tooltip } from "@mui/material";
 import Box from "@mui/material/Box";
 import { useState, useEffect } from "react";
 import Autocomplete from "@mui/material/Autocomplete";
-// import Snackbar from "@mui/material/Snackbar";
-// import MuiAlert from "@mui/material/Alert";
-import { getAllFaculties } from "@/api/api-faculties";
-import {
-  getNganhs,
-} from "@/api/api-nganh";
 
 import Layout from "../Layout";
 import { getRole, getNguoiQuanLyCTDTId } from "@/utils/storage";
-import { getNganhsByNguoiQuanLyId } from "@/api/api-nganh";
 import { useCallback } from "react";
 import ArrowLeftIcon from "@mui/icons-material/ArrowLeft";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import lessonIcon from "@/assets/icons/lesson-icon.png"; //
 import DialogHocPhanCLO from "../../components/DialogHocPhanCLO";
+import { getProgrammes } from "@/api/api-programmes";
 function TestPage() {
   const styles = {
     main: {
@@ -135,11 +129,9 @@ function TestPage() {
     },
   };
 
-  const [khoas, setKhoas] = useState([]);
   const [data, setData] = useState([]);
   const [searchQuery, setSearchQuery] = useState(""); // Lưu giá trị tìm kiếm
   const [filteredData, setFilteredData] = useState(data); // Lưu dữ liệu đã lọc
-  const [selectedKhoaFilter, setSelectedKhoaFilter] = useState(null);
   const [page, setPage] = useState(1);
   const [nganhId, setNganhId] = useState("");
   const [openDialog, setOpenDialog] = React.useState(false);
@@ -182,34 +174,29 @@ function TestPage() {
   const role = getRole();
   const nguoiQuanLyCTDTId = getNguoiQuanLyCTDTId();
 
-  const handleKhoaChange = (event, newValue) => {
-    setSelectedKhoaFilter(newValue);
-    setPage(1); // 👉 Reset về trang đầu tiên
   
-    if (!newValue) {
-      setFilteredData(data); 
-    } else {
-      const filtered = data.filter((row) => row.tenKhoa === newValue.ten);
-      setFilteredData(filtered);
-    }
-  };
-
 
 
 
 
   // console.log("role, nguoiQuanLyCTDTId: ", role, nguoiQuanLyCTDTId);
   const fetchData = useCallback(async () => {
-    const khoa = await getAllFaculties();
-    console.log(role);
-    setKhoas(khoa);
-    if (role === "NguoiPhuTrachCTĐT" && nguoiQuanLyCTDTId !== 0) {
-      const nganhData = await getNganhsByNguoiQuanLyId(nguoiQuanLyCTDTId);
-      setData(nganhData);
-      return;
+    try {
+      let programmes = [];
+  
+      if (role === "NguoiPhuTrachCTĐT" && nguoiQuanLyCTDTId !== 0) {
+        // Gọi API với managerAccountId
+        programmes = await getProgrammes({ managerAccountId: nguoiQuanLyCTDTId });
+      } else {
+        // Gọi API lấy tất cả chương trình
+        programmes = await getProgrammes({});
+      }
+  
+      setData(programmes);
+    } catch (error) {
+      console.error("Lỗi khi fetch danh sách chương trình:", error);
+
     }
-    const nganhs = await getNganhs();
-    setData(nganhs);
   }, [role, nguoiQuanLyCTDTId]);
 
   useEffect(() => {
@@ -226,7 +213,7 @@ function TestPage() {
       setFilteredData(data); // If search query is empty, show all data
     } else {
       const filtered = data.filter((row) =>
-        row.ten.toLowerCase().includes(query.toLowerCase())
+        row.name.toLowerCase().includes(query.toLowerCase())
       );
       setFilteredData(filtered);
     }
@@ -313,21 +300,7 @@ function TestPage() {
               />
             </Box>
           </div>
-          <div style={styles.cbKhoa}>
-          <Autocomplete
-  size="small" // 👉 Nhỏ gọn lại để align đẹp
-  sx={{ width: "100%" }}
-  options={khoas}
-  getOptionLabel={(option) => option.ten || ""}
-  required
-  value={selectedKhoaFilter}
-  onChange={handleKhoaChange}
-  renderInput={(params) => (
-    <TextField {...params} label="Chọn khoa" size="small" />
-  )}
-/>
-
-          </div>
+          
         </div>
         <div style={styles.table}>
           <TableContainer component={Paper}>
@@ -344,7 +317,6 @@ function TestPage() {
                   <StyledTableCell align="center">STT</StyledTableCell>
                   <StyledTableCell align="center">Mã CTĐT</StyledTableCell>
                   <StyledTableCell align="center">Tên CTĐT</StyledTableCell>
-                  <StyledTableCell align="center">Tên Khoa</StyledTableCell>
                   {/* <StyledTableCell align="center">
                     Người quản lí
                   </StyledTableCell> */}
@@ -355,9 +327,8 @@ function TestPage() {
   {paginatedData.map((row, index) => (
     <StyledTableRow key={row.id}>
       <StyledTableCell align="center">{(page - 1) * pageSize + index + 1}</StyledTableCell>
-      <StyledTableCell align="center">{row.maNganh}</StyledTableCell>
-      <StyledTableCell align="center">{row.ten}</StyledTableCell>
-      <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
+      <StyledTableCell align="center">{row.code}</StyledTableCell>
+      <StyledTableCell align="center">{row.name}</StyledTableCell>
       {/* <StyledTableCell align="center">{row.tenNguoiQuanLy}</StyledTableCell> */}
       <StyledTableCell align="center">
         <Tooltip

@@ -25,22 +25,14 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Layout from './Layout';
 import { useSearchParams } from "react-router-dom";
-import {
-  getSinhViens,
-  deleteSinhVien,
-  addSinhVien,
-  updateSinhVien,
-  getSinhVienById
-} from "@/api/api-sinhvien";
+
 import { getAllFaculties } from "@/api/api-faculties";
-import { getAllNganhs } from "@/api/api-nganh";
-import { getGiangVienId, getRole } from "@/utils/storage";
-import { getNganhsByKhoaId } from "@/api/api-nganh"; 
 import ArrowLeftIcon from "@mui/icons-material/ArrowLeft";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import {getProgrammes} from "@/api/api-programmes";
 import {getAllStudents,createStudent,getStudentById,updateStudent,deleteStudent} from "@/api/api-students";
+import { getRole } from '../utils/storage';
 const role = getRole();
 
 
@@ -178,26 +170,18 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 export default function SinhVienPage() {
   const [searchParams] = useSearchParams();
   const lopHocPhanIdParam = searchParams.get("lopHocPhanId");
-  const khoaIdParam = searchParams.get("khoaId");
-  const nganhIdParam = searchParams.get("nganhId");
   const [data, setData] = useState([]);
   const [khoaItems, setKhoaItems] = useState([]);
   const [nganhItems, setNganhItems] = useState([]);
-  const [khoaId, setKhoaId] = useState(khoaIdParam);
   const [lopHocPhanId, setLopHocPhanId] = useState(lopHocPhanIdParam);
-  const [nganhId, setNganhId] = useState(nganhIdParam);
   
-  useEffect(() => {
-    setKhoaId(khoaIdParam);
-  }, [khoaIdParam]);
+
   
   useEffect(() => {
     setLopHocPhanId(lopHocPhanIdParam);
   }, [lopHocPhanIdParam]);
   
-  useEffect(() => {
-    setNganhId(nganhIdParam);
-  }, [nganhIdParam]);
+
   
 
   const [openAddDialog, setOpenAddDialog] = useState(false);
@@ -432,21 +416,6 @@ export default function SinhVienPage() {
     setFilteredData(filteredData);
   };
 
-  const handleKhoaChangeInForm = async (event, newValue) => {
-    setSelectedKhoa(newValue);
-    setSelectedNganh(null);
-
-    if (newValue) {
-      const dataNganh = await getNganhsByKhoaId(newValue.value);
-      const mappedNganhItems = dataNganh.map(nganh => ({
-        label: nganh.ten,
-        value: nganh.id
-      }));
-      setNganhItems(mappedNganhItems);
-    } else {
-      setNganhItems([]);
-    }
-  };
   const handleSearchChange = (event) => {
     const query = event.target.value.trim();
     setSearchQuery(query);
