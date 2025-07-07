@@ -75,3 +75,38 @@ export const deletePLO = async (id) => {
   }
 };
 
+/**
+ * Lấy danh sách CLO của 1 PLO
+ */
+export const getCLOsByPLOId = async (id) => {
+  try {
+    const response = await axios.get(`${API_PLOS}/${id}/clos`, getAuthHeader());
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data || `Lỗi khi lấy CLO của PLO ID ${id}`);
+  }
+};
+
+/**
+ * Lấy danh sách học phần liên kết với 1 PLO
+ */
+export const getCoursesOfPLO = async (id) => {
+  try {
+    const response = await axios.get(`${API_PLOS}/${id}/courses`, getAuthHeader());
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data || `Lỗi khi lấy học phần của PLO ID ${id}`);
+  }
+};
+
+/**
+ * Cập nhật CLO liên kết với 1 PLO
+ */
+export const updateCLOsOfPLO = async (id, cloIds) => {
+  try {
+    const response = await axios.put(`${API_PLOS}/${id}/clos`, cloIds, getAuthHeader());
+    return response;
+  } catch (error) {
+    throw new Error(error.response?.data || `Lỗi khi cập nhật CLO của PLO ID ${id}`);
+  }
+};
