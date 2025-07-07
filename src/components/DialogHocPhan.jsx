@@ -3,7 +3,6 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import { useEffect, useState } from "react";
-import { getNganhById } from "@/api/api-nganh";
 import Typography  from "@mui/material/Typography";
 import DialogContentText from '@mui/material/DialogContentText';
 import { Box } from "@mui/material";
@@ -23,9 +22,7 @@ import { styled } from '@mui/material/styles';
 import Checkbox from "@mui/material/Checkbox";
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
-import { removeHocPhanFromNganh } from "@/api/api-nganh";
 import SaveIcon from '@mui/icons-material/Save';
-import { getHocPhansByNganhId,updateHocPhanCotLois } from "@/api/api-nganh";
 import { getRole } from "@/utils/storage";
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
@@ -34,6 +31,8 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import AddIcon from '@mui/icons-material/Add';
 import DialogAddHocPhan from "./DialogAddHocPhan";
 import FormControlLabel from "@mui/material/FormControlLabel";
+import {getProgrammeById,getCoursesInProgramme,updateCourseIsCoreStatus,removeCoursesFromProgramme} from "@/api/api-programmes";
+
 // eslint-disable-next-line react/prop-types
 function DialogHocPhan({ nganhId, open, onClose }) {
   const styles = {
@@ -163,24 +162,28 @@ function DialogHocPhan({ nganhId, open, onClose }) {
 
   const fetchData = async () => {
     try {
-      const nganhs = await getNganhById(nganhId);
-      const hocphans = await getHocPhansByNganhId(nganhId);
-      const totalCredits = hocphans.reduce((total, hocPhan) => total + hocPhan.soTinChi, 0);
-      setOriginalData(hocphans);
-      setHocPhanDaChon(hocphans);
-      setFilteredData(hocphans);
-      setNganh(nganhs);
-      setTongSoTinChi(totalCredits);
-      
+      const programme = await getProgrammeById(nganhId); // nganhId chính là programmeId
+      console.log("programme", programme);
+      const courses = await getCoursesInProgramme(nganhId); // có thể truyền { facultyId, isCore } nếu cần
+      console.log("courses",courses);
+      const totalCredits = courses.reduce((total, course) => total + course.credits, 0);
 
+  
+      setOriginalData(courses);
+      setHocPhanDaChon(courses);
+      setFilteredData(courses);
+      setNganh(programme);
+      setTongSoTinChi(totalCredits);
+  
     } catch (error) {
-      console.error("Lỗi khi lấy dữ liệu ngành:", error);
+      console.error("Lỗi khi lấy dữ liệu chương trình đào tạo:", error);
     }
   };
-
+  
   const handleClose = () => {
     setSearchQuery(""); // Reset search query when closing dialog
     setOnlyShowCotLoi(false); // Reset checkbox state
+    setPage(1);
     onClose();
   };
 
@@ -199,14 +202,15 @@ function DialogHocPhan({ nganhId, open, onClose }) {
     // Nếu có tìm kiếm
     if (query.trim()) {
       data = data.filter((row) =>
-        row.ten.toLowerCase().includes(query.toLowerCase())
+        row.name.toLowerCase().includes(query.toLowerCase())
       );
     }
   
     // Nếu có tick checkbox cốt lõi
     if (cotLoiOnly) {
-      data = data.filter((row) => row.laCotLoi);
+      data = data.filter((row) => row.isCore);
     }
+    
   
     setFilteredData(data);
   };
@@ -259,32 +263,30 @@ function DialogHocPhan({ nganhId, open, onClose }) {
       setOpenSnackbar(true);
       return;
     }
-    let successCount = 0;
-    let failureCount = 0;
+  
+    if (selectedDeleteHocPhan.length === 0) {
+      setSnackbarSeverity("info");
+      setSnackbarMessage("Không có học phần nào được chọn.");
+      setOpenSnackbar(true);
+      return;
+    }
   
     try {
-      for (const hocPhanId of selectedDeleteHocPhan) {
-        const response = await removeHocPhanFromNganh(nganhId, hocPhanId);
-  
-        if (response.status === 204) {
-          successCount++;
-        } else {
-          failureCount++;
-        }
-      }
-      if (successCount > 0 || failureCount > 0) {
+      const status = await removeCoursesFromProgramme(nganhId, selectedDeleteHocPhan);
+
+      if (status === 204) {
         setSnackbarSeverity("success");
-        setSnackbarMessage(`Đã xóa thành công: ${successCount}, thất bại: ${failureCount}`);
+        setSnackbarMessage(`Đã xóa ${selectedDeleteHocPhan.length} học phần khỏi ngành.`);
         setOpenSnackbar(true);
         setSelectedDeleteHocPhan([]);
+        fetchData();
+        setOpenAlertDialog(false);
       } else {
-        setSnackbarSeverity("info");
-        setSnackbarMessage("Không có học phần nào được chọn.");
+        setSnackbarSeverity("warning");
+        setSnackbarMessage("Yêu cầu xoá trả về mã trạng thái bất thường.");
         setOpenSnackbar(true);
-        setSelectedDeleteHocPhan([]);
       }
-      fetchData();
-      setOpenAlertDialog(false);
+
     } catch (error) {
       console.error("Lỗi khi xóa học phần:", error);
       setSnackbarSeverity("error");
@@ -294,6 +296,7 @@ function DialogHocPhan({ nganhId, open, onClose }) {
     }
   };
   
+  
   const handleOpenAlertDialog = () => {
     setOpenAlertDialog(true);
   };
@@ -302,20 +305,19 @@ function DialogHocPhan({ nganhId, open, onClose }) {
     setSelectedDeleteHocPhan([]);
   };
   const handleToggleCotLoi = (hocPhanId) => {
-    // Cập nhật trạng thái laCotLoi cho cả hocPhanDaChon (nguồn dữ liệu gốc)
     setHocPhanDaChon((prev) =>
       prev.map((hp) =>
-        hp.id === hocPhanId ? { ...hp, laCotLoi: !hp.laCotLoi } : hp
+        hp.id === hocPhanId ? { ...hp, isCore: !hp.isCore } : hp
       )
     );
-
-    // Cập nhật filteredData để UI thay đổi theo (nếu đang hiển thị)
+  
     setFilteredData((prev) =>
       prev.map((hp) =>
-        hp.id === hocPhanId ? { ...hp, laCotLoi: !hp.laCotLoi } : hp
+        hp.id === hocPhanId ? { ...hp, isCore: !hp.isCore } : hp
       )
     );
   };
+  
   
   const handleSaveCotLoi = async () => {
     if (!hasPermission()) {
@@ -324,39 +326,40 @@ function DialogHocPhan({ nganhId, open, onClose }) {
       setOpenSnackbar(true);
       return;
     }
+  
     const updatedHocPhans = filteredData.map((hp) => ({
-      HocPhanId: hp.id,
-      LaCotLoi: hp.laCotLoi
+      CourseId: hp.id,
+      IsCore: hp.isCore
     }));
   
     try {
-      const rp=await updateHocPhanCotLois(nganhId, updatedHocPhans);
-      if(rp.status===200){
+      const response = await updateCourseIsCoreStatus(nganhId, updatedHocPhans);
+      if (response.status === 200) {
         setSnackbarSeverity("success");
         setSnackbarMessage("Cập nhật học phần cốt lõi thành công!");
         setOpenSnackbar(true);
         fetchData();
-      }
-      else{
+      } else {
         setSnackbarSeverity("error");
         setSnackbarMessage("Cập nhật học phần cốt lõi thất bại!");
         setOpenSnackbar(true);
       }
-
-      
     } catch (error) {
-        setSnackbarSeverity("error");
-        setSnackbarMessage("Cập nhật học phần cốt lõi thất bại!");
-        setOpenSnackbar(true);
-        console.log("error",error);
+      setSnackbarSeverity("error");
+      setSnackbarMessage("Cập nhật học phần cốt lõi thất bại!");
+      setOpenSnackbar(true);
+      console.error("Lỗi khi cập nhật học phần cốt lõi:", error);
     }
   };
+  
+  
   const hasChanges = () => {
     return hocPhanDaChon.some((hocPhan) => {
       const original = originalData.find((o) => o.id === hocPhan.id);
-      return original && original.laCotLoi !== hocPhan.laCotLoi;
+      return original && original.isCore !== hocPhan.isCore;
     });
   };
+  
   
   
   const hasPermission = () => {
@@ -377,20 +380,17 @@ function DialogHocPhan({ nganhId, open, onClose }) {
       <DialogTitle fontSize={"18px"} fontWeight={"bold"}>
         Danh sách học phần thuộc ngành:  
         <Typography component="span" color="info.main" fontWeight="bold">
-          {nganh ? ` ${nganh.ten}` : " Đang tải..."}
+          {nganh ? ` ${nganh.name}` : " Đang tải..."}
         </Typography>
 
         <Box sx={{ display: "flex", gap: 10, alignItems: "center", mt: 0.5 }}>
           <DialogContentText component="span">
             Mã ngành:
-            <Typography component="span" color="info.main" fontWeight="500"> {nganh ? nganh.maNganh : "Đang tải..."} </Typography>
+            <Typography component="span" color="info.main" fontWeight="500"> {nganh ? nganh.code : "Đang tải..."} </Typography>
           </DialogContentText>
           <DialogContentText component="span">
             Tổng số tín chỉ: 
             <Typography component="span" color="info.main" fontWeight="500"> {tongSoTinChi ? tongSoTinChi : "0"} </Typography>
-          </DialogContentText>
-          <DialogContentText component="span">
-            Khoa:<Typography component="span" color="info.main" fontWeight="500"> {nganh ? nganh.tenKhoa : "Đang tải..."}</Typography>
           </DialogContentText>
         </Box>
       </DialogTitle>
@@ -550,7 +550,6 @@ function DialogHocPhan({ nganhId, open, onClose }) {
             <StyledTableCell align="center">STT</StyledTableCell>
             <StyledTableCell align="center">Mã học phần</StyledTableCell>
             <StyledTableCell align="center">Tên học phần</StyledTableCell>
-            {/* <StyledTableCell align="center">Thuộc khoa</StyledTableCell> */}
             <StyledTableCell align="center">Số tín chỉ</StyledTableCell>
             <StyledTableCell align="center">Là cốt lõi</StyledTableCell>
           </TableRow>
@@ -573,14 +572,14 @@ function DialogHocPhan({ nganhId, open, onClose }) {
                   />
                 </StyledTableCell>
                 <StyledTableCell align="center" width={50}>{index + 1}</StyledTableCell>
-                <StyledTableCell align="center" width={150}>{row.maHocPhan}</StyledTableCell>
-                <StyledTableCell align="left">{row.ten}</StyledTableCell>
+                <StyledTableCell align="center" width={150}>{row.code}</StyledTableCell>
+                <StyledTableCell align="left">{row.name}</StyledTableCell>
                 {/* <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell> */}
-                <StyledTableCell align="center" width={150}>{row.soTinChi}</StyledTableCell>
+                <StyledTableCell align="center" width={150}>{row.credits  }</StyledTableCell>
                 <StyledTableCell align="center" width={150}>
                   <Checkbox
                     size="small"
-                    checked={row.laCotLoi}
+                    checked={row.isCore}
                     onChange={() => handleToggleCotLoi(row.id)}
                   />
                 </StyledTableCell>

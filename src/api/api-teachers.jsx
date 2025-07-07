@@ -28,13 +28,13 @@ export const getTeacherById = async (id) => {
 // Tạo mới giảng viên
 export const createTeacher = async (data) => {
   const res = await axios.post(API_TEACHERS, data, getAuthHeader());
-  return res.data;
+  return res;
 };
 
 // Cập nhật giảng viên
 export const updateTeacher = async (id, data) => {
   const res = await axios.put(`${API_TEACHERS}/${id}`, data, getAuthHeader());
-  return res.data;
+  return res;
 };
 
 // Xoá giảng viên

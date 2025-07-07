@@ -29,7 +29,7 @@ import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import MenuItem from '@mui/material/MenuItem';
 import Popover from '@mui/material/Popover';
-import { getCourses,createCourse,getCourseById,updateCourse } from "@/api/api-courses";
+import { getCourses } from "@/api/api-courses";
 import { getAllClasses , createClass, getClassById,updateClass} from '../api/api-classes';
 import {getAllTeachers } from '../api/api-teachers';
 import ListIcon from '@mui/icons-material/List';
@@ -154,7 +154,6 @@ function HocPhanPage()
   const [tenHocPhan, setTenHocPhan] = useState("");
   const [errorTenHocPhan, setErrorTenHocPhan] = useState(false);
   const [errorMaHocPhan , setErrorMaHocPhan] = useState(false);
-  const soTinChiRef = useRef("");
   const tenHocPhanRef = useRef("");
   const [maHocPhan, setMaHocPhan] = useState("");
   const [hocPhanId, setHocPhanId] = useState("");

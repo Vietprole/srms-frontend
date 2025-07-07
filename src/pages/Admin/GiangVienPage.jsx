@@ -21,20 +21,16 @@ import { useState, useEffect } from "react";
 import Autocomplete from '@mui/material/Autocomplete';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
-import {
-  getAllFaculties
-} from "@/api/api-faculties";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Layout from '../Layout';
-import {getAllGiangViens,addGiangVien,getGiangVienById,updateGiangVien,deleteGiangVien} from "@/api/api-giangvien";
 import ArrowLeftIcon from "@mui/icons-material/ArrowLeft";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import MenuItem from '@mui/material/MenuItem';
 import Popover from '@mui/material/Popover';
-
-
+import { getAllTeachers ,getTeacherById,createTeacher,updateTeacher,deleteTeacher} from '../../api/api-teachers';
+import {getAllWorkUnits} from '../../api/api-work-units';
 function GiangVienPage() 
 {
   const styles = {
@@ -156,12 +152,12 @@ function GiangVienPage()
   const [searchQuery, setSearchQuery] = useState(""); // Lưu giá trị tìm kiếm
   const [filteredData, setFilteredData] = useState(data); // Lưu dữ liệu đã lọc
   const [selectedKhoa, setSelectedKhoa] = useState(null); // Lưu khoa được chọn
-  const [selectedKhoaFilter, setSelectedKhoaFilter] = useState(null); // Lưu khoa được chọn để lọc dữ liệu
   const [tenGiangVien, setTenGiangVien] = useState("");
   const [errorTenGiangVien, setErrorTenGiangVien] = useState(false);
+  const [maGiangVien, setmaGiangVien] = useState("");
+  const [errorMaGiangVien, setErrorMaGiangVien] = useState(false);
   const [tenKhoa, setTenKhoa] = useState("");
   const [giangVienId, setGiangVienId] = useState(null);
-  const [khoaId, setKhoaId] = useState("");
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10); // tùy chọn mặc định
@@ -204,42 +200,39 @@ function GiangVienPage()
 
 
   const handleOpenEditDialog  = async (giangVienId) => {
-    const giangVien = await getGiangVienById(giangVienId);
-    setTenGiangVien(giangVien.ten);
-    setTenKhoa(giangVien.tenKhoa);
+    const giangVien = await getTeacherById(giangVienId);
+    setTenGiangVien(giangVien.name);
+    setTenKhoa(giangVien.workUnitName);
     setOpenEditDialog(true);
-    setKhoaId(giangVien.khoaId);
     setGiangVienId(giangVienId);
+    setmaGiangVien(giangVien.code);
   };  
   const handleCloseEditDialog = () => {
     setOpenEditDialog(false);
     setTenGiangVien("");
     setTenKhoa("");
-    setKhoaId("");
     setGiangVienId(null);
     setErrorTenGiangVien(false);
   };
 
-  const handleOpenAddDialog = () => {
+  const handleOpenAddDialog = async () => {
+    const khoas = await getAllWorkUnits();
+    setKhoas(khoas);
     setOpenAddDialog(true);
   }
   const handleCloseAddDialog = () => {
     setOpenAddDialog(false);
     setSelectedKhoa(null);
     setTenGiangVien("");
+    setmaGiangVien("");
+    setErrorTenGiangVien(false);
+    setErrorMaGiangVien(false);
+    setSelectedKhoa(null);
+    setKhoas([]); // Reset khoas khi đóng dialog
 
   }
 
-  const handleKhoaChange = (event, newValue) => {
-    setPage(1); // Reset về trang 1 khi thay đổi khoa
-    setSelectedKhoaFilter(newValue);
-    if (!newValue) {
-      setFilteredData(data);
-    } else {
-      const filtered = data.filter((row) => row.tenKhoa === newValue.ten);
-      setFilteredData(filtered);
-    }
-  };
+
 
 
   useEffect(() => {
@@ -248,11 +241,9 @@ function GiangVienPage()
   
   
   const fetchData = async () => {
-    const giangvien = await getAllGiangViens();
+    const giangvien = await getAllTeachers();
     setData(giangvien);
     setFilteredData(giangvien);
-    const khoa = await getAllFaculties();
-    setKhoas(khoa);
   };
   
   
@@ -263,7 +254,7 @@ function GiangVienPage()
       setFilteredData(data); // If search query is empty, show all data
     } else {
       const filtered = data.filter((row) =>
-        row.ten.toLowerCase().includes(query.toLowerCase())
+        row.name.toLowerCase().includes(query.toLowerCase())
       );
       setFilteredData(filtered);
     }
@@ -312,39 +303,49 @@ function GiangVienPage()
       setOpenSnackbar(true);
       return;
     }
+  
+    if (maGiangVien.trim() === "") {
+      setSnackbarSeverity("error");
+      setSnackbarMessage("Vui lòng nhập mã giảng viên");
+      setOpenSnackbar(true);
+      return;
+    }
+  
     if (!selectedKhoa) {
       setSnackbarSeverity("error");
       setSnackbarMessage("Vui lòng chọn khoa");
       setOpenSnackbar(true);
       return;
     }
+  
+    // ✅ Đảm bảo đúng với CreateTeacherDTO
     const newGiangVien = {
-      ten: tenGiangVien,
-      khoaId: selectedKhoa.id,
+      name: tenGiangVien,
+      code: maGiangVien,
+      workUnitId: selectedKhoa.id,
     };
+  
     try {
-      const rp =await addGiangVien(newGiangVien);
-      if(rp.status===201)
-      {
+      const rp = await createTeacher(newGiangVien); // Đổi đúng tên API mới
+  
+      if (rp.status === 201) {
         setSnackbarMessage("Thêm giảng viên thành công");
         setSnackbarSeverity("success");
         setOpenSnackbar(true);
         handleCloseAddDialog();
         fetchData();
-      }
-      else
-      {
-        setSnackbarMessage("Thêm giảng viêm thất bại");
+      } else {
+        setSnackbarMessage("Thêm giảng viên thất bại");
         setSnackbarSeverity("error");
         setOpenSnackbar(true);
       }
     } catch (error) {
-      setSnackbarMessage(error.message);
+      setSnackbarMessage(error?.response?.data || error.message || "Đã xảy ra lỗi");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     }
-
   };
+  
   const handleSubmitEditDialog = async () => {
     if (tenGiangVien.trim() === "") {
       setSnackbarSeverity("error");
@@ -353,11 +354,10 @@ function GiangVienPage()
       return;
     }
     const data = {
-      ten: tenGiangVien,
-      khoaId: khoaId,
+      name: tenGiangVien,
     };
     try {
-      const rp =await updateGiangVien(giangVienId,data);
+      const rp =await updateTeacher(giangVienId,data);
       if(rp.status===200)
       {
         setSnackbarMessage("Cập nhật giảng viên thành công");
@@ -397,7 +397,7 @@ function GiangVienPage()
 
   const handleDeleteGiangVien = async () => {
     try {
-      await deleteGiangVien(giangVienId);
+      await deleteTeacher(giangVienId);
       setSnackbarMessage("Xóa giảng viên thành công");
       setSnackbarSeverity("success");
       setOpenSnackbar(true);
@@ -467,20 +467,7 @@ sx={{
             </Box>
           </Box>
 
- {/* Bộ lọc khoa */}
-<Box sx={{ minWidth: 250, maxWidth: 300 }}>
-  <Autocomplete
-    options={khoas}
-    getOptionLabel={(option) => option.ten || ""}
-    value={selectedKhoaFilter}
-    onChange={handleKhoaChange}
-    renderInput={(params) => (
-      <TextField {...params} label="Chọn khoa" size="small" />
-    )}
-  />
-</Box>
 
-{/* Nút tạo giảng viên */}
 <Box sx={{ display: "flex", justifyContent: "flex-end", flex: 1 }}>
             <Box sx={{ minWidth: 160 }}>
   <Button fullWidth variant="contained" onClick={handleOpenAddDialog}>
@@ -516,9 +503,23 @@ sx={{
         helperText="Vui lòng nhập tên giảng viên"
         autoComplete="off"
       />
+      <TextField
+        autoFocus
+        required
+        id="maGiangVien"
+        margin="dense"
+        label="Mã giảng viên"
+        fullWidth
+        variant="standard"
+        onBlur={(e) => setmaGiangVien(e.target.value.trim())}
+        error={errorMaGiangVien}
+        onInput={(e) => setErrorMaGiangVien(e.target.value.trim() === "")}
+        helperText="Vui lòng nhập mã giảng viên"
+        autoComplete="off"
+      />
       <Autocomplete
         options={khoas}
-        getOptionLabel={(option) => option.ten || ""}
+        getOptionLabel={(option) => option.name || ""}
         noOptionsText="Không tìm thấy khoa"
         required
         id="disable-clearable"
@@ -552,8 +553,8 @@ sx={{
             {paginatedData.map((row, index) => (
               <StyledTableRow key={row.maHocPhan || index}>
                 <StyledTableCell align="center" width={150}>{index + 1}</StyledTableCell>
-                <StyledTableCell align="center">{row.ten}</StyledTableCell>
-                <StyledTableCell align="center" width={450}>{row.tenKhoa}</StyledTableCell>
+                <StyledTableCell align="center">{row.name}</StyledTableCell>
+                <StyledTableCell align="center" width={450}>{row.workUnitName}</StyledTableCell>
                 <StyledTableCell align="center" width={150}>
   <IconButton size="small" onClick={(e) => handleOpenPopover(e, row.id)}>
     <MoreHorizIcon fontSize="small" />
@@ -618,6 +619,20 @@ sx={{
                           onInput={(e) => setErrorTenGiangVien(e.target.value.trim() === "")}
                           helperText="Vui lòng nhập tên giảng viên"
                           autoComplete='off'
+                        />
+                        <TextField
+                          autoFocus
+                          required
+                          id='maGiangVien'
+                          margin="dense"
+                          label="Mã giảng viên"
+                          defaultValue={maGiangVien}
+                          fullWidth
+                          variant="standard"
+                          helperText="Không thể thay đổi mã giảng viên"
+                          autoComplete='off'
+                          focused={false}
+                          InputProps={{ readOnly: true }}
                         />
                         <TextField
                           autoFocus
