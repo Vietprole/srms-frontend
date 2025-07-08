@@ -36,6 +36,7 @@ import ListIcon from '@mui/icons-material/List';
 import VirtualizedAutocomplete from '../components/VirtualizedAutocomplete';
 import {getAllSemesters} from '../api/api-semester';
 import  Stack  from '@mui/material/Stack';
+import { useNavigate } from 'react-router-dom';
 function HocPhanPage() 
 {
   const styles = {
@@ -173,6 +174,8 @@ function HocPhanPage()
 
   const [anchorPosition, setAnchorPosition] = useState(null);
   const [selectedRowId, setSelectedRowId] = useState(null);
+
+  const navigate = useNavigate();
 
   const handleOpenPopover = (event, rowId) => {
     setAnchorPosition({ top: event.clientY + 5, left: event.clientX + 5 });
@@ -699,46 +702,45 @@ function HocPhanPage()
                         <MoreHorizIcon fontSize="small" />
                       </IconButton>
 
-                      {/* Chỉ hiển thị popover nếu đúng hàng */}
-                      {selectedRowId === row.id && (
-                        <Popover
-                          open={Boolean(anchorPosition)}
-                          anchorReference="anchorPosition"
-                          anchorPosition={anchorPosition}
-                          onClose={handleClosePopover}
-                          anchorOrigin={{ vertical: "top", horizontal: "left" }}
-                          transformOrigin={{
-                            vertical: "top",
-                            horizontal: "left",
-                          }}
-                          PaperProps={{ sx: { p: 1.5, minWidth: 120 } }}
-                        >
-                          <MenuItem
-                            onClick={() => {
-                              handleOpenEditDialog(row.id);
-                              handleClosePopover();
-                            }}
-                          >
-                            <EditIcon fontSize="small" sx={{ mr: 1 }} />
-                            Sửa
-                          </MenuItem>
-                          <MenuItem
-                            onClick={() => {
-                              handleOpenEditDialog(row.id);
-                              handleClosePopover();
-                            }}
-                          >
-                            <ListIcon fontSize="small" sx={{ mr: 1 }} />
-                            Kế thừa bài/câu hỏi đánh giá - CLO
-                          </MenuItem>
-                        </Popover>
-                      )}
-                    </StyledTableCell>
-                  </StyledTableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+        {/* Chỉ hiển thị popover nếu đúng hàng */}
+        {selectedRowId === row.id && (
+          <Popover
+            open={Boolean(anchorPosition)}
+            anchorReference="anchorPosition"
+            anchorPosition={anchorPosition}
+            onClose={handleClosePopover}
+            anchorOrigin={{ vertical: "top", horizontal: "left" }}
+            transformOrigin={{ vertical: "top", horizontal: "left" }}
+            PaperProps={{ sx: { p: 1.5, minWidth: 120 } }}
+          >
+            <MenuItem
+              onClick={() => {
+                handleOpenEditDialog(row.id);
+                handleClosePopover();
+              }}
+            >
+              <EditIcon fontSize="small" sx={{ mr: 1 }} />
+              Sửa
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                navigate(`/lophocphan/${row.id}/sinhvien`);
+                handleClosePopover();
+              }}
+            >
+              <ListIcon fontSize="small" sx={{ mr: 1 }} />
+              Quản lý sinh viên
+            </MenuItem>
+
+          </Popover>
+        )}
+      </StyledTableCell>
+    </StyledTableRow>
+  ))}
+</TableBody>
+
+  </Table>
+</TableContainer>
 
           <Dialog
             id="suaLopHocPhan"

@@ -116,7 +116,7 @@ export const addStudentsToClass = async (id, studentIds) => {
       studentIds,
       getAuthHeader()
     );
-    return response.data;
+    return response;
   } catch (error) {
     console.error("addStudentsToClass error:", error);
     throw new Error(error.response?.data || "Lỗi khi thêm sinh viên vào lớp");
@@ -169,5 +169,14 @@ export const updateGradeComposition = async (id, examList) => {
   } catch (error) {
     console.error("updateGradeComposition error:", error);
     throw new Error(error.response?.data || "Lỗi khi cập nhật thành phần điểm");
+  }
+};
+export const getStudentIdsNotInClass = async (id) => {
+  try {
+    const response = await axios.get(`${API_CLASSES}/${id}/students/not-in-class`, getAuthHeader());
+    return response.data; // Trả về mảng các studentId
+  } catch (error) {
+    console.error("getStudentIdsNotInClass error:", error);
+    throw new Error(error.response?.data || "Lỗi khi lấy danh sách sinh viên chưa trong lớp");
   }
 };
