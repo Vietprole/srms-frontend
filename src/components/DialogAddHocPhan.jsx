@@ -31,6 +31,7 @@ import Snackbar from "@mui/material/Snackbar";
 import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
 import VirtualizedAutocomplete from "./VirtualizedAutocomplete";
 import {getProgrammeById,getCoursesNotInProgramme,addCoursesToProgramme,getProgrammes,copyProgrammeStructure} from "../api/api-programmes";
+import {getCourses} from "../api/api-courses";
 // eslint-disable-next-line react/prop-types
 function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
   const styles = {
@@ -161,7 +162,8 @@ function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
       setLoading(true);
       const [nganhData, hocPhans] = await Promise.all([
         getProgrammeById(nganhId),
-        getCoursesNotInProgramme(nganhId),
+        // getCoursesNotInProgramme(nganhId),
+        getCourses({ programmeId: nganhId, excludeProgramme: true }),
       ]);
       console.log("Ngành data:", nganhData);
       console.log("Học phần data:", hocPhans);

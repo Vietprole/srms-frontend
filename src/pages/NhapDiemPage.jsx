@@ -87,6 +87,7 @@ export default function NhapDiemPage() {
         label: `${lopHocPhan.code} - ${lopHocPhan.name}`,
         value: lopHocPhan.id,
       }));
+      console.log("mappedComboBoxItems", mappedComboBoxItems);
       setLopHocPhans(mappedComboBoxItems);
     };
 

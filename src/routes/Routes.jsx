@@ -6,7 +6,8 @@ import SinhVienPage from "@/pages/SinhVienPage";
 import GiangVienPage from "@/pages/Admin/GiangVienPage";
 import HocPhanPage from "@/pages/Admin/HocPhanPage";
 import PLOPage from "@/pages/PLOPage";
-import NoiCLOPLO from "@/pages/chuandaura/MapPLOCLO";
+// import NoiCLOPLO from "@/pages/chuandaura/MapPLOCLO";
+import MapPLOCLOPage from "@/pages/MapPLOCLOPage";
 import LopHocPhanPage from "@/pages/LopHocPhanPage";
 import CongThucDiemPage from "@/pages/CongThucDiemPage";
 import NhapDiemPage from "@/pages/NhapDiemPage";
@@ -78,7 +79,7 @@ const routes = [
   },
   {
     path: "/mapploclo",
-    element: <NoiCLOPLO />,
+    element: <MapPLOCLOPage />,
   },
   {
     path: "/lophocphan",
@@ -103,7 +104,7 @@ const routes = [
         ),
       },
       { path: ":lopHocPhanId/tao-clo", element: <TaoCLO /> },
-      { path: ":lopHocPhanId/noi-plo-clo", element: <NoiCLOPLO /> },
+      { path: ":lopHocPhanId/noi-plo-clo", element: <MapPLOCLOPage /> },
       { path: ":lopHocPhanId/noi-cau-hoi-clo", element: <NoiCauHoiCLO /> },
       { path: ":lopHocPhanId/diem-clo", element: <DiemCLO /> },
       { path: ":lopHocPhanId/diem-pk", element: <DiemPk /> },

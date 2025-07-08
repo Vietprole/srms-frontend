@@ -34,9 +34,9 @@ export const getAllPLOs = async () => {
   }
 };
 
-export const getFilteredPLOs = async (programmeId, classId) => {
+export const getFilteredPLOs = async (programmeId, courseId, classId) => {
   try {
-    const paramsObj = { programmeId, classId };
+    const paramsObj = { programmeId, courseId, classId };
     const url = createSearchURL(API_PLO, paramsObj);
     console.log("url: ", url);
 
@@ -108,7 +108,7 @@ export const deletePLO = async (id) => {
 
 export const getCLOsByPLOId = async (ploId) => {
   try {
-    const response = await axios.get(`${API_PLO}/${ploId}/clo`, {
+    const response = await axios.get(`${API_PLO}/${ploId}/clos`, {
       headers: { Authorization: getAccessToken() },
     });
     return response.data;
@@ -121,7 +121,7 @@ export const getCLOsByPLOId = async (ploId) => {
 
 export const addCLOsToPLO = async (ploId, cloIdsList) => {
   try {
-    const response = await axios.post(`${API_PLO}/${ploId}/clo`, cloIdsList, {
+    const response = await axios.post(`${API_PLO}/${ploId}/clos`, cloIdsList, {
       headers: { Authorization: getAccessToken() },
     });
     toast.success("Thêm CLO vào PLO thành công");
@@ -135,7 +135,7 @@ export const addCLOsToPLO = async (ploId, cloIdsList) => {
 
 export const updateCLOsToPLO = async (ploId, cloIdsList) => {
   try {
-    const response = await axios.put(`${API_PLO}/${ploId}/clo`, cloIdsList, {
+    const response = await axios.put(`${API_PLO}/${ploId}/clos`, cloIdsList, {
       headers: { Authorization: getAccessToken() },
     });
     toast.success("Cập nhật CLO trong PLO thành công");
@@ -149,7 +149,7 @@ export const updateCLOsToPLO = async (ploId, cloIdsList) => {
 
 export const removeCLOsFromPLO = async (ploId, cloId) => {
   try {
-    const response = await axios.delete(`${API_PLO}/${ploId}/clo/${cloId}`, {
+    const response = await axios.delete(`${API_PLO}/${ploId}/clos/${cloId}`, {
       headers: { Authorization: getAccessToken() },
     });
     toast.success("Xoá CLO khỏi PLO thành công");
@@ -191,3 +191,30 @@ export const updateCoursesToPLO = async (ploId, hocPhanIdsList) => {
     throw new Error(error.response?.data || "Lỗi bất định");
   }
 };
+
+export const getCoursesOfPLO = async (ploId) => {
+  try {
+    const response = await axios.get(`${API_PLO}/${ploId}/courses`, {
+      headers: { Authorization: getAccessToken() }
+    });
+    return response.data;
+  } catch (error) {
+    console.log("error message: ", error.message);
+    toast.error(error.response?.data || "Lỗi bất định");
+    throw new Error(error.response?.data || "Lỗi bất định");
+  }
+}
+
+export const upsertCourseOfPLO = async (ploId, coursePLODTO) => {
+  try {
+    const response = await axios.put(`${API_PLO}/${ploId}/courses`, coursePLODTO, {
+      headers: { Authorization: getAccessToken() }
+    });
+    toast.success("Cập nhật học phần trong PLO thành công");
+    return response.data;
+  } catch (error) {
+    console.log("error message: ", error.message);
+    toast.error(error.response?.data || "Lỗi bất định");
+    throw new Error(error.response?.data || "Lỗi bất định");
+  }
+}

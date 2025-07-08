@@ -168,7 +168,7 @@ export default function DiemPk() {
     const fetchData = async () => {
       const [sinhViens, PLOs] = await Promise.all([
         getFilteredStudents(null, null, lopHocPhanId),
-        getFilteredPLOs(null, lopHocPhanId),
+        getFilteredPLOs(null, null, lopHocPhanId),
       ]);
 
       const piDataPromises = PLOs.map((plo) =>
@@ -209,7 +209,7 @@ export default function DiemPk() {
           // Add it to the student's scores object
           studentPkScores[`pi_${pi.id}`] = scoreObj?.pkScore;
         });
-      
+
         // Return student with their CLO scores
         return { ...sv, ...studentPkScores };
       });

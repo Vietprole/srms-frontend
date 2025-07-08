@@ -220,7 +220,7 @@ export default function StudentPLOScore({ studentId }) {
         sinhViens = await getStudentById(studentId).then((sv) => [sv]);
         setNganhId(sinhViens[0].programmeId);
       }
-      let PLOs = await getFilteredPLOs(nganhId, null);
+      let PLOs = await getFilteredPLOs(nganhId, null, null);
 
       const ploScores = await getAllStudentPLOScoresForProgramme(
         nganhId,

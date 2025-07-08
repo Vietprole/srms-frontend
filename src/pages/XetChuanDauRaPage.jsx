@@ -259,7 +259,7 @@ export default function XetChuanDauRaPage() {
         sinhViens = await getStudentById(studentId).then((sv) => [sv]);
         setNganhId(sinhViens[0].nganhId);
       }
-      let PLOs = await getFilteredPLOs(nganhId, null);
+      let PLOs = await getFilteredPLOs(nganhId, null, null);
 
       const ploScores = await getAllStudentPLOScoresForProgramme(
         nganhId,

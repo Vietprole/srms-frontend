@@ -14,7 +14,7 @@ const getAuthHeader = () => ({
  * Lấy danh sách học phần, có thể lọc theo facultyId, programmeId, piId, v.v...
  */
 export const getCourses = async (filters = {}) => {
-  try {
+  try {   
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== null && value !== undefined) {
