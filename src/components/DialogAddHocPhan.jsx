@@ -26,13 +26,11 @@ import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import Autocomplete from "@mui/material/Autocomplete";
 import { styled } from "@mui/material/styles";
-import { getAllHocPhanNotNganhId } from "../api/api-hocphan";
-import { getNganhById,addHocPhansToNganh } from "../api/api-nganh";
 import MuiAlert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
-import { getNganhsByKhoaId,copyNganhStructure } from "../api/api-nganh";
 import VirtualizedAutocomplete from "./VirtualizedAutocomplete";
+import {getProgrammeById,getCoursesNotInProgramme,addCoursesToProgramme,getProgrammes,copyProgrammeStructure} from "../api/api-programmes";
 // eslint-disable-next-line react/prop-types
 function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
   const styles = {
@@ -127,7 +125,7 @@ function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
   const handleOpenDialog = async () => {
     setOpenDialog(true);
     try {
-      const nganhData = await getNganhsByKhoaId(nganh.khoaId);
+      const nganhData = await getProgrammes({});
   
       // ⚠️ Bỏ ctđt hiện tại (nganh.id) khỏi danh sách
       const filtered = nganhData.filter((item) => item.id !== nganh.id);
@@ -162,9 +160,11 @@ function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
     try {
       setLoading(true);
       const [nganhData, hocPhans] = await Promise.all([
-        getNganhById(nganhId),
-        getAllHocPhanNotNganhId(nganhId),
+        getProgrammeById(nganhId),
+        getCoursesNotInProgramme(nganhId),
       ]);
+      console.log("Ngành data:", nganhData);
+      console.log("Học phần data:", hocPhans);
       setNganh(nganhData);
       setHocPhanList(hocPhans);
     } catch (error) {
@@ -193,8 +193,8 @@ function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
   // Lọc theo searchTerm và onlySelected
   const filteredData = hocPhanList.filter((item) => {
     const matchSearch =
-      item.maHocPhan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.ten.toLowerCase().includes(searchTerm.toLowerCase());
+      item.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchSelected = !onlySelected || selectedHocPhan.includes(item.id);
     return matchSearch && matchSelected;
   });
@@ -254,12 +254,14 @@ function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
   
     try {
       setLoading(true);
-      const res = await addHocPhansToNganh(nganhId, selectedHocPhan);
+      const res = await addCoursesToProgramme(nganhId, selectedHocPhan);
   
-      // Gọi callback từ cha để hiển thị snackbar
-      onSavedSuccess?.(res.data || "Thêm học phần thành công!", "success");
-  
-      handleClose(); // Đóng dialog sau khi gọi callback
+      if (res.status === 200) {
+        onSavedSuccess?.("Thêm học phần thành công!", "success");
+        handleClose(); // Đóng dialog sau khi thêm thành công
+      } else {
+        onSavedSuccess?.("Không thể thêm học phần. Vui lòng thử lại.", "error");
+      }
     } catch (error) {
       const message = error?.message || "Đã xảy ra lỗi khi thêm học phần.";
       onSavedSuccess?.(message, "error");
@@ -267,44 +269,8 @@ function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
       setLoading(false);
     }
   };
-  // const handleSaveAddByNganh = async () => {
-  //   if (!selectedNganh || !selectedNganh.id) {
-  //     setSnackbarMessage("Vui lòng chọn ctđt để lấy học phần.");
-  //     setSnackbarSeverity("warning");
-  //     setOpenSnackbar(true);
-  //     return;
-  //   }
   
-  //   try {
-  //     setLoading(true);
-  //     const hocPhansFromNganh = await getHocPhansByNganhId(selectedNganh.id);
-  
-  //     // Lấy danh sách id học phần từ ctđt khác
-  //     const idsFromNganh = hocPhansFromNganh.map((hp) => hp.id);
-  
-  //     // Lọc ra những ID học phần từ ctđt khác có tồn tại trong bảng hiện tại
-  //     const validIds = hocPhanList
-  //       .filter((hp) => idsFromNganh.includes(hp.id))
-  //       .map((hp) => hp.id);
-  
-  //     // Gộp với danh sách đã chọn trước đó (không trùng)
-  //     const merged = Array.from(new Set([...selectedHocPhan, ...validIds]));
-  
-  //     setSelectedHocPhan(merged);
-  //     handleCloseDialog(); // Đóng dialog sau khi lấy học phần
-      
-  //     setSnackbarMessage("Đã thêm học phần từ ctđt khác.");
-  //     setSnackbarSeverity("success");
-  //     setOpenSnackbar(true);
-  //   } catch (error) {
-  //     console.error("Lỗi khi lấy học phần từ ctđt khác:", error);
-  //     setSnackbarMessage("Lỗi khi lấy học phần từ ctđt khác.");
-  //     setSnackbarSeverity("error");
-  //     setOpenSnackbar(true);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+
   const handleSaveAddByNganh = async () => {
     if (!selectedNganh || !selectedNganh.id) {
       setSnackbarMessage("Vui lòng chọn đầy đủ ctđt.");
@@ -315,8 +281,7 @@ function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
   
     try {
       setLoading(true);
-      const response = await copyNganhStructure(nganhId, selectedNganh.id);
-  
+      const response = await copyProgrammeStructure(nganhId, selectedNganh.id);
       if (response?.status === 200) {
         setSnackbarMessage("Đã sao chép học phần từ ctđt khác.");
         setSnackbarSeverity("success");
@@ -349,7 +314,7 @@ function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
       <DialogTitle fontSize={"18px"} fontWeight={"bold"}>
         Thêm học phần vào ctđt:
         <Typography component="span" color="info.main" fontWeight="bold">
-          {nganh ? ` ${nganh.ten}` : " Đang tải..."}
+          {nganh ? ` ${nganh.name}` : " Đang tải..."}
         </Typography>
       </DialogTitle>
 
@@ -420,8 +385,8 @@ function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
                     options={nganhList}
                     value={selectedNganh}
                     onChange={(event, newValue) => setSelectedNganh(newValue)}
-                    getOptionLabel={(option) => `${option.maNganh} - ${option.ten}`}
-                    label="Chọn ctđt"
+                    getOptionLabel={(option) => `${option.code} - ${option.name}`}
+                    label="Chọn ngành"
                     noOptionsText="Không tìm thấy"
                     variant="outlined"
                     size="small"
@@ -475,9 +440,9 @@ function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
             <StyledTableRow key={row.id}>
              
               <StyledTableCell align="center">{startRow + index}</StyledTableCell>
-              <StyledTableCell align="center">{row.maHocPhan}</StyledTableCell>
-              <StyledTableCell align="left">{row.ten}</StyledTableCell>
-              <StyledTableCell align="center">{row.soTinChi}</StyledTableCell>
+              <StyledTableCell align="center">{row.code}</StyledTableCell>
+              <StyledTableCell align="left">{row.name}</StyledTableCell>
+              <StyledTableCell align="center">{row.credits}</StyledTableCell>
               <StyledTableCell align="center">
                 <Checkbox
                   size="small"

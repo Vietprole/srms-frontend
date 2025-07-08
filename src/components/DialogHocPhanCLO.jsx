@@ -3,7 +3,6 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import { useEffect, useState } from "react";
-import { getNganhById } from "@/api/api-nganh";
 import Typography  from "@mui/material/Typography";
 import { Box } from "@mui/material";
 import TextField from "@mui/material/TextField";
@@ -19,7 +18,6 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { styled } from '@mui/material/styles';
 import Checkbox from "@mui/material/Checkbox";
-import { getHocPhansByNganhId } from "@/api/api-nganh";
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -30,6 +28,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import Tooltip from '@mui/material/Tooltip';
 import DialogMapPLOCLO from "./DialogMapPLOCLO";
 import DatasetLinkedIcon from '@mui/icons-material/DatasetLinked';
+import { getProgrammeById,getCoursesInProgramme } from "../api/api-programmes";
 // eslint-disable-next-line react/prop-types
 function DialogHocPhanCLO({ nganhId, open, onClose }) {
   const styles = {
@@ -164,8 +163,9 @@ function DialogHocPhanCLO({ nganhId, open, onClose }) {
 
   const fetchData = async () => {
     try {
-      const nganhs = await getNganhById(nganhId);
-      const hocphans = await getHocPhansByNganhId(nganhId);
+      const nganhs = await getProgrammeById(nganhId);
+      const hocphans = await getCoursesInProgramme(nganhId);
+      console.log("Dữ liệu học phần:", hocphans);
       setHocPhanDaChon(hocphans);
       setFilteredData(hocphans);
       setNganh(nganhs);
@@ -195,13 +195,13 @@ function DialogHocPhanCLO({ nganhId, open, onClose }) {
     // Nếu có tìm kiếm
     if (query.trim()) {
       data = data.filter((row) =>
-        row.ten.toLowerCase().includes(query.toLowerCase())
+        row.name.toLowerCase().includes(query.toLowerCase())
       );
     }
   
     // Nếu có tick checkbox cốt lõi
     if (cotLoiOnly) {
-      data = data.filter((row) => row.laCotLoi);
+      data = data.filter((row) => row.isCore);
     }
   
     setFilteredData(data);
@@ -247,7 +247,7 @@ function DialogHocPhanCLO({ nganhId, open, onClose }) {
       <DialogTitle fontSize={"18px"} fontWeight={"bold"}>
         Danh sách học phần thuộc ctđt:  
         <Typography component="span" color="info.main" fontWeight="bold">
-          {nganh ? ` ${nganh.ten}` : " Đang tải..."}
+          {nganh ? ` ${nganh.name}` : " Đang tải..."}
         </Typography>
       </DialogTitle>
       <DialogContent>
@@ -349,16 +349,16 @@ function DialogHocPhanCLO({ nganhId, open, onClose }) {
               <StyledTableRow key={row.id || index}>
 
                 <StyledTableCell align="center" width={50}>{index + 1}</StyledTableCell>
-                <StyledTableCell align="center" width={150}>{row.maHocPhan}</StyledTableCell>
-                <StyledTableCell align="left">{row.ten}</StyledTableCell>
-                <StyledTableCell align="center" width={150}>{row.soTinChi}</StyledTableCell>
+                <StyledTableCell align="center" width={150}>{row.code}</StyledTableCell>
+                <StyledTableCell align="left">{row.name}</StyledTableCell>
+                <StyledTableCell align="center" width={150}>{row.credits}</StyledTableCell>
                 <StyledTableCell align="center" width={150}>
                 <Checkbox
-                  checked={row.laCotLoi}
+                  checked={row.isCore}
                   readOnly
                   disableRipple
                   sx={{
-                    color: row.laCotLoi ? "green" : "grey.400",
+                    color: row.isCore ? "green" : "grey.400",
                     '&.Mui-checked': {
                       color: "green",
                     },

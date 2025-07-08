@@ -33,7 +33,7 @@ export const getPLOs = async ({ programmeId, classId }) => {
 export const getPLOById = async (id) => {
   try {
     const response = await axios.get(`${API_PLOS}/${id}`, getAuthHeader());
-    return response.data;
+    return response;
   } catch (error) {
     throw new Error(error.response?.data || "Không tìm thấy PLO");
   }
@@ -45,7 +45,7 @@ export const getPLOById = async (id) => {
 export const createPLO = async (data) => {
   try {
     const response = await axios.post(API_PLOS, data, getAuthHeader());
-    return response.data;
+    return response;
   } catch (error) {
     throw new Error(error.response?.data || "Lỗi khi tạo PLO");
   }
@@ -57,7 +57,7 @@ export const createPLO = async (data) => {
 export const updatePLO = async (id, data) => {
   try {
     const response = await axios.put(`${API_PLOS}/${id}`, data, getAuthHeader());
-    return response.data;
+    return response;
   } catch (error) {
     throw new Error(error.response?.data || "Lỗi khi cập nhật PLO");
   }
@@ -68,8 +68,45 @@ export const updatePLO = async (id, data) => {
  */
 export const deletePLO = async (id) => {
   try {
-    await axios.delete(`${API_PLOS}/${id}`, getAuthHeader());
+    const res = await axios.delete(`${API_PLOS}/${id}`, getAuthHeader());
+    return res.status; // 👈 trả về status để bên gọi có thể kiểm tra
   } catch (error) {
     throw new Error(error.response?.data || "Lỗi khi xoá PLO");
+  }
+};
+
+/**
+ * Lấy danh sách CLO của 1 PLO
+ */
+export const getCLOsByPLOId = async (id) => {
+  try {
+    const response = await axios.get(`${API_PLOS}/${id}/clos`, getAuthHeader());
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data || `Lỗi khi lấy CLO của PLO ID ${id}`);
+  }
+};
+
+/**
+ * Lấy danh sách học phần liên kết với 1 PLO
+ */
+export const getCoursesOfPLO = async (id) => {
+  try {
+    const response = await axios.get(`${API_PLOS}/${id}/courses`, getAuthHeader());
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data || `Lỗi khi lấy học phần của PLO ID ${id}`);
+  }
+};
+
+/**
+ * Cập nhật CLO liên kết với 1 PLO
+ */
+export const updateCLOsOfPLO = async (id, cloIds) => {
+  try {
+    const response = await axios.put(`${API_PLOS}/${id}/clos`, cloIds, getAuthHeader());
+    return response;
+  } catch (error) {
+    throw new Error(error.response?.data || `Lỗi khi cập nhật CLO của PLO ID ${id}`);
   }
 };

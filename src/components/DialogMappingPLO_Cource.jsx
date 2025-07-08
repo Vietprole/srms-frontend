@@ -3,7 +3,6 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import { useEffect, useState } from "react";
-import { getNganhById } from "@/api/api-nganh";
 import Typography  from "@mui/material/Typography";
 import DialogContentText from '@mui/material/DialogContentText';
 import { Box } from "@mui/material";
@@ -20,8 +19,6 @@ import Checkbox from "@mui/material/Checkbox";
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import SaveIcon from '@mui/icons-material/Save';
-import { getHocPhansByNganhId } from "@/api/api-nganh";
-import { getPLOsByNganhId, getHocPhansByPLOId, updateHocPhansToPLO } from '@/api/api-plo';
 import { useCallback } from "react";
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
@@ -29,7 +26,9 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
-
+import {getProgrammeById,getCoursesInProgramme} from "@/api/api-programmes";
+import {getPLOs} from "@/api/api-plos";
+import {getCoursePLOs,upsertCoursePLO} from "@/api/api-course-plo";
 // eslint-disable-next-line react/prop-types
 function DialogPLOHocPhan({ nganhId, open, onClose }) {
   const styles = {
@@ -150,7 +149,7 @@ function DialogPLOHocPhan({ nganhId, open, onClose }) {
   const [hocPhanTheoPLO, setHocPhanTheoPLO] = useState({}); // Biến tạm lưu trạng thái checkbox
   const [originalHocPhanTheoPLO, setOriginalHocPhanTheoPLO] = useState({});
   const [selectedPLOs, setSelectedPLOs] = useState([]); // Danh sách ID PLO được chọn
-  const [onlyCore, setOnlyCore] = useState(false);
+  const [onlyCore, setOnlyCore] = useState(true);
   const filteredHocPhan = onlyCore
   ? hocPhanDaChon.filter((hp) => hp.laCotLoi)
   : hocPhanDaChon;
@@ -184,59 +183,64 @@ function DialogPLOHocPhan({ nganhId, open, onClose }) {
 
 
   
-const fetchData = useCallback(async () => {
-  try {
-    const nganhs = await getNganhById(nganhId);
-    const hocphans = await getHocPhansByNganhId(nganhId);
-    console.log("hocphans", hocphans);
-    const totalCredits = hocphans.reduce((total, hp) => total + hp.soTinChi, 0);
-    const plos = await getPLOsByNganhId(nganhId);
-    const ploHocPhanMap = {}; 
-    for (const plo of plos) {
+    const fetchData = useCallback(async () => {
       try {
-        const hpTheoPLO = await getHocPhansByPLOId(plo.id);
-        ploHocPhanMap[plo.id] = hpTheoPLO.map((hp) => hp.id);
+        // Lấy chương trình đào tạo
+        const programme = await getProgrammeById(nganhId);
+    
+        // Lấy danh sách học phần trong CTĐT
+        const hocphans = await getCoursesInProgramme(nganhId); // [{ id, maHocPhan, ten, laCotLoi, soTinChi }]
+        const totalCredits = hocphans.reduce((total, hp) => total + hp.credits, 0);
+    
+        // Lấy danh sách PLO
+        const plos = await getPLOs({ programmeId: nganhId });
+    
+        // Lấy danh sách liên kết Course - PLO
+        const coursePLOs = await getCoursePLOs({ programmeId: nganhId }); // [{ courseId, ploId, weight }]
+    
+        // Tạo map từ PLOId => danh sách CourseId
+        const ploHocPhanMap = {};
+        for (const plo of plos) {
+          ploHocPhanMap[plo.id] = coursePLOs
+            .filter(item => item.ploId === plo.id)
+            .map(item => item.courseId);
+        }
+    
+        // Merge học phần với flags theo từng PLO
+        const mergedList = hocphans.map((hp) => {
+          const ploFlags = {};
+          for (const plo of plos) {
+            ploFlags[`plo${plo.id}`] = ploHocPhanMap[plo.id]?.includes(hp.id) || false;
+          }
+    
+          return {
+            id: hp.id,
+            maHocPhan: hp.code,
+            ten: hp.name,
+            laCotLoi: hp.isCore,
+            ...ploFlags,
+          };
+        });
+    
+        // Set state
+        setNganh(programme);
+        setLsPLO(plos);
+        setHocPhanDaChon(mergedList);
+        setTongSoTinChi(totalCredits);
+    
+        // Lưu bản gốc để theo dõi thay đổi checkbox
+        const originalMap = {};
+        for (const plo of plos) {
+          originalMap[plo.id] = ploHocPhanMap[plo.id];
+        }
+    
+        setHocPhanTheoPLO(originalMap);
+        setOriginalHocPhanTheoPLO(originalMap);
       } catch (error) {
-        console.error(`Lỗi khi lấy học phần của PLO ${plo.id}:`, error);
-        ploHocPhanMap[plo.id] = []; // Đảm bảo có key
+        console.error("Lỗi khi fetch dữ liệu:", error);
       }
-    }
-
-    // Tạo bảng tổng hợp học phần với các PLO bool tương ứng
-    const mergedList = hocphans.map((hp) => {
-      const ploFlags = {};
-      for (const plo of plos) {
-        ploFlags[`plo${plo.id}`] = ploHocPhanMap[plo.id]?.includes(hp.id) || false;
-      }
-
-      return {
-        id: hp.id,
-        maHocPhan: hp.maHocPhan,
-        ten: hp.ten,
-        laCotLoi: hp.laCotLoi, // vẫn giữ boolean
-        ...ploFlags,
-      };
-      
-    });
-
-    // Set state
-    setNganh(nganhs);
-    setLsPLO(plos);
-    setHocPhanDaChon(mergedList);
-    setTongSoTinChi(totalCredits);
-
-    // Ngoài ra, nếu cần lưu trạng thái checkbox ban đầu để check thay đổi
-    const originalMap = {};
-    for (const plo of plos) {
-      originalMap[plo.id] = ploHocPhanMap[plo.id];
-    }
-
-    setHocPhanTheoPLO(originalMap);
-    setOriginalHocPhanTheoPLO(originalMap);
-  } catch (error) {
-    console.error("Lỗi khi fetch dữ liệu:", error);
-  }
-}, [nganhId]);
+    }, [nganhId]);
+    
   useEffect(() => {
     if (open && nganhId) {
       fetchData();
@@ -275,50 +279,70 @@ const fetchData = useCallback(async () => {
   };
   
   
-const handleSavePLOs = async () => {
-  let hasChanges = false;
-  for (const ploId in hocPhanTheoPLO) {
-    const current = hocPhanTheoPLO[ploId] || [];
-    const original = originalHocPhanTheoPLO?.[ploId] || [];
-
-    const currentSorted = [...current].sort();
-    const originalSorted = [...original].sort();
-
-    if (JSON.stringify(currentSorted) !== JSON.stringify(originalSorted)) {
-      hasChanges = true;
-      break;
-    }
-  }
-
-  if (!hasChanges) {
-    setSnackbarSeverity("info");
-    setSnackbarMessage("Không có thay đổi nào để lưu.");
-    setOpenSnackbar(true);
-    return;
-  }
-
-  try {
+  const handleSavePLOs = async () => {
+    let hasChanges = false;
+  
     for (const ploId in hocPhanTheoPLO) {
-      const hocPhanIds = hocPhanTheoPLO[ploId];
-      const rp = await updateHocPhansToPLO(ploId, hocPhanIds); // Gọi API cập nhật
-      if (rp.status !== 200) {
-        throw new Error(`Lỗi khi cập nhật PLO`);
+      const current = hocPhanTheoPLO[ploId] || [];
+      const original = originalHocPhanTheoPLO?.[ploId] || [];
+  
+      const currentSorted = [...current].sort();
+      const originalSorted = [...original].sort();
+  
+      if (JSON.stringify(currentSorted) !== JSON.stringify(originalSorted)) {
+        hasChanges = true;
+        break;
       }
     }
-
-    setSnackbarSeverity("success");
-    setSnackbarMessage("Cập nhật PLO - học phần thành công!");
-
-    // Sau khi lưu xong, cập nhật lại dữ liệu gốc
-    setOriginalHocPhanTheoPLO({ ...hocPhanTheoPLO });
-  } catch (err) {
-    console.error("Lỗi khi lưu:", err);
-    setSnackbarSeverity("error");
-    setSnackbarMessage("Cập nhật thất bại!");
-  } finally {
-    setOpenSnackbar(true);
-  }
-};
+  
+    if (!hasChanges) {
+      setSnackbarSeverity("info");
+      setSnackbarMessage("Không có thay đổi nào để lưu.");
+      setOpenSnackbar(true);
+      return;
+    }
+  
+    try {
+      const allPLOIds = Object.keys(hocPhanTheoPLO).map(Number);
+  
+      for (const ploId of allPLOIds) {
+        const currentList = hocPhanTheoPLO[ploId] || [];
+        const originalList = originalHocPhanTheoPLO[ploId] || [];
+  
+        const allRelatedCourseIds = Array.from(
+          new Set([...currentList, ...originalList])
+        );
+  
+        for (const courseId of allRelatedCourseIds) {
+          const isChecked = currentList.includes(courseId);
+  
+          const payload = {
+            courseId,
+            ploId: Number(ploId),
+            weight: isChecked ? 1 : null,
+          };
+  
+          const rp = await upsertCoursePLO(payload); // Gọi API
+  
+          // ✅ Check status từ response
+          if (rp.status !== 200) {
+            throw new Error(`Lỗi khi cập nhật học phần ${courseId} cho PLO ${ploId}`);
+          }
+        }
+      }
+  
+      setSnackbarSeverity("success");
+      setSnackbarMessage("Cập nhật PLO - học phần thành công!");
+      setOriginalHocPhanTheoPLO({ ...hocPhanTheoPLO }); // cập nhật bản gốc
+    } catch (err) {
+      console.error("Lỗi khi lưu:", err);
+      setSnackbarSeverity("error");
+      setSnackbarMessage("Cập nhật thất bại!");
+    } finally {
+      setOpenSnackbar(true);
+    }
+  };
+  
   
 
   const isDifferent = (a = {}, b = {}) => {
@@ -343,7 +367,7 @@ const handleSavePLOs = async () => {
   .filter((plo) => selectedPLOs.length === 0 || selectedPLOs.includes(plo.id)) // nếu không chọn gì thì hiện tất cả
   .map((plo) => ({
     width: 80,
-    label: plo.ten,
+    label: plo.name,
     dataKey: `plo${plo.id}`,
     align: "center",
     isSticky: false,
@@ -372,20 +396,17 @@ const handleSavePLOs = async () => {
       <DialogTitle fontSize={"18px"} fontWeight={"bold"}>
         Nối PLO - Học phần thuộc ctđt:
         <Typography component="span" color="info.main" fontWeight="bold">
-          {nganh ? ` ${nganh.ten}` : " Đang tải..."}
+          {nganh ? ` ${nganh.name}` : " Đang tải..."}
         </Typography>
   
         <Box sx={{ display: "flex", gap: 10, alignItems: "center", mt: 0.5 }}>
           <DialogContentText component="span">
-            Mã ctđt:
-            <Typography component="span" color="info.main" fontWeight="500"> {nganh ? nganh.maNganh : "Đang tải..."} </Typography>
+            Mã ngành:
+            <Typography component="span" color="info.main" fontWeight="500"> {nganh ? nganh.code : "Đang tải..."} </Typography>
           </DialogContentText>
           <DialogContentText component="span">
             Tổng số tín chỉ: 
             <Typography component="span" color="info.main" fontWeight="500"> {tongSoTinChi ? tongSoTinChi : "0"} </Typography>
-          </DialogContentText>
-          <DialogContentText component="span">
-            Khoa:<Typography component="span" color="info.main" fontWeight="500"> {nganh ? nganh.tenKhoa : "Đang tải..."}</Typography>
           </DialogContentText>
         </Box>
       </DialogTitle>
@@ -403,7 +424,7 @@ const handleSavePLOs = async () => {
         multiple
         size="small"
         options={lsPLO}
-        getOptionLabel={(option) => option.ten}
+        getOptionLabel={(option) => option.name}
         value={lsPLO.filter((plo) => selectedPLOs.includes(plo.id))}
         onChange={(event, newValue) => {
           setSelectedPLOs(newValue.map((plo) => plo.id));
@@ -512,17 +533,18 @@ const handleSavePLOs = async () => {
     return (
       <StyledTableRow key={row.id} sx={{ backgroundColor: rowBgColor }}>
         {columns.map((column, colIndex) => {
-          const value =
-            column.dataKey.startsWith("plo") ? (
-              <Checkbox
-                checked={
-                  hocPhanTheoPLO?.[column.dataKey.replace("plo", "")]?.includes(row.id) || false
-                }
-                onChange={(e) => {
-                  e.stopPropagation();
-                  handleTogglePLOCheckbox(row.id, parseInt(column.dataKey.replace("plo", "")));
-                }}
-              />
+const value =
+column.dataKey.startsWith("plo") ? (
+  <Checkbox
+    checked={
+      hocPhanTheoPLO?.[column.dataKey.replace("plo", "")]?.includes(row.id) || false
+    }
+    disabled={!row.laCotLoi} // ✅ Chỉ cho tick nếu là học phần cốt lõi
+    onChange={(e) => {
+      e.stopPropagation();
+      handleTogglePLOCheckbox(row.id, parseInt(column.dataKey.replace("plo", "")));
+    }}
+  />
             ) : column.dataKey === "laCotLoi" ? (
               <Checkbox
                 checked={row.laCotLoi}

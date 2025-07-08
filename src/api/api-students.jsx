@@ -28,13 +28,13 @@ export const getStudentById = async (id) => {
 // Tạo sinh viên mới
 export const createStudent = async (data) => {
   const res = await axios.post(API_STUDENTS, data, getAuthHeader());
-  return res.data;
+  return res;
 };
 
 // Cập nhật thông tin sinh viên
 export const updateStudent = async (id, data) => {
   const res = await axios.put(`${API_STUDENTS}/${id}`, data, getAuthHeader());
-  return res.data;
+  return res;
 };
 
 // Xóa sinh viên

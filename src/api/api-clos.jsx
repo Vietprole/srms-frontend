@@ -37,7 +37,7 @@ export const getAllCLOs = async (filters = {}) => {
 export const getCLOById = async (id) => {
   try {
     const response = await axios.get(`${API_CLOS}/${id}`, getAuthHeader());
-    return response.data;
+    return response;
   } catch (error) {
     console.error("getCLOById error:", error);
     throw new Error(error.response?.data || "Không tìm thấy CLO");
@@ -50,7 +50,7 @@ export const getCLOById = async (id) => {
 export const createCLO = async (cloData) => {
   try {
     const response = await axios.post(API_CLOS, cloData, getAuthHeader());
-    return response.data;
+    return response;
   } catch (error) {
     console.error("createCLO error:", error);
     throw new Error(error.response?.data || "Lỗi khi tạo CLO");
@@ -63,7 +63,7 @@ export const createCLO = async (cloData) => {
 export const updateCLO = async (id, updateData) => {
   try {
     const response = await axios.put(`${API_CLOS}/${id}`, updateData, getAuthHeader());
-    return response.data;
+    return response;
   } catch (error) {
     console.error("updateCLO error:", error);
     throw new Error(error.response?.data || "Lỗi khi cập nhật CLO");
@@ -75,9 +75,11 @@ export const updateCLO = async (id, updateData) => {
  */
 export const deleteCLO = async (id) => {
   try {
-    await axios.delete(`${API_CLOS}/${id}`, getAuthHeader());
+    const response = await axios.delete(`${API_CLOS}/${id}`, getAuthHeader());
+    return response.status; // trả về mã status
   } catch (error) {
     console.error("deleteCLO error:", error);
     throw new Error(error.response?.data || "Lỗi khi xoá CLO");
   }
 };
+

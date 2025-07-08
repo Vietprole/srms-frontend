@@ -1,51 +1,43 @@
-import { styled } from "@mui/material/styles";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell, { tableCellClasses } from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import TextField from "@mui/material/TextField";
-import SearchIcon from "@mui/icons-material/Search";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import Box from "@mui/material/Box";
-import { useState, useEffect, useRef } from "react";
-import Autocomplete from "@mui/material/Autocomplete";
-import Snackbar from "@mui/material/Snackbar";
-import MuiAlert from "@mui/material/Alert";
-import EditIcon from "@mui/icons-material/Edit";
-import Layout from "./Layout";
-import ArrowLeftIcon from "@mui/icons-material/ArrowLeft";
-import ArrowRightIcon from "@mui/icons-material/ArrowRight";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-import MenuItem from "@mui/material/MenuItem";
-import Popover from "@mui/material/Popover";
-import {
-  getCourses,
-  createCourse,
-  getCourseById,
-  updateCourse,
-} from "@/api/api-courses";
-import {
-  getAllClasses,
-  createClass,
-  getClassById,
-  updateClass,
-} from "../api/api-classes";
-import { getAllTeachers } from "../api/api-teachers";
-import ListIcon from "@mui/icons-material/List";
-import VirtualizedAutocomplete from "../components/VirtualizedAutocomplete";
-import { getAllSemesters } from "../api/api-semester";
-import Stack from "@mui/material/Stack";
-function HocPhanPage() {
+import * as React from 'react';
+import { styled } from '@mui/material/styles';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell, { tableCellClasses } from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import TextField from '@mui/material/TextField';
+import SearchIcon from '@mui/icons-material/Search';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import Box from '@mui/material/Box';
+import { useState, useEffect,useRef } from "react";
+import Autocomplete from '@mui/material/Autocomplete';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
+import EditIcon from '@mui/icons-material/Edit';
+import Layout from './Layout';
+import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
+import ArrowRightIcon from '@mui/icons-material/ArrowRight';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import MenuItem from '@mui/material/MenuItem';
+import Popover from '@mui/material/Popover';
+import { getCourses } from "@/api/api-courses";
+import { getAllClasses , createClass, getClassById,updateClass} from '../api/api-classes';
+import {getAllTeachers } from '../api/api-teachers';
+import ListIcon from '@mui/icons-material/List';
+import VirtualizedAutocomplete from '../components/VirtualizedAutocomplete';
+import {getAllSemesters} from '../api/api-semester';
+import  Stack  from '@mui/material/Stack';
+function HocPhanPage() 
+{
   const styles = {
     main: {
       display: "flex",
@@ -157,8 +149,7 @@ function HocPhanPage() {
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [tenHocPhan, setTenHocPhan] = useState("");
   const [errorTenHocPhan, setErrorTenHocPhan] = useState(false);
-  const [errorMaHocPhan, setErrorMaHocPhan] = useState(false);
-  const soTinChiRef = useRef("");
+  const [errorMaHocPhan , setErrorMaHocPhan] = useState(false);
   const tenHocPhanRef = useRef("");
   const [maHocPhan, setMaHocPhan] = useState("");
   const [hocPhanId, setHocPhanId] = useState("");

@@ -3,7 +3,6 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import { useEffect, useState,useRef } from "react";
-import { getProgrammeById } from "@/api/api-programmes";
 import Typography  from "@mui/material/Typography";
 import DialogContentText from '@mui/material/DialogContentText';
 import { Box } from "@mui/material";
@@ -27,17 +26,11 @@ import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import Autocomplete from '@mui/material/Autocomplete';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import AddIcon from '@mui/icons-material/Add';
-import {
-  createPLO,
-  updatePLO,
-  getPLOById,
-  deletePLO,
-  getPLOs,
-} from "@/api/api-plos";
 import EditIcon from '@mui/icons-material/Edit';
 import Tooltip from '@mui/material/Tooltip';
-import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
-import DialogAddPLO from "./DialogAddPLO";
+import {getProgrammeById } from "@/api/api-programmes";
+import { getPLOs,createPLO,updatePLO, getPLOById, deletePLO } from "../api/api-plos";
+
 // eslint-disable-next-line react/prop-types
 function DialogPLO({ nganhId, open, onClose }) {
   const styles = {
@@ -134,38 +127,32 @@ function DialogPLO({ nganhId, open, onClose }) {
   const moTaPLORef = useRef("");
   const [ploID, setPloID] = useState("");
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [openDialogAdd, setOpenDialogAdd] = useState(false);
 
-  const handleOpenDialogAdd = () => {
-    setOpenDialogAdd(true);
-  };
-  const handleCloseDialogAddFrom = () => {
-    setOpenDialogAdd(false);
-  };
   const handleCloseDeleteDialog = () => {
     setOpenDeleteDialog(false);
     setPloID(null);
   };
-
   const handleDeleteHocPhan = async () => {
     try {
-      const rp = await deletePLO(ploID);
-      if (rp.status !== 204) {
+      const status = await deletePLO(ploID);
+      if (status !== 204) {
         throw new Error("Xóa PLO thất bại");
       }
+  
       setSnackbarMessage("Xóa PLO thành công");
       setSnackbarSeverity("success");
       setOpenSnackbar(true);
       handleCloseDeleteDialog();
       fetchData();
     } catch (error) {
-      setSnackbarMessage("Xóa PLO thất bại");
+      setSnackbarMessage(error.message || "Xóa PLO thất bại");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       handleCloseDeleteDialog();
       console.log(error);
     }
   };
+  
 
   
   const handleOpenDeleteDialog = (idPLO) => {
@@ -210,14 +197,19 @@ function DialogPLO({ nganhId, open, onClose }) {
   const fetchData = async () => {
     try {
       const nganhs = await getProgrammeById(nganhId);
-      const data = await getPLOs(nganhId, null);
+      const data = await getPLOs({ programmeId: nganhId }); // ✅ sửa lại để dùng API mới
       setNganh(nganhs);
-      setPlos(data); // lưu dữ liệu gốc
-      setFilteredData(data); // dùng để hiển thị
+      setPlos(data); // dữ liệu gốc
+      console.log("Dữ liệu PLO:", data);
+      setFilteredData(data); // dữ liệu hiển thị
     } catch (error) {
-      console.error("Lỗi khi lấy dữ liệu ctđt:", error);
+      console.error("Lỗi khi lấy dữ liệu ngành:", error);
+      setSnackbarMessage(error.message || "Lỗi khi lấy dữ liệu ngành");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
     }
   };
+  
   
 
   const handleClose = () => {
@@ -237,7 +229,7 @@ function DialogPLO({ nganhId, open, onClose }) {
   
     if (query.trim()) {
       data = data.filter((row) =>
-        row.ten.toLowerCase().includes(query.toLowerCase())
+        row.name.toLowerCase().includes(query.toLowerCase())
       );
     }
   
@@ -303,9 +295,9 @@ function DialogPLO({ nganhId, open, onClose }) {
       return;
     }
     const ploData = {
-      ten: tenPLO,
-      moTa: moTaPLO,
-      nganhId: nganhId,
+      name: tenPLO,
+      description: moTaPLO,
+      programmeId: nganhId,
     };
     try {
       const rp = await createPLO(ploData);
@@ -361,8 +353,8 @@ function DialogPLO({ nganhId, open, onClose }) {
       return;
     }
     const ploData = {
-      ten: tenPLORef.current,
-      moTa: moTaPLORef.current,
+      name: tenPLORef.current,
+      description: moTaPLORef.current,
     };
 
     try {
@@ -388,10 +380,10 @@ function DialogPLO({ nganhId, open, onClose }) {
   const handleOpenEditDialog = async (ploID) => {
     const plo = await getPLOById(ploID);
     if (plo.status === 200) {
-      setTenPLO(plo.data.ten);
-      setMoTaPLO(plo.data.moTa);
-      tenPLORef.current = plo.data.ten;
-      moTaPLORef.current = plo.data.moTa;
+      setTenPLO(plo.data.name);
+      setMoTaPLO(plo.data.description);
+      tenPLORef.current = plo.data.name;
+      moTaPLORef.current = plo.data.description;
       setPloID(ploID);
       setOpenEditDialog(true);
     } else if (plo.status === 404) {
@@ -419,16 +411,13 @@ function DialogPLO({ nganhId, open, onClose }) {
       <DialogTitle fontSize={"18px"} fontWeight={"bold"}>
         Danh sách các PLO thuộc CTĐT:  
         <Typography component="span" color="info.main" fontWeight="bold">
-          {nganh ? ` ${nganh.ten}` : " Đang tải..."}
+          {nganh ? ` ${nganh.name}` : " Đang tải..."}
         </Typography>
 
         <Box sx={{ display: "flex", gap: 10, alignItems: "center", mt: 0.5 }}>
           <DialogContentText component="span">
-            Mã CTĐT:
-            <Typography component="span" color="info.main" fontWeight="500"> {nganh ? nganh.maNganh : "Đang tải..."} </Typography>
-          </DialogContentText>
-          <DialogContentText component="span">
-            Khoa:<Typography component="span" color="info.main" fontWeight="500"> {nganh ? nganh.tenKhoa : "Đang tải..."}</Typography>
+            Mã ngành:
+            <Typography component="span" color="info.main" fontWeight="500"> {nganh ? nganh.code : "Đang tải..."} </Typography>
           </DialogContentText>
         </Box>
       </DialogTitle>
@@ -469,28 +458,14 @@ function DialogPLO({ nganhId, open, onClose }) {
         value={searchQuery}
         onChange={handleSearchChange}
       />
-            <DialogAddPLO
-              open={openDialogAdd}
-              onClose={handleCloseDialogAddFrom}
-              nganhId={nganhId}
-              onAddSuccess={fetchData} // Callback để cập nhật dữ liệu sau khi thêm
-              />        
+                
     </Box>
   </Box>
 
   {/* Các nút chức năng */}
 
 
-  <Button
-    variant="contained"
-    color="primary"
-    startIcon={<MoveToInboxIcon />}
-    sx={{ height: 40 }}
-    disabled={filteredData.length > 0} // Bị disable nếu có dữ liệu
-    onClick={handleOpenDialogAdd}
-  >
-    Thêm PLO từ CTĐT khác
-  </Button>
+
 
   <Button
     variant="contained"
@@ -656,8 +631,8 @@ function DialogPLO({ nganhId, open, onClose }) {
             paginatedData.map((row, index) => (
               <StyledTableRow key={row.id || index}>
                 <StyledTableCell align="center" width={50}>{index + 1}</StyledTableCell>
-                <StyledTableCell align="center" width={300}>{row.ten}</StyledTableCell>
-                <StyledTableCell align="left">{row.moTa}</StyledTableCell>
+                <StyledTableCell align="center" width={300}>{row.name}</StyledTableCell>
+                <StyledTableCell align="left">{row.description}</StyledTableCell>
                 <StyledTableCell align="center" width={150}>
           <Tooltip title="Sửa thông tin PLO">
             <IconButton size="small" onClick={()=> handleOpenEditDialog(row.id)}>

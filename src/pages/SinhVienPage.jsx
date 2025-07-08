@@ -25,23 +25,16 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Layout from './Layout';
 import { useSearchParams } from "react-router-dom";
-import {
-  getSinhViens,
-  deleteSinhVien,
-  addSinhVien,
-  updateSinhVien,
-  getSinhVienById
-} from "@/api/api-sinhvien";
+
 import { getAllFaculties } from "@/api/api-faculties";
-import { getAllNganhs } from "@/api/api-nganh";
-import { getGiangVienId, getRole } from "@/utils/storage";
-import { getNganhsByKhoaId } from "@/api/api-nganh"; 
 import ArrowLeftIcon from "@mui/icons-material/ArrowLeft";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-
+import {getProgrammes} from "@/api/api-programmes";
+import {getAllStudents,createStudent,getStudentById,updateStudent,deleteStudent} from "@/api/api-students";
+import { getRole } from '../utils/storage';
 const role = getRole();
-const giangVienId = getGiangVienId();
+
 
 const styles = {
   main: {
@@ -177,26 +170,18 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 export default function SinhVienPage() {
   const [searchParams] = useSearchParams();
   const lopHocPhanIdParam = searchParams.get("lopHocPhanId");
-  const khoaIdParam = searchParams.get("khoaId");
-  const nganhIdParam = searchParams.get("nganhId");
   const [data, setData] = useState([]);
   const [khoaItems, setKhoaItems] = useState([]);
   const [nganhItems, setNganhItems] = useState([]);
-  const [khoaId, setKhoaId] = useState(khoaIdParam);
   const [lopHocPhanId, setLopHocPhanId] = useState(lopHocPhanIdParam);
-  const [nganhId, setNganhId] = useState(nganhIdParam);
   
-  useEffect(() => {
-    setKhoaId(khoaIdParam);
-  }, [khoaIdParam]);
+
   
   useEffect(() => {
     setLopHocPhanId(lopHocPhanIdParam);
   }, [lopHocPhanIdParam]);
   
-  useEffect(() => {
-    setNganhId(nganhIdParam);
-  }, [nganhIdParam]);
+
   
 
   const [openAddDialog, setOpenAddDialog] = useState(false);
@@ -207,8 +192,10 @@ export default function SinhVienPage() {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [tenSinhVien, setTenSinhVien] = useState("");
+  const [maSinhVien, setMaSinhVien] = useState("");
   const [selectedKhoa, setSelectedKhoa] = useState(null);
   const [selectedNganh, setSelectedNganh] = useState(null);
+  const [selectedAddNganh, setSelectedAddNganh] = useState(null);
   const [namNhapHoc, setNamNhapHoc] = useState("");
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [filteredData, setFilteredData] = useState([]);
@@ -239,27 +226,36 @@ export default function SinhVienPage() {
   const paginatedData = filteredData.slice((page - 1) * pageSize, page * pageSize);
 
   const fetchData = useCallback(async () => {
-    const dataKhoa = await getAllFaculties();
-    const mappedKhoaItems = dataKhoa.map(khoa => ({ label: khoa.ten, value: khoa.id }));
-    setKhoaItems(mappedKhoaItems);
-
-    const dataNganh = await getAllNganhs();
-    const mappedNganhItems = dataNganh.map(nganh => ({ label: nganh.ten, value: nganh.id }));
-    setNganhItems(mappedNganhItems);
-
-    if (role === "GiangVien" && giangVienId != 0) {
-
-      const dataSinhVien = await getSinhViens(khoaId, nganhId, lopHocPhanId);
+    try {
+      const dataKhoa = await getAllFaculties();
+      const mappedKhoaItems = dataKhoa.map(khoa => ({ label: khoa.name, value: khoa.id }));
+      setKhoaItems(mappedKhoaItems);
+  
+      const dataNganh = await getProgrammes({});
+      const mappedNganhItems = dataNganh.map((nganh) => ({
+        label: `${nganh.code} ${nganh.name}`, // 👈 đảm bảo không trùng label
+        value: nganh.id,
+      }));
+      
+      setNganhItems(mappedNganhItems);
+  
+      // Xây dựng params linh hoạt
+      const params = {};
+      if (selectedKhoa) params.facultyId = selectedKhoa.value;
+      if (selectedNganh) params.programmeId = selectedNganh.value;
+  
+      const dataSinhVien = await getAllStudents(params);
+  
       setData(dataSinhVien);
       setFilteredData(dataSinhVien);
-      return;
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách sinh viên:", error);
+      setSnackbarMessage("Lỗi khi tải dữ liệu sinh viên.");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
     }
-
-    const dataSinhVien = await getSinhViens(khoaId, nganhId, lopHocPhanId);
-    console.log("dataSinhVien: ", dataSinhVien);
-    setData(dataSinhVien);
-    setFilteredData(dataSinhVien);
-  }, [khoaId, nganhId, lopHocPhanId]);
+  }, [selectedKhoa, selectedNganh, lopHocPhanId]);
+  
 
   useEffect(() => {
     fetchData();
@@ -267,18 +263,25 @@ export default function SinhVienPage() {
 
   const handleDeleteSinhVien = async () => {
     try {
-      await deleteSinhVien(selectedStudentId);
-      setSnackbarMessage("Xóa sinh viên thành công");
-      setSnackbarSeverity("success");
-      setOpenSnackbar(true);
-      handleCloseDeleteDialog();
-      fetchData(); // Cập nhật lại danh sách sinh viên
+      const success = await deleteStudent(selectedStudentId); // ✅ dùng đúng hàm API mới
+      if (success) {
+        setSnackbarMessage("Xóa sinh viên thành công");
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
+        handleCloseDeleteDialog();
+        fetchData(); // Refresh lại danh sách
+      } else {
+        setSnackbarMessage("Không thể xóa sinh viên");
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
+      }
     } catch (error) {
-      setSnackbarMessage(error.message);
+      setSnackbarMessage(error.message || "Lỗi khi xóa sinh viên");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     }
   };
+  
 
   const handleOpenAddDialog = () => {
     setOpenAddDialog(true);
@@ -287,79 +290,87 @@ export default function SinhVienPage() {
   const handleCloseAddDialog = () => {
     setOpenAddDialog(false);
     setTenSinhVien("");
-    setSelectedKhoa(null);
     setSelectedNganh(null);
     setNamNhapHoc("");
+    setMaSinhVien("");
+    setSelectedAddNganh(null);
   };
 
   const handleSubmitAdd = async () => {
-    if (!tenSinhVien || !selectedKhoa || !selectedNganh || !namNhapHoc) {
+    if (!tenSinhVien || !maSinhVien || !selectedAddNganh || !namNhapHoc) {
       setSnackbarSeverity("error");
       setSnackbarMessage("Vui lòng điền đầy đủ thông tin");
       setOpenSnackbar(true);
       return;
     }
-
+  
     const newSinhVien = {
-      ten: tenSinhVien,
-      khoaId: selectedKhoa.value,
-      nganhId: selectedNganh.value,
-      namNhapHoc: parseInt(namNhapHoc)
+      name: tenSinhVien,
+      code: maSinhVien,
+      programmeId: selectedAddNganh.value,
+      enrollmentYear: parseInt(namNhapHoc)
     };
-
+  
     try {
-      const response = await addSinhVien(newSinhVien);
-      if (response) {
+      const response = await createStudent(newSinhVien); // dùng đúng hàm `createStudent`
+      if (response?.status === 201) {
         setSnackbarMessage("Thêm sinh viên thành công");
         setSnackbarSeverity("success");
         setOpenSnackbar(true);
         handleCloseAddDialog();
         fetchData();
+      } else {
+        setSnackbarMessage("Thêm sinh viên thất bại");
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
       }
     } catch (error) {
-      setSnackbarMessage(error.message);
+      setSnackbarMessage(error.message || "Lỗi khi thêm sinh viên");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     }
   };
-
   const handleSubmitEdit = async () => {
-    if (!tenSinhVien || !selectedKhoa || !selectedNganh || !namNhapHoc) {
+    if (!tenSinhVien || !selectedAddNganh || !namNhapHoc) {
       setSnackbarSeverity("error");
       setSnackbarMessage("Vui lòng điền đầy đủ thông tin");
       setOpenSnackbar(true);
       return;
     }
-
+  
     const updatedSinhVien = {
-      ten: tenSinhVien,
-      khoaId: selectedKhoa.value,
-      nganhId: selectedNganh.value,
-      namNhapHoc: parseInt(namNhapHoc)
+      name: tenSinhVien,
+      programmeId: selectedAddNganh.value,
+      enrollmentYear: parseInt(namNhapHoc)
     };
-
+  
     try {
-      const response = await updateSinhVien(selectedStudentId, updatedSinhVien);
-      if (response) {
+      const response = await updateStudent(selectedStudentId, updatedSinhVien);
+      if (response?.status === 200) {
         setSnackbarMessage("Cập nhật sinh viên thành công");
         setSnackbarSeverity("success");
         setOpenSnackbar(true);
         handleCloseEditDialog();
-        fetchData(); // Cập nhật lại danh sách sinh viên
+        fetchData();
+      } else {
+        setSnackbarMessage("Cập nhật sinh viên thất bại");
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
       }
     } catch (error) {
-      setSnackbarMessage(error.message);
+      setSnackbarMessage(error.message || "Lỗi khi cập nhật sinh viên");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     }
   };
+  
 
   const handleOpenEditDialog = async (sinhVienId) => {
-    const sinhVien = await getSinhVienById(sinhVienId);
-    setTenSinhVien(sinhVien.ten);
-    setSelectedKhoa({ value: sinhVien.khoaId, label: sinhVien.tenKhoa });
-    setSelectedNganh({ value: sinhVien.nganhId, label: sinhVien.tenNganh });
-    setNamNhapHoc(sinhVien.namNhapHoc);
+    const sinhVien = await getStudentById(sinhVienId);
+    setTenSinhVien(sinhVien.name);
+    setMaSinhVien(sinhVien.code);
+    setSelectedAddNganh({ value: sinhVien.programmeId, label: sinhVien.programmeName });
+    setNamNhapHoc(sinhVien.enrollmentYear);
     setSelectedStudentId(sinhVienId);
     setOpenEditDialog(true);
   };
@@ -370,6 +381,8 @@ export default function SinhVienPage() {
     setSelectedKhoa(null);
     setSelectedNganh(null);
     setNamNhapHoc("");
+    setMaSinhVien("");
+    setSelectedAddNganh(null);
   };
 
   const handleOpenDeleteDialog = (sinhVienId) => {
@@ -386,25 +399,8 @@ export default function SinhVienPage() {
     setPage(1);
     setSelectedKhoa(newValue);
     setSelectedNganh(null);
-    
-    if (newValue) {
-      const dataNganh = await getNganhsByKhoaId(newValue.value);
-      const mappedNganhItems = dataNganh.map(nganh => ({
-        label: nganh.ten,
-        value: nganh.id
-      }));
-      setNganhItems(mappedNganhItems);
-    } else {
-      setNganhItems([]);
-    }
-    
     filterData(newValue, null);
   };
-
-  // const handleNganhChange = (event, newValue) => {
-  //   setSelectedNganh(newValue);
-  //   filterData(selectedKhoa, newValue);
-  // };
 
   const filterData = (khoa, nganh) => {
     let filteredData = data;
@@ -420,21 +416,30 @@ export default function SinhVienPage() {
     setFilteredData(filteredData);
   };
 
-  const handleKhoaChangeInForm = async (event, newValue) => {
-    setSelectedKhoa(newValue);
-    setSelectedNganh(null);
-
-    if (newValue) {
-      const dataNganh = await getNganhsByKhoaId(newValue.value);
-      const mappedNganhItems = dataNganh.map(nganh => ({
-        label: nganh.ten,
-        value: nganh.id
-      }));
-      setNganhItems(mappedNganhItems);
+  const handleSearchChange = (event) => {
+    const query = event.target.value.trim();
+    setSearchQuery(query);
+  
+    const lowerQuery = query.toLowerCase();
+  
+    let filtered = [];
+  
+    // Nếu bắt đầu bằng số → tìm theo mã sinh viên (code)
+    if (/^\d/.test(lowerQuery)) {
+      filtered = data.filter((sv) =>
+        sv.code.toLowerCase().includes(lowerQuery)
+      );
     } else {
-      setNganhItems([]);
+      // Ngược lại → tìm theo tên sinh viên
+      filtered = data.filter((sv) =>
+        sv.name.toLowerCase().includes(lowerQuery)
+      );
     }
+  
+    setPage(1); // Reset về trang đầu
+    setFilteredData(filtered);
   };
+  
   return (
     <Layout>
       <div style={styles.main}>
@@ -466,22 +471,23 @@ export default function SinhVienPage() {
         },
       }}
     >
-      <TextField
-        fullWidth
-        placeholder="Tìm kiếm theo tên sinh viên..."
-        variant="standard"
-        autoComplete="off"
-        InputProps={{
-          disableUnderline: true,
-          startAdornment: (
-            <IconButton>
-              <SearchIcon sx={{ color: "#888" }} />
-            </IconButton>
-          ),
-        }}
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-      />
+    <TextField
+      fullWidth
+      placeholder="Tìm kiếm theo tên sinh viên..."
+      variant="standard"
+      autoComplete="off"
+      InputProps={{
+        disableUnderline: true,
+        startAdornment: (
+          <IconButton>
+            <SearchIcon sx={{ color: "#888" }} />
+          </IconButton>
+        ),
+      }}
+      value={searchQuery}
+      onChange={handleSearchChange} // 👈 Gắn hàm này
+    />
+
     </Box>
   </Box>
 
@@ -498,24 +504,25 @@ export default function SinhVienPage() {
     />
   </Box>
 
-  {/* Dropdown chọn CTĐT */}
-  {selectedKhoa && (
+  {/* Dropdown chọn Ngành */}
     <Box sx={{ width: "22%", height: 40 }}>
-      <Autocomplete
-        options={nganhItems}
-        getOptionLabel={(option) => option.label || ""}
-        value={selectedNganh}
-        onChange={(event, newValue) => {
-          setPage(1);
-          setSelectedNganh(newValue);
-          filterData(selectedKhoa, newValue);
-        }}
-        renderInput={(params) => (
-          <TextField {...params} label="Chọn CTĐT" size="small" />
-        )}
-      />
-    </Box>
+    <Autocomplete
+  options={nganhItems}
+  getOptionLabel={(option) => option.label || ""}
+  isOptionEqualToValue={(option, value) => option.value === value.value} // tránh so sánh toàn object
+  value={selectedNganh}
+  onChange={(event, newValue) => {
+    setPage(1);
+    setSelectedNganh(newValue);
+    filterData(selectedKhoa, newValue);
+  }}
+  renderInput={(params) => (
+    <TextField {...params} label="Chọn Ngành" size="small" />
   )}
+/>
+
+    </Box>
+
   {(role === "Admin" || role === "PhongDaoTao") && (
     <Box
       sx={{
@@ -541,14 +548,6 @@ export default function SinhVienPage() {
 
 
         <div style={styles.table}>
-        {/* <TableVirtuoso
-  data={filteredData}
-  components={VirtuosoTableComponents}
-  fixedHeaderContent={fixedHeaderContent}
-  itemContent={rowContent}
-  style={{ width: "100%", height: "calc(100vh - 00px)" }}
-/> */}
-
           <TableContainer component={Paper}>
             <Table sx={{ minWidth: 700 }} aria-label="customized table">
               <TableHead sx={{position: 'sticky', top: 0, zIndex: 1, backgroundColor: "#0071A6"}}>
@@ -556,8 +555,7 @@ export default function SinhVienPage() {
                   <StyledTableCell align="center">STT</StyledTableCell>
                   <StyledTableCell align="center">Mã sinh viên</StyledTableCell>
                   <StyledTableCell align="center">Tên sinh viên</StyledTableCell>
-                  <StyledTableCell align="center">Khoa</StyledTableCell>
-                  <StyledTableCell align="center">CTĐT</StyledTableCell>
+                  <StyledTableCell align="center">Ngành</StyledTableCell>
                   <StyledTableCell align="center">Năm nhập học</StyledTableCell>
                   {(role === "Admin" || role === "PhongDaoTao") && (
                     <StyledTableCell align="center">Thao tác</StyledTableCell>
@@ -567,12 +565,11 @@ export default function SinhVienPage() {
               <TableBody>
                 {paginatedData.map((row, index) => (
                   <StyledTableRow key={row.id}>
-                    <StyledTableCell align="center">{index + 1}</StyledTableCell>
-                    <StyledTableCell align="center">{row.maSinhVien}</StyledTableCell>
-                    <StyledTableCell align="center">{row.ten}</StyledTableCell>
-                    <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
-                    <StyledTableCell align="center">{row.tenNganh}</StyledTableCell>
-                    <StyledTableCell align="center">{row.namNhapHoc}</StyledTableCell>
+                    <StyledTableCell align="center">{startRow + index}</StyledTableCell>
+                    <StyledTableCell align="center">{row.code}</StyledTableCell>
+                    <StyledTableCell align="center">{row.name}</StyledTableCell>
+                    <StyledTableCell align="center">{row.programmeName}</StyledTableCell>
+                    <StyledTableCell align="center">{row.enrollmentYear}</StyledTableCell>
                     {(role === "Admin" || role === "PhongDaoTao") && (
                       <StyledTableCell align="center">
                         <Tooltip title="Sửa sinh viên">
@@ -691,30 +688,24 @@ export default function SinhVienPage() {
               helperText="Vui lòng nhập tên sinh viên"
               autoComplete='off'
             />
-            
-            <Autocomplete
-              options={khoaItems}
-              getOptionLabel={(option) => option.label || ""}
-              value={selectedKhoa}
-              onChange={handleKhoaChangeInForm}
-              renderInput={(params) => (
-                <TextField 
-                  {...params} 
-                  label="Chọn khoa" 
-                  variant="standard"
-                  margin="dense"
-                  required
-                  helperText="Khoa của sinh viên"
-                />
-              )}
+             <TextField
+              required
+              margin="dense"
+              label="Mã sinh viên"
+              fullWidth
+              variant="standard"
+              value={maSinhVien}
+              onChange={(e) => setMaSinhVien(e.target.value)}
+              helperText="Vui lòng nhập mã sinh viên"
+              autoComplete='off'
             />
 
-            {selectedKhoa && (
+
               <Autocomplete
                 options={nganhItems}
                 getOptionLabel={(option) => option.label || ""}
-                value={selectedNganh}
-                onChange={(event, newValue) => setSelectedNganh(newValue)}
+                value={selectedAddNganh}
+                onChange={(event, newValue) => setSelectedAddNganh(newValue)}
                 renderInput={(params) => (
                   <TextField 
                     {...params} 
@@ -726,7 +717,7 @@ export default function SinhVienPage() {
                   />
                 )}
               />
-            )}
+
 
             <TextField
               required
@@ -765,42 +756,38 @@ export default function SinhVienPage() {
               helperText="Vui lòng nhập tên sinh viên"
               autoComplete='off'
             />
+            <TextField
+              required
+              margin="dense"
+              label="Mã sinh viên"
+              fullWidth
+              variant="standard"
+              defaultValue={maSinhVien}
+              helperText="Vui lòng nhập mã sinh viên"
+              autoComplete='off'
+              focused={false}
+              InputProps={{ readOnly: true }}
+            />
+            
             
             <Autocomplete
-              options={khoaItems}
+              options={nganhItems}
               getOptionLabel={(option) => option.label || ""}
-              value={selectedKhoa}
-              onChange={handleKhoaChangeInForm}
+              value={selectedAddNganh}
+              onChange={(event, newValue) => setSelectedAddNganh(newValue)}
               renderInput={(params) => (
                 <TextField 
                   {...params} 
-                  label="Chọn khoa" 
+                  label="Chọn ngành" 
                   variant="standard"
                   margin="dense"
                   required
-                  helperText="Khoa của sinh viên"
+                  helperText="Ngành của sinh viên"
                 />
               )}
             />
 
-            {selectedKhoa && (
-              <Autocomplete
-                options={nganhItems}
-                getOptionLabel={(option) => option.label || ""}
-                value={selectedNganh}
-                onChange={(event, newValue) => setSelectedNganh(newValue)}
-                renderInput={(params) => (
-                  <TextField 
-                    {...params} 
-                    label="Chọn ctđt" 
-                    variant="standard"
-                    margin="dense"
-                    required
-                    helperText="CTĐT sinh viên nhập học"
-                  />
-                )}
-              />
-            )}
+           
 
             <TextField
               required

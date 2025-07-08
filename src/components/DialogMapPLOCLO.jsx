@@ -16,19 +16,19 @@ import TableRow from '@mui/material/TableRow';
 import { styled } from '@mui/material/styles';
 import Checkbox from "@mui/material/Checkbox";
 import Snackbar from '@mui/material/Snackbar';
-import MuiAlert from '@mui/material/Alert';
+import { Alert } from '@mui/material';
+
 import SaveIcon from '@mui/icons-material/Save';
-import { getPLOsByNganhId,   } from '@/api/api-plo';
 import { useCallback } from "react";
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
-import { getCLOsByPLOId, updateCLOsToPLO } from '@/api/api-plo';
-import { getCLOsByHocPhanId } from '@/api/api-clo';
 import DialogContentText from "@mui/material/DialogContentText";
-import { getHocPhanById} from "@/api/api-hocphan";
+import {getCourseById} from "@/api/api-courses";
+import { getAllCLOs } from "../api/api-clos";
+import {getPLOs,getCLOsByPLOId,updateCLOsOfPLO} from "@/api/api-plos";
 // eslint-disable-next-line react/prop-types
 function DialogPLOHocPhan({ nganhId, open, onClose ,hocPhanId}) {
   const styles = {
@@ -179,14 +179,17 @@ function DialogPLOHocPhan({ nganhId, open, onClose ,hocPhanId}) {
     if (!nganhId || !hocPhanId) return;
   
     try {
-      const hocPhanResponse = await getHocPhanById(hocPhanId);
-      console.log("hocPhanResponse:", hocPhanResponse); // Kiểm tra dữ liệu học phần
+      // Lấy thông tin học phần
+      const hocPhanResponse = await getCourseById(hocPhanId);
       setHocPhanData(hocPhanResponse);
-      const cloList = await getCLOsByHocPhanId(hocPhanId);
-      // Rút trích danh sách học kỳ duy nhất từ cloList
-
-      const ploList = await getPLOsByNganhId(nganhId);
   
+      // Lấy CLO theo courseId
+      const cloList = await getAllCLOs({ courseId: hocPhanId });
+  
+      // Lấy danh sách PLO theo ngành
+      const ploList = await getPLOs({ programmeId: nganhId });
+  
+      // Lấy mapping CLO theo từng PLO
       const ploCloMap = {};
       for (const plo of ploList) {
         try {
@@ -198,43 +201,34 @@ function DialogPLOHocPhan({ nganhId, open, onClose ,hocPhanId}) {
         }
       }
   
-      // Gán vào bảng hiển thị
-      // Gán vào bảng hiển thị
-const mergedList = cloList.map((clo) => {
-  const ploFlags = {};
-  for (const plo of ploList) {
-    ploFlags[`plo${plo.id}`] = ploCloMap[plo.id]?.includes(clo.id) || false;
-  }
-
-  return {
-    id: clo.id,
-    ten: clo.ten,
-    hocKy: clo.tenHocKy,
-    ...ploFlags,
-  };
-});
-
-// 🟢 Sắp xếp mergedList theo học kỳ (tenHocKy) để hiển thị gọn gàng khi chưa lọc
-const sortedMergedList = mergedList
-  .sort((a, b) => {
-    // So sánh theo học kỳ trước
-    if (a.hocKy < b.hocKy) return -1;
-    if (a.hocKy > b.hocKy) return 1;
-
-    // Nếu cùng học kỳ, so sánh theo tên CLO
-    return a.ten.localeCompare(b.ten);
-  });
-
-
-setHocPhanDaChon(sortedMergedList); // dùng list đã sort
-setLsPLO(ploList);
-setHocPhanTheoPLO(ploCloMap);
-setOriginalHocPhanTheoPLO(ploCloMap);
-
+      // Gộp dữ liệu CLO với flag PLO
+      const mergedList = cloList.map((clo) => {
+        const ploFlags = {};
+        for (const plo of ploList) {
+          ploFlags[`plo${plo.id}`] = ploCloMap[plo.id]?.includes(clo.id) || false;
+        }
+  
+        return {
+          id: clo.id,
+          ten: clo.name,
+          ...ploFlags,
+        };
+      });
+  
+      // Chỉ sort theo tên CLO (bỏ học kỳ)
+      const sortedMergedList = mergedList.sort((a, b) => a.ten.localeCompare(b.ten));
+  
+      // Cập nhật state
+      setHocPhanDaChon(sortedMergedList);
+      setLsPLO(ploList);
+      setHocPhanTheoPLO(ploCloMap);
+      setOriginalHocPhanTheoPLO(ploCloMap);
+  
     } catch (err) {
       console.error("Lỗi khi fetch dữ liệu:", err);
     }
   }, [nganhId, hocPhanId]);
+  
   
   useEffect(() => {
     if (open && nganhId && hocPhanId) {
@@ -276,7 +270,7 @@ setOriginalHocPhanTheoPLO(ploCloMap);
     .map((plo) => ({
       width: 80,
       maxWidth: 120,
-      label: plo.ten,
+      label: plo.name,
       dataKey: `plo${plo.id}`,
       align: "center",
       isSticky: false,
@@ -305,26 +299,27 @@ setOriginalHocPhanTheoPLO(ploCloMap);
   };
   const handleSavePLOs = async () => {
     try {
-      for (const ploId in hocPhanTheoPLO) {
-        const hocPhanIds = hocPhanTheoPLO[ploId];
-        const response = await updateCLOsToPLO(ploId, hocPhanIds);
-  
+      const updatePromises = Object.entries(hocPhanTheoPLO).map(async ([ploId, cloIds]) => {
+        const response = await updateCLOsOfPLO(ploId, cloIds);
         if (response.status !== 200) {
-          throw new Error("Lưu thất bại với PLO ID: " + ploId);
+          throw new Error(`Lưu thất bại cho PLO ID: ${ploId}`);
         }
-      }
+      });
   
-      setOriginalHocPhanTheoPLO(hocPhanTheoPLO); // cập nhật bản gốc để so sánh thay đổi sau này
+      await Promise.all(updatePromises);
+  
+      setOriginalHocPhanTheoPLO(hocPhanTheoPLO); // Cập nhật bản gốc sau khi lưu thành công
       setSnackbarMessage("Lưu CLO-PLO thành công!");
       setSnackbarSeverity("success");
       setOpenSnackbar(true);
     } catch (error) {
-      console.error("Lỗi khi lưu:", error);
-      setSnackbarMessage("Đã xảy ra lỗi khi lưu dữ liệu.");
+      console.error("Lỗi khi lưu CLO-PLO:", error);
+      setSnackbarMessage(error.message || "Đã xảy ra lỗi khi lưu dữ liệu.");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     }
   };
+  
   
   
   return (
@@ -339,16 +334,13 @@ setOriginalHocPhanTheoPLO(ploCloMap);
       <DialogTitle fontSize={"18px"} fontWeight={"bold"}>
         Nối PLO_CLO thuộc học phần  
         <Typography component="span" color="info.main" fontWeight="bold">
-          {hocPhanData ? ` ${hocPhanData.data.ten}` : " Đang tải..."}
+          {hocPhanData ? ` ${hocPhanData.data.name}` : " Đang tải..."}
         </Typography>
 
         <Box sx={{ display: "flex", gap: 10, alignItems: "center", mt: 0.5 }}>
           <DialogContentText component="span">
             Mã học phần:
-            <Typography component="span" color="info.main" fontWeight="500"> {hocPhanData ? hocPhanData.data.maHocPhan : "Đang tải..."} </Typography>
-          </DialogContentText>
-          <DialogContentText component="span">
-            Khoa:<Typography component="span" color="info.main" fontWeight="500"> {hocPhanData ? hocPhanData.data.tenKhoa : "Đang tải..."}</Typography>
+            <Typography component="span" color="info.main" fontWeight="500"> {hocPhanData ? hocPhanData.data.code : "Đang tải..."} </Typography>
           </DialogContentText>
         </Box>
       </DialogTitle>
@@ -366,7 +358,7 @@ setOriginalHocPhanTheoPLO(ploCloMap);
         multiple
         size="small"
         options={lsPLO}
-        getOptionLabel={(option) => option.ten}
+        getOptionLabel={(option) => option.name}
         value={lsPLO.filter((plo) => selectedPLOs.includes(plo.id))}
         onChange={(event, newValue) => {
           setSelectedPLOs(newValue.map((plo) => plo.id));
@@ -596,21 +588,22 @@ setOriginalHocPhanTheoPLO(ploCloMap);
           </div>
         </div>
 
-        <Snackbar 
-  open={openSnackbar} 
-  autoHideDuration={3000} 
-  onClose={handleSnackbarClose} 
+        <Snackbar
+  open={openSnackbar}
+  autoHideDuration={3000}
+  onClose={handleSnackbarClose}
   anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
 >
-  <MuiAlert
+  <Alert
     onClose={handleSnackbarClose}
     severity={snackbarSeverity}
     variant="filled"
     sx={{ width: '100%' }}
   >
     {snackbarMessage}
-  </MuiAlert>
+  </Alert>
 </Snackbar>
+
           </div>
         ) : (
           <p>Đang tải dữ liệu...</p>

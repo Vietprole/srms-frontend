@@ -95,7 +95,7 @@ export const getCoursesInProgramme = async (id, { facultyId, isCore } = {}) => {
 export const addCoursesToProgramme = async (id, courseIds) => {
   try {
     const response = await axios.post(`${API_PROGRAMMES}/${id}/courses`, courseIds, getAuthHeader());
-    return response.data;
+    return response;
   } catch (err) {
     throw new Error(err.response?.data || "Lỗi khi thêm học phần");
   }
@@ -118,14 +118,17 @@ export const updateCoursesOfProgramme = async (id, courseIds) => {
  */
 export const removeCoursesFromProgramme = async (id, courseIds) => {
   try {
-    await axios.delete(`${API_PROGRAMMES}/${id}/courses`, {
+    const response = await axios.delete(`${API_PROGRAMMES}/${id}/courses`, {
       ...getAuthHeader(),
       data: courseIds,
     });
+
+    return response.status; // Trả về status code, ví dụ 204
   } catch (err) {
     throw new Error(err.response?.data || "Lỗi khi xoá học phần");
   }
 };
+
 
 /**
  * Cập nhật trạng thái cốt lõi (isCore) của các học phần trong chương trình
@@ -137,8 +140,38 @@ export const updateCourseIsCoreStatus = async (id, updateCotLoiDTOs) => {
       updateCotLoiDTOs,
       getAuthHeader()
     );
-    return response.data;
+    return response;
   } catch (err) {
     throw new Error(err.response?.data || "Lỗi khi cập nhật trạng thái học phần cốt lõi");
   }
 };
+
+export const getCoursesNotInProgramme = async (id) => {
+  try {
+    const response = await axios.get(`${API_PROGRAMMES}/${id}/courses/not-in-programme`, getAuthHeader());
+    return response.data;
+  } catch (err) {
+    throw new Error(err.response?.data || "Lỗi khi lấy danh sách học phần chưa có trong chương trình");
+  }
+};
+
+export const copyProgrammeStructure = async (id, sourceProgrammeId) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/${id}/copy-structure`,
+      sourceProgrammeId, // ✅ gửi trực tiếp int
+      {
+        ...getAuthHeader(),
+        headers: {
+          ...getAuthHeader().headers,
+          'Content-Type': 'application/json', // ✅ Bắt buộc để serialize đúng kiểu int
+        },
+      }
+    );
+    return response;
+  } catch (err) {
+    const msg = typeof err?.response?.data === 'string' ? err.response.data : JSON.stringify(err.response?.data);
+    throw new Error(msg || "Lỗi khi sao chép cấu trúc chương trình");
+  }
+};
+

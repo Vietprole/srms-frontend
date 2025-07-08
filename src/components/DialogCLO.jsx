@@ -26,15 +26,10 @@ import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import Autocomplete from '@mui/material/Autocomplete';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import AddIcon from '@mui/icons-material/Add';
-import 
-{
-  getHocPhanById,
-} from "@/api/api-hocphan";
+import {getCourseById} from "../api/api-courses";
 import EditIcon from '@mui/icons-material/Edit';
 import Tooltip from '@mui/material/Tooltip';
-import { getCLOsByHocPhanId,addCLO,updateCLO,deleteCLO, getCLOById } from "../api/api-clo";
-import {getAllSemesters} from '@/api/api-semester'
-import VirtualizedAutocomplete from "./VirtualizedAutocomplete";
+import { getAllCLOs,createCLO,updateCLO,deleteCLO, getCLOById } from "../api/api-clos";
 
 // eslint-disable-next-line react/prop-types
 function DialogCLO({ nganhId, open, onClose }) {
@@ -132,8 +127,6 @@ function DialogCLO({ nganhId, open, onClose }) {
   const moTaPLORef = useRef("");
   const [ploID, setPloID] = useState("");
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [hockys, setHockys] = useState([]);
-  const [selectedHocKy, setSelectedHocKy] = useState(null); // Lưu học kỳ đã chọn
 
   const handleCloseDeleteDialog = () => {
     setOpenDeleteDialog(false);
@@ -142,8 +135,8 @@ function DialogCLO({ nganhId, open, onClose }) {
 
   const handleDeleteHocPhan = async () => {
     try {
-      const rp = await deleteCLO(ploID);
-      if (rp.status !== 204) {
+      const status = await deleteCLO(ploID);
+      if (status !== 204) {
         throw new Error("Xóa CLO thất bại");
       }
       setSnackbarMessage("Xóa CLO thành công");
@@ -152,13 +145,14 @@ function DialogCLO({ nganhId, open, onClose }) {
       handleCloseDeleteDialog();
       fetchData();
     } catch (error) {
-      setSnackbarMessage("Xóa CLO thất bại");
+      setSnackbarMessage(error.message || "Xóa CLO thất bại");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       handleCloseDeleteDialog();
       console.log(error);
     }
   };
+  
 
   
   const handleOpenDeleteDialog = (idPLO) => {
@@ -202,16 +196,19 @@ function DialogCLO({ nganhId, open, onClose }) {
 
   const fetchData = async () => {
     try {
-      const nganhs = await getHocPhanById(nganhId);
-      const data = await getCLOsByHocPhanId(nganhId);
+      const nganhs = await getCourseById(nganhId); // gọi theo id ngành
+      const data = await getAllCLOs({ courseId: nganhId }); // truyền nganhId như là courseId
+  
       console.log("Dữ liệu CLO:", data);
-      setNganh(nganhs);
-      setPlos(data); // lưu dữ liệu gốc
-      setFilteredData(data); // dùng để hiển thị
+      setNganh(nganhs);          // nếu bạn vẫn dùng state này để lưu thông tin ngành
+      setPlos(data);            // lưu dữ liệu gốc
+      setFilteredData(data);    // dùng để hiển thị
     } catch (error) {
-      console.error("Lỗi khi lấy dữ liệu ctđt:", error);
+      console.error("Lỗi khi lấy dữ liệu CLO:", error);
     }
   };
+  
+  
   
 
   const handleClose = () => {
@@ -231,7 +228,7 @@ function DialogCLO({ nganhId, open, onClose }) {
   
     if (query.trim()) {
       data = data.filter((row) =>
-        row.ten.toLowerCase().includes(query.toLowerCase())
+        row.name.toLowerCase().includes(query.toLowerCase())
       );
     }
   
@@ -279,8 +276,6 @@ function DialogCLO({ nganhId, open, onClose }) {
     setErrorMoTaPLO(false);
     setErrorTenPLO(false);
     setOpenAddDialog(false);
-    setHockys([]); // Reset học kỳ khi đóng dialog
-    setSelectedHocKy(null); // Reset học kỳ đã chọn
 
   };
 
@@ -299,21 +294,14 @@ function DialogCLO({ nganhId, open, onClose }) {
       setOpenSnackbar(true);
       return;
     }
-    if (selectedHocKy === null) {
-      setSnackbarMessage("Vui lòng chọn học kỳ cho CLO");
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
-      return;
-    }
     const ploData = {
-      ten: tenPLO,
-      moTa: moTaPLO,
-      hocPhanId: nganhId,
-      hocKyId: selectedHocKy.id, // Sử dụng ID của học kỳ đã chọn
-
+      name: tenPLO,
+      description: moTaPLO,
+      courseId: nganhId, 
     };
+    
     try {
-      const rp = await addCLO(ploData);
+      const rp = await createCLO(ploData);
       if (rp.status === 201) {
         setSnackbarMessage("Thêm CLO thành công");
         setSnackbarSeverity("success");
@@ -333,9 +321,6 @@ function DialogCLO({ nganhId, open, onClose }) {
     }
   };
   const handleOpenAddDialog =async () => {
-    const hockys = await getAllSemesters();
-
-    setHockys(hockys);
     setTenPLO("");
     setMoTaPLO("");
     setErrorTenPLO(false);
@@ -352,7 +337,6 @@ function DialogCLO({ nganhId, open, onClose }) {
     tenPLORef.current = "";
     moTaPLORef.current = "";
     setPloID("");
-    setSelectedHocKy(null); // Reset học kỳ đã chọn
   };
 
   const handleSubmitEdit = async () => {
@@ -371,8 +355,8 @@ function DialogCLO({ nganhId, open, onClose }) {
       return;
     }
     const ploData = {
-      ten: tenPLORef.current,
-      moTa: moTaPLORef.current,
+      name: tenPLORef.current,
+      description: moTaPLORef.current,
     };
 
     try {
@@ -399,23 +383,21 @@ function DialogCLO({ nganhId, open, onClose }) {
     const plo = await getCLOById(ploID);
     console.log("plo data: ", plo);
     if (plo.status === 200) {
-      setTenPLO(plo.data.ten);
-      setMoTaPLO(plo.data.moTa);
-      tenPLORef.current = plo.data.ten;
-      moTaPLORef.current = plo.data.moTa;
+      setTenPLO(plo.data.name);
+      setMoTaPLO(plo.data.description);
+      tenPLORef.current = plo.data.name;
+      moTaPLORef.current = plo.data.description;
       setPloID(ploID);
       setOpenEditDialog(true);
-      setSelectedHocKy(plo.data.tenHocKy); // Giả sử plo.data.tenHocKy là đối tượng học kỳ
     } else if (plo.status === 404) {
-      setSnackbarMessage("Không tìm thấy PLO");
+      setSnackbarMessage("Không tìm thấy CLO");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     } else {
-      setSnackbarMessage("Lỗi không xác định");
+      setSnackbarMessage("Không tìm thấy CLO");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     }
-
   };
 
   return (
@@ -431,16 +413,13 @@ function DialogCLO({ nganhId, open, onClose }) {
       <DialogTitle fontSize={"18px"} fontWeight={"bold"}>
         Danh sách các CLO thuộc học phần:  
         <Typography component="span" color="info.main" fontWeight="bold">
-          {nganh ? ` ${nganh.data.ten}` : " Đang tải..."}
+          {nganh ? ` ${nganh.data.name}` : " Đang tải..."}
         </Typography>
 
         <Box sx={{ display: "flex", gap: 10, alignItems: "center", mt: 0.5 }}>
           <DialogContentText component="span">
             Mã học phần:
-            <Typography component="span" color="info.main" fontWeight="500"> {nganh ? nganh.data.maHocPhan : "Đang tải..."} </Typography>
-          </DialogContentText>
-          <DialogContentText component="span">
-            Khoa:<Typography component="span" color="info.main" fontWeight="500"> {nganh ? nganh.data.tenKhoa : "Đang tải..."}</Typography>
+            <Typography component="span" color="info.main" fontWeight="500"> {nganh ? nganh.data.code : "Đang tải..."} </Typography>
           </DialogContentText>
         </Box>
       </DialogTitle>
@@ -504,9 +483,9 @@ function DialogCLO({ nganhId, open, onClose }) {
                 open={openEditDialog}
                 onClose={handleCloseDialogEdit}
               >
-                <DialogTitle>Sửa thông tin PLO:</DialogTitle>
+                <DialogTitle>Sửa thông tin CLO:</DialogTitle>
                 <DialogContent>
-                  <DialogContentText>Sửa thông tin PLO</DialogContentText>
+                  <DialogContentText>Sửa thông tin CLO</DialogContentText>
                   <TextField
                     autoFocus
                     required
@@ -521,7 +500,7 @@ function DialogCLO({ nganhId, open, onClose }) {
                       setErrorTenPLO(e.target.value.trim() === "");
                     }}
                     error={errorTenPLO}
-                    helperText={errorTenPLO ? "Vui lòng nhập tên PLO" : ""}
+                    helperText={errorTenPLO ? "Vui lòng nhập tên CLO" : ""}
                     autoComplete="off"
                   />
                   <TextField
@@ -529,7 +508,7 @@ function DialogCLO({ nganhId, open, onClose }) {
                     required
                     id="suaMoTaPLO"
                     margin="dense"
-                    label="Mô tả cho PLO"
+                    label="Mô tả cho CLO"
                     variant="standard"
                     fullWidth
                     defaultValue={moTaPLO}
@@ -538,22 +517,8 @@ function DialogCLO({ nganhId, open, onClose }) {
                       setErrorMoTaPLO(e.target.value.trim() === "");
                     }}
                     error={errorMoTaPLO}
-                    helperText={errorMoTaPLO ? "Vui lòng nhập mô tả cho PLO" : ""}
+                    helperText={errorMoTaPLO ? "Vui lòng nhập mô tả cho CLO" : ""}
                     autoComplete="off"
-                  />
-                   <TextField
-                    autoFocus
-                    required
-                    id="hocky"
-                    margin="dense"
-                    label="Thuộc học kỳ"
-                    variant="standard"
-                    fullWidth
-                    defaultValue={selectedHocKy}
-                    autoComplete="off"
-                    focused={false}
-                    InputProps={{ readOnly: true }}
-                    helperText={errorMoTaPLO ? "Học kỳ không thể thay đổi" : ""}
                   />
                   
                 </DialogContent>
@@ -603,14 +568,6 @@ function DialogCLO({ nganhId, open, onClose }) {
                     error={errorMoTaPLO}
                     helperText={errorMoTaPLO ? "Vui lòng nhập mô tả cho CLO" : ""}
                     autoComplete="off"
-                  />
-                  <VirtualizedAutocomplete
-                    options={hockys}
-                    value={selectedHocKy}
-                    onChange={(e, newVal) => setSelectedHocKy(newVal)}
-                    getOptionLabel={(option) => ` ${option.ten}`}
-                    label="Chọn học kỳ"
-                    noOptionsText="Không tìm thấy học kỳ"  // Thông báo nếu không có kết quả
                   />
 
 
@@ -662,7 +619,6 @@ function DialogCLO({ nganhId, open, onClose }) {
             <StyledTableCell align="center">STT</StyledTableCell>
             <StyledTableCell align="center">Tên CLO</StyledTableCell>
             <StyledTableCell align="center">Mô tả cho CLO</StyledTableCell>
-            <StyledTableCell align="center">Học kì</StyledTableCell>
             <StyledTableCell align="center">Thao tác</StyledTableCell>
           </TableRow>
         </TableHead>
@@ -677,9 +633,8 @@ function DialogCLO({ nganhId, open, onClose }) {
             paginatedData.map((row, index) => (
               <StyledTableRow key={row.id || index}>
                 <StyledTableCell align="center" width={50}>{index + 1}</StyledTableCell>
-                <StyledTableCell align="center" width={300}>{row.ten}</StyledTableCell>
-                <StyledTableCell align="left">{row.moTa}</StyledTableCell>
-                <StyledTableCell align="center">{row.tenHocKy}</StyledTableCell>
+                <StyledTableCell align="center" width={300}>{row.name}</StyledTableCell>
+                <StyledTableCell align="left">{row.description}</StyledTableCell>
                 <StyledTableCell align="center" width={150}>
           <Tooltip title="Sửa thông tin CLO">
             <IconButton size="small" onClick={()=> handleOpenEditDialog(row.id)}>
