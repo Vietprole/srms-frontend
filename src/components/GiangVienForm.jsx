@@ -16,7 +16,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { addGiangVien, updateGiangVien } from "@/api/api-giangvien";
-import { getAllKhoas } from "@/api/api-khoa";
+import { getAllFaculties } from "@/api/api-faculties";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { ChevronsUpDown } from "lucide-react";
@@ -35,7 +35,7 @@ export function GiangVienForm({ giangVien, handleAdd, handleEdit, setIsDialogOpe
 
   useEffect(() => {
     const fetchData = async () => {
-      const comboBoxItems = await getAllKhoas();
+      const comboBoxItems = await getAllFaculties();
       const mappedComboBoxItems = comboBoxItems.map(khoa => ({ label: khoa.ten, value: khoa.id }));
       setComboBoxItems(mappedComboBoxItems);
     };

@@ -27,7 +27,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Check } from "lucide-react";
-import { getAllKhoas } from "@/api/api-khoa";
+import { getAllFaculties } from "@/api/api-faculties";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { ChevronsUpDown } from "lucide-react";
@@ -49,7 +49,7 @@ export function NganhForm({ nganh, handleAdd, handleEdit, setIsDialogOpen }) {
 
   useEffect(() => {
     const fetchData = async () => {
-      const comboBoxItems = await getAllKhoas();
+      const comboBoxItems = await getAllFaculties();
       const mappedComboBoxItems = comboBoxItems.map((khoa) => ({
         label: khoa.ten,
         value: khoa.id,

@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { getCLOsByHocPhanId } from '@/api/api-clo';
-import { getCauHoisByBaiKiemTraId, getCLOsByCauHoiId, updateCLOsToCauHoi } from '@/api/api-cauhoi';
-import { getBaiKiemTrasByLopHocPhanId } from '@/api/api-baikiemtra';
+import { getCLOsByClassId } from '@/api-new/api-clo';
+import { getQuestionsByExamId, getCLOsByQuestionId, updateCLOsToCauHoi } from '@/api-new/api-cauhoi';
+import { getBaiKiemTrasByLopHocPhanId } from '@/api-new/api-baikiemtra';
 import MappingTable from '@/components/MappingTable';
 import { getLopHocPhanById } from '@/api/api-lophocphan';
 
@@ -16,27 +16,27 @@ export default function NoiCauHoiCLO() {
 
   const fetchData = useCallback(async () => {
     try {
-        const lopHocPhan = await getLopHocPhanById(lopHocPhanId);
-      const hocPhanId = lopHocPhan.hocPhanId;
+      //   const lopHocPhan = await getLopHocPhanById(lopHocPhanId);
+      // const hocPhanId = lopHocPhan.hocPhanId;
       const baiKiemTrasData = await getBaiKiemTrasByLopHocPhanId(lopHocPhanId);
       const [cLOsData] = await Promise.all([
-        getCLOsByHocPhanId(hocPhanId),
+        getCLOsByClassId(lopHocPhanId),
       ]);
   
       const cauHoisPromises = baiKiemTrasData.map(baiKiemTra =>
-        getCauHoisByBaiKiemTraId(baiKiemTra.id)
+        getQuestionsByExamId(baiKiemTra.id)
       );
   
       const cauHoisResults = await Promise.all(cauHoisPromises);
       console.log("cauHoisResults", cauHoisResults);
       // Create extraHeaders object
       const extraHeaders = cauHoisResults.reduce((acc, cauHoisGroup, index) => {
-        const baiKiemTraId = cauHoisGroup[0]?.baiKiemTraId;
-        if (baiKiemTraId) {
-          const baiKiemTra = baiKiemTrasData.find(bkt => bkt.id === baiKiemTraId);
-          acc[baiKiemTraId] = {
+        const examId = cauHoisGroup[0]?.examId;
+        if (examId) {
+          const baiKiemTra = baiKiemTrasData.find(bkt => bkt.id === examId);
+          acc[examId] = {
             colSpan: cauHoisGroup.length,
-            header: baiKiemTra.loai
+            header: baiKiemTra.type
           };
         }
         return acc;
@@ -50,7 +50,7 @@ export default function NoiCauHoiCLO() {
 
       const toggledData = {};
       for (const cauHoi of cauHoisData) {
-        const cauHoisData = await getCLOsByCauHoiId(cauHoi.id);
+        const cauHoisData = await getCLOsByQuestionId(cauHoi.id);
         toggledData[cauHoi.id] = cauHoisData.map(clo => clo.id);
       }
       setToggledData(toggledData);
@@ -82,7 +82,7 @@ export default function NoiCauHoiCLO() {
       extraHeaders={extraHeaders}
       toggledDataFromParent={toggledData}
       updateRowItemsToColumnItem={updateCLOsToCauHoi}
-      getRowItemsByColumnItemId={getCLOsByCauHoiId}
+      getRowItemsByColumnItemId={getCLOsByQuestionId}
     />
   );
 }

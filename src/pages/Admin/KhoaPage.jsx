@@ -25,15 +25,17 @@ import Tooltip  from '@mui/material/Tooltip';
 import Layout from '../Layout';
 import { useState, useEffect,useCallback } from "react";
 import {
-  getAllKhoas,
-  addKhoa,
-  updateKhoa,
-  getKhoaById
-} from "@/api/api-khoa";
+  getAllFaculties,
+  addFaculty,
+  updateFaculty,
+  getFacultyById
+} from "@/api/api-faculties";
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import EditIcon from '@mui/icons-material/Edit';
-
+import ArrowLeftIcon from "@mui/icons-material/ArrowLeft";
+import ArrowRightIcon from "@mui/icons-material/ArrowRight";
+import { Autocomplete } from '@mui/material';
 function KhoaPage() 
 {
   const [khoaEditId, setKhoaEditId] = useState(""); // Lưu giá trị ID khoa cần sửa
@@ -57,11 +59,21 @@ function KhoaPage()
   const [data, setData] = useState([]);
   const [searchQuery, setSearchQuery] = useState(""); // Lưu giá trị tìm kiếm
   const [filteredData, setFilteredData] = useState(data); // Lưu dữ liệu đã lọc
+  const [pageSize, setPageSize] = useState(20); // 👈 Số bản ghi/trang mặc định
+  const pageSizeOptions = [20,50, 100];
+  const [currentPage, setCurrentPage] = useState(1); // Trang hiện tại
+  const [totalItems, setTotalItems] = useState(0); // Tổng số bản ghi thực tế
+  const startRow = (currentPage - 1) * pageSize + 1;
+const endRow = Math.min(currentPage * pageSize, totalItems);
+useEffect(() => {
+  fetchData(); // Gọi API để lấy danh sách khoa ngay khi trang load
+}, []);
+
   const handleClickOpen = () => {
     setOpen(true);
   };
   const handleClickOpenEdit = async (id) => {
-    const khoaData =await getKhoaById(id);
+    const khoaData =await getFacultyById(id);
     setTenKhoaEdit(khoaData.ten);
     setMaKhoaEdit(khoaData.maKhoa);
     setKhoaEditId(id);
@@ -80,25 +92,33 @@ function KhoaPage()
     setOpen(false);
   };
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (!data.length) return; // ⛔ Không làm gì khi data chưa load xong
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+  
+    const filtered = !searchQuery.trim()
+      ? data
+      : data.filter((row) =>
+          row.nảm.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+  
+    setFilteredData(filtered.slice(startIndex, endIndex));
+    setTotalItems(filtered.length);
+  }, [data, searchQuery, currentPage, pageSize]);
+  
   
   const fetchData = async () => {
-    const khoas = await getAllKhoas();
+    const khoas = await getAllFaculties();
+    console.log(khoas);
     setData(khoas);
   };
-  
-  useEffect(() => {
-    // Only set filteredData once data has been loaded
-    setFilteredData(data);
-  }, [data]);
-  
+
   const filterData = (query) => {
     if (!query.trim()) {
       setFilteredData(data); // If search query is empty, show all data
     } else {
       const filtered = data.filter((row) =>
-        row.ten.toLowerCase().includes(query.toLowerCase())
+        row.name.toLowerCase().includes(query.toLowerCase())
       );
       setFilteredData(filtered);
     }
@@ -290,7 +310,7 @@ function KhoaPage()
     };
   
     try {
-      const response = await updateKhoa(khoaEditId,khoaData);  // Gọi hàm updateKhoa
+      const response = await updateFaculty(khoaEditId,khoaData);  // Gọi hàm updateFaculty
       if (response.status === 200) {  
         setSnackbarMessage("Khoa đã được cập nhật thành công!");
         setSnackbarSeverity("success");
@@ -318,7 +338,7 @@ function KhoaPage()
     };
   
     try {
-      const response = await addKhoa(khoaData);  // Gọi hàm addKhoa
+      const response = await addFaculty(khoaData);  // Gọi hàm addFaculty
       if (response.status === 201) {  
         setSnackbarMessage("Khoa đã được thêm thành công!");
         setSnackbarSeverity("success");
@@ -366,9 +386,6 @@ function KhoaPage()
       <div style={styles.main}>
       <div style={styles.title}>
         <span>Danh sách khoa</span>
-        <div style={styles.btnMore}>
-          <IconButton aria-label="more actions"><MoreVertIcon/></IconButton>
-        </div>
       </div>
       <div style={styles.tbActions}>
         <div style={styles.ipSearch}>
@@ -422,8 +439,8 @@ function KhoaPage()
       <div style={styles.table}>
       
        <TableContainer component={Paper}>
-       <Table sx={{ minWidth: 700 }} aria-label="customized table">
-         <TableHead sx={{position: 'sticky',top: 0,  zIndex: 1,backgroundColor: "#0071A6",}}>
+       <Table sx={{ minWidth: 600 }} aria-label="customized table">
+         <TableHead sx={{position: 'sticky',top: 0,  zIndex: 1,backgroundColor: "#0071A6",height:"5vh"}}>
            <TableRow>
             <StyledTableCell align="center" >STT</StyledTableCell>
              <StyledTableCell align="center" >Tên Khoa</StyledTableCell>
@@ -436,14 +453,14 @@ function KhoaPage()
          </TableHead>
          <TableBody sx={{overflowY:"auto"}}> 
           {filteredData.map((row, index) => (
-            <StyledTableRow key={row.ten}>
+            <StyledTableRow key={row.name}>
               <StyledTableCell component="th" scope="row" align="center" width={50}>
                 {index + 1} {/* Số thứ tự */}
               </StyledTableCell>
               <StyledTableCell component="th" scope="row">
-                {row.ten}
+                {row.name}
               </StyledTableCell>
-              <StyledTableCell align="center">{row.maKhoa}</StyledTableCell>
+              <StyledTableCell align="center">{row.code}</StyledTableCell>
               {canManageKhoa && (
                 <StyledTableCell align="center" width={150}>
                   <Tooltip title="Sửa khoa">
@@ -490,6 +507,85 @@ function KhoaPage()
         </MuiAlert>
       </Snackbar>
       </div>
+      <div style={styles.divPagination}>
+  {/* Phân trang bên trái */}
+  <Box display="flex" alignItems="center">
+  <Box
+    sx={{
+      ...styles.squareStyle,
+      borderLeft: '1px solid #ccc',
+      borderTopLeftRadius: '6px',
+      borderBottomLeftRadius: '6px',
+      opacity: currentPage === 1 ? 0.5 : 1,
+      pointerEvents: currentPage === 1 ? 'none' : 'auto',
+    }}
+    onClick={() => setCurrentPage(currentPage - 1)}
+  >
+    <ArrowLeftIcon fontSize="small" />
+  </Box>
+
+  {[...Array(Math.ceil(totalItems / pageSize)).keys()].slice(0, 5).map(i => {
+    const page = i + 1;
+    return (
+      <Box
+        key={page}
+        sx={{
+          ...styles.squareStyle,
+          ...(currentPage === page
+            ? { backgroundColor: '#0071A6', color: '#fff', fontWeight: 'bold' }
+            : {}),
+        }}
+        onClick={() => setCurrentPage(page)}
+      >
+        {page}
+      </Box>
+    );
+  })}
+
+  <Box
+    sx={{
+      ...styles.squareStyle,
+      borderTopRightRadius: '6px',
+      borderBottomRightRadius: '6px',
+      opacity: currentPage >= Math.ceil(totalItems / pageSize) ? 0.5 : 1,
+      pointerEvents: currentPage >= Math.ceil(totalItems / pageSize) ? 'none' : 'auto',
+    }}
+    onClick={() => setCurrentPage(currentPage + 1)}
+  >
+    <ArrowRightIcon fontSize="small" />
+  </Box>
+</Box>
+
+
+  {/* Bên phải: Autocomplete + Dòng thông tin */}
+  <Box display="flex" alignItems="center" gap={2}>
+    <Box display="flex" alignItems="center" gap={1}>
+      <span style={{ fontSize: 14 }}>Số bản ghi/trang:</span>
+      <Autocomplete
+        disableClearable
+        options={pageSizeOptions}
+        size="small"
+        sx={{ width: 80, backgroundColor: "#fff", borderRadius: "4px" }}
+        value={pageSize}
+        onChange={(event, newValue) => {
+          setPageSize(newValue);
+          // Optionally update current page
+        }}
+        renderInput={(params) => (
+          <TextField {...params} variant="outlined" size="small" />
+        )}
+      />
+    </Box>
+    {/* Thông tin dòng */}
+    <span style={{ fontSize: 14, color: '#333' }}>
+      Dòng {startRow} đến {endRow} / {totalItems}
+    </span>
+
+  </Box>
+</div>
+
+
+
       <Dialog id='editKhoa' open={openEdit} onClose={handleClickCloseEdit} fullWidth>
                       <DialogTitle>Sửa khoa:</DialogTitle>
                       <DialogContent>
@@ -542,57 +638,50 @@ function KhoaPage()
                       </DialogActions>
                     </Dialog>
       </div>
+     
     </Layout>
   );
 };
 const styles = {
-  main:
-  {
-    width: '100%',
-    height: '91vh',
+  main: {
     display: 'flex',
     flexDirection: 'column',
-    overflowY: 'hidden',
-    padding: "10px",
+    height: '100%',
+    padding: '10px',
+    boxSizing: 'border-box',
+    overflow: 'hidden',
   },
-  title:
-  {
+  
+  title: {
     width: '100%',
-    height: '6%',
     fontSize: '1.2em',
     fontFamily: 'Roboto',
     fontWeight: 'bold',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
-  btnMore:
-  {
+  btnMore: {
     display: 'flex',
     justifyContent: 'flex-end',
-    marginLeft: 'auto',
   },
-  tbActions:
-  {
+  tbActions: {
     width: '100%',
-    height: '6%',
+    marginTop: 10,
     display: 'flex',
-    justifyContent: 'flex-start',
     alignItems: 'center',
     flexDirection: 'row',
+    paddingBottom: '10px',
   },
-  ipSearch:
-  {
+  ipSearch: {
     width: '25%',
-    height: '100%',
+    height: 40,
     justifyContent: 'flex-start',
     borderRadius: '5px',
   },
-  btnCreate:
-  {
+  btnCreate: {
     width: '10%',
-    height: '100%',
+    height: 40,
     display: 'flex',
     marginLeft: 'auto',
     justifyContent: 'center',
@@ -601,14 +690,45 @@ const styles = {
     color: 'white',
     cursor: 'pointer',
   },
-  table:
-  {
-    width: '100%',
-    height: '98%',
+  table: {
+    flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    paddingTop: '10px',
-    overflowY: 'auto',
+    overflow: 'hidden',
+  },
+  divPagination: {
+    flexShrink: 0,
+    display: 'flex',
+    justifyContent: 'space-between', // 👉 chia trái & phải
+    alignItems: 'center',
+    borderTop: '1px solid #eee',
+    backgroundColor: '#f5f5f5',
+    padding: '5px 10px',
+  },
+  
+  
+  squareStyle: {
+    width: 40,
+    height: 35,
+    backgroundColor: '#fff',
+    border: '1px solid #ccc',
+    borderLeft: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 14,
+    cursor: 'pointer',
+    boxSizing: 'border-box',
+    transition: 'all 0.2s ease-in-out',
+    '&:hover': {
+      backgroundColor: '#0071A6',
+      color: '#fff',
+    },
   }
+  
+  
+  
+  
 };
+
 export default KhoaPage;

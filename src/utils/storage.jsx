@@ -61,3 +61,46 @@ export const getNguoiQuanLyCTDTId = () => {
     return null;
   }
 }
+
+export const getTeacherId = () => {
+  const result = sessionStorage.getItem("accessToken");
+  try {
+    if (!result) return null;
+
+    const decodedToken = jwtDecode(result);
+    const giangVienId = decodedToken.teacherId;
+
+    // Handle various invalid cases
+    if (giangVienId === undefined || giangVienId === null) return null;
+    if (giangVienId === 0 || giangVienId === "0") return null;
+
+    // Parse the ID and check if it's a valid number
+    const programmeManagerId = parseInt(giangVienId);
+    return !isNaN(programmeManagerId) && programmeManagerId > 0 ? programmeManagerId : null;
+  } catch (error) {
+    console.log("Error getting giangVienId:", error);
+    return null;
+  }
+};
+
+export const getStudentId = () => {
+  const result = sessionStorage.getItem("accessToken");
+  try {
+    const decodedToken = jwtDecode(result);
+    const studentId = decodedToken.studentId;
+    return parseInt(studentId);
+  } catch (error) {
+    return null;
+  }
+};
+
+export const getProgrammeManagerId = () => {
+  const result = sessionStorage.getItem("accessToken");
+  try {
+    const decodedToken = jwtDecode(result);
+    const programmeManagerId = decodedToken.managerId;
+    return !isNaN(programmeManagerId) && programmeManagerId > 0 ? programmeManagerId : null;
+  } catch (error) {
+    return null;
+  }
+};

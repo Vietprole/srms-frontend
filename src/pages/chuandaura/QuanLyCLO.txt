@@ -31,7 +31,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogActions from "@mui/material/DialogActions";
-import {getAllHocKys} from "@/api/api-hocky";
+import {getAllSemesters} from "@/api/api-semester";
 import { getHocPhanById } from "../../api/api-hocphan";
 
 export default function CLOPage() {
@@ -50,7 +50,7 @@ export default function CLOPage() {
   const [hocKy, setHocKy] = useState([]);
   const [hocPhanData, setHocPhanData] = useState(null);
   const handleOpenAddDialog = async() => {
-    const hocKyData = await getAllHocKys();
+    const hocKyData = await getAllSemesters();
     setHocKy(hocKyData);
     setOpenAddDialog(true);
   };

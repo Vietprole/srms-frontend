@@ -17,7 +17,7 @@ import Box from "@mui/material/Box";
 import { useState, useEffect } from "react";
 import Autocomplete from "@mui/material/Autocomplete";
 import DatasetLinkedIcon from "@mui/icons-material/DatasetLinked";
-import { getAllKhoas } from "@/api/api-khoa";
+import { getAllFaculties } from "@/api/api-faculties";
 import { getAllNganhs } from "@/api/api-nganh";
 import Layout from "./Layout";
 import { TableVirtuoso } from "react-virtuoso";
@@ -122,14 +122,14 @@ function NganhPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (role === "NguoiPhuTrachCTĐT" && nguoiQuanLyCTDTId !== 0) {
+      if (role === "ProgrammeManager" && nguoiQuanLyCTDTId !== 0) {
         const nganhData = await getNganhsByNguoiQuanLyId(nguoiQuanLyCTDTId);
         setData(nganhData);
       } else {
         const nganhData = await getAllNganhs();
         setData(nganhData);
       }
-      const khoa = await getAllKhoas();
+      const khoa = await getAllFaculties();
       setKhoas(khoa);
     };
     
@@ -182,8 +182,8 @@ function NganhPage() {
 
   const columns = [
     { width: 50, label: "STT", dataKey: "index", align: "center" },
-    { width: 150, label: "Mã Ngành", dataKey: "maNganh", align: "center" },
-    { label: "Tên Ngành", dataKey: "ten", align: "center" },
+    { width: 150, label: "Mã CTĐT", dataKey: "maNganh", align: "center" },
+    { label: "Tên CTĐT", dataKey: "ten", align: "center" },
     { width: 300, label: "Tên Khoa", dataKey: "tenKhoa", align: "center" },
     { width: 150, label: "", dataKey: "actions", align: "center" },
   ];
@@ -258,7 +258,7 @@ function NganhPage() {
     <Layout>
       <div style={styles.main}>
         <div style={styles.title}>
-          <span>Danh sách ngành học</span>
+          <span>Danh sách ctđt học</span>
           <div style={styles.btnMore}>
             <IconButton aria-label="more actions">
               <MoreVertIcon />
@@ -285,7 +285,7 @@ function NganhPage() {
               <TextField
                 fullWidth
                 fontSize="10px"
-                placeholder="Tìm kiếm theo tên ngành..."
+                placeholder="Tìm kiếm theo tên ctđt..."
                 variant="standard"
                 autoComplete="off"
                 InputProps={{

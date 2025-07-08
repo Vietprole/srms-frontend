@@ -1,58 +1,93 @@
 import  { useEffect, useState } from "react";
 import Layout from './Layout';
 import { useParams } from "react-router-dom";
-import { 
-  getSinhViensByLopHocPhanId, 
-  getSinhViensNotInLopHocPhanId,
-  getLopHocPhanById,
-  removeSinhVienFromLopHocPhan,
-  addSinhViensToLopHocPhan
-  
-} from "@/api/api-lophocphan";
 import  Typography  from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import Button  from "@mui/material/Button";
-import React, { useRef } from "react";
-import { TableVirtuoso } from "react-virtuoso";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableBody from "@mui/material/TableBody";
-import Checkbox from "@mui/material/Checkbox";
 import { styled } from "@mui/material/styles";
 import TableCell, { tableCellClasses } from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
-
+import Checkbox from "@mui/material/Checkbox";
+import {getClassById,getStudentsInClass,removeStudentsFromClass} from "@/api/api-classes";
+import  TextField  from "@mui/material/TextField";
+import Autocomplete from "@mui/material/Autocomplete";
+import ArrowLeftIcon from "@mui/icons-material/ArrowLeft";
+import ArrowRightIcon from "@mui/icons-material/ArrowRight";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import DialogAddSinhVienClass from "../components/DialogAddSinhVienClass";
 export default function StudentInCoursePage() {
-  const { courseId } = useParams();
+  const StyledTableCell = styled(TableCell)(({ theme }) => ({
+    [`&.${tableCellClasses.head}`]: {
+      backgroundColor: "#0071A6",
+      color: theme.palette.common.white,
+      borderRight: "1px solid #ddd", // Đường phân cách dọc
+    },
+    [`&.${tableCellClasses.body}`]: {
+      fontSize: 14,
+      padding: "5px 10px", // Thêm padding cho các hàng
+      borderRight: "1px solid #ddd", // Đường phân cách dọc
+    },
+  }));
+
+  const StyledTableRow = styled(TableRow)(({ theme }) => ({
+    "&:nth-of-type(odd)": {
+      backgroundColor: theme.palette.action.hover,
+    },
+    "&:hover": {
+      backgroundColor: "#D3F3FF", // Màu nền khi hover
+      cursor: "pointer", // Tùy chọn: Thêm hiệu ứng con trỏ
+    },
+  }));
+  const { courseId } = useParams(); 
   const [courseInfo, setCourseInfo] = useState({});
   const [sinhViensInCourse, setSinhViensInCourse] = useState([]);
-  const [sinhViensNotInCourse, setSinhViensNotInCourse] = useState([]);
-  const virtuosoRef = useRef(null);
   const [selectedSinhViens, setselectedSinhViens] = useState([]);
-  const [openSnackbar, setOpenSnackbar] = useState(false); // Quản lý việc hiển thị Snackbar
-  const [openAddDialog, setOpenAddDialog] = useState(false); // Quản lý việc hiển thị Dialog thêm sinh viên
-  const [selectedAddSinhVien, setSelectedAddSinhVien] = useState([]);
-
-
-  const handleOpenAddDialog =async () => {
-    const res = await getSinhViensNotInLopHocPhanId(courseId);
-    setSinhViensNotInCourse(res);
-    setOpenAddDialog(true);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [page, setPage] = useState(1);
+  const [openDialogAddSinhVien, setOpenDialogAddSinhVien] = useState(false); // Dialog để thêm sinh viên
+  
+  const handleOpenDialogAddSinhVien = () => {
+    setOpenDialogAddSinhVien(true);
   };
-const handleCloseDialogAdd = () => {
-  setOpenAddDialog(false);
-  setSelectedAddSinhVien([]); // Đặt lại danh sách sinh viên đã chọn
-};
+  const handleCloseDialogAddSinhVien = () => {
+    setOpenDialogAddSinhVien(false);
+  };
+
+
+  
+  const [pageSize, setPageSize] = useState(20); // tùy chọn mặc định
+  const pageSizeOptions = [20,50,100]; // tuỳ bạn thêm số lựa chọn
+
+  const totalItems = sinhViensInCourse.length;
+  const startRow = (page - 1) * pageSize + 1;
+  const endRow = Math.min(page * pageSize, totalItems);
+  const totalPages = Math.ceil(totalItems / pageSize);
+  let pagesToShow = [];
+  
+  if (totalPages <= 4) {
+    pagesToShow = Array.from({ length: totalPages }, (_, i) => i + 1);
+  } else {
+    if (page <= 3) {
+      pagesToShow = [1, 2, 3, 'more', totalPages];
+    } else if (page >= totalPages - 2) {
+      pagesToShow = [1, 'more', totalPages - 2, totalPages - 1, totalPages];
+    } else {
+      pagesToShow = [1, 'more', page - 1, page, page + 1, 'more', totalPages];
+    }
+  }
+
+  // Lấy dữ liệu cho trang hiện tại
+  const paginatedData = sinhViensInCourse.slice((page - 1) * pageSize, page * pageSize);
+
   
   const [snackbarMessage, setSnackbarMessage] = useState(""); // Thông điệp hiển thị trong Snackbar
   const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // Mức độ nghiêm trọng của thông điệp (success, error, warning, info)
@@ -65,30 +100,9 @@ const handleCloseDialogAdd = () => {
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
   }
-  function handleSelectAddSinhVien(id) {
-    setSelectedAddSinhVien((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
-  }
-
-
-
-  const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    [`&.${tableCellClasses.head}`]: {
-      backgroundColor: theme.palette.primary.main,
-      color: theme.palette.common.white,
-      textAlign: "center",
-      padding: "4px 8px", // giảm chiều cao
-    },
-    [`&.${tableCellClasses.body}`]: {
-      fontSize: 14,
-      textAlign: "center",
-      padding: "4px 8px", // giảm chiều cao
-    },
-  }));
+  
   const handleRemoveSelectedSinhViens = async () => {
-    if (!selectedSinhViens.length) 
-    {
+    if (!selectedSinhViens.length) {
       setSnackbarSeverity("warning");
       setSnackbarMessage("Vui lòng chọn ít nhất một sinh viên để xóa.");
       setOpenSnackbar(true);
@@ -99,194 +113,25 @@ const handleCloseDialogAdd = () => {
     if (!confirm) return;
   
     try {
-      const results = await Promise.allSettled(
-        selectedSinhViens.map((sinhVienId) =>
-          removeSinhVienFromLopHocPhan(courseId, sinhVienId)
-        )
-      );
-  
-      const failedIds = [];
-      results.forEach((result, index) => {
-        if (result.status === "fulfilled") {
-          if (result.value.status !== 200) {
-            failedIds.push(selectedSinhViens[index]);
-          }
-        } else {
-          failedIds.push(selectedSinhViens[index]);
-        }
-      });
-  
-      if (failedIds.length > 0) {
-        setSnackbarSeverity("error");
-        setSnackbarMessage(`Không thể xóa ${failedIds.length} sinh viên.`);
-      } else {
-        setSnackbarSeverity("success");
-        setSnackbarMessage("Xóa sinh viên thành công.");
-      }
-  
-      setOpenSnackbar(true);
-      await fetchSinhViensInCourse(); // refresh danh sách
+      await removeStudentsFromClass(courseId, selectedSinhViens); // Gửi 1 mảng
+      setSnackbarSeverity("success");
+      setSnackbarMessage("Xóa sinh viên thành công.");
       setselectedSinhViens([]);
+      await fetchSinhViensInCourse(); // refresh danh sách
     } catch (error) {
       console.error("Lỗi khi xóa sinh viên:", error);
       setSnackbarSeverity("error");
-      setSnackbarMessage("Đã xảy ra lỗi khi xóa sinh viên.");
-      setOpenSnackbar(true);
+      setSnackbarMessage(error.message || "Đã xảy ra lỗi khi xóa sinh viên.");
     }
+  
+    setOpenSnackbar(true);
   };
-  
-  
-  const StyledTableRow = styled(TableRow)(({ theme }) => ({
-    '&:nth-of-type(odd)': {
-      backgroundColor: theme.palette.action.hover,
-    },
-  }));
-  
-  const columns = [
-    { dataKey: "select", label: "", align: "center", width: 50 },
-    { dataKey: "stt", label: "STT", align: "center", width: 60 },
-    { dataKey: "maSinhVien", label: "Mã sinh viên", align: "center", width: 150 },
-    { dataKey: "ten", label: "Tên sinh viên", align: "left", width: 300 },
-    { dataKey: "soTinChi", label: "Thuộc khoa", align: "center", width: 200 },
-  ];
-  const VirtuosoTableComponents = {
-    // eslint-disable-next-line react/display-name
-    Scroller: React.forwardRef((props, ref) => (
-      <TableContainer component={Paper} {...props} ref={ref} sx={{ height: "calc(100vh - 200px)" }} />
-    )),
-    Table: (props) => (
-      <Table {...props} sx={{ borderCollapse: "separate", tableLayout: "fixed", backgroundColor: "white" }} />
-    ),
-    // eslint-disable-next-line react/display-name
-    TableHead: React.forwardRef((props, ref) => <TableHead {...props} ref={ref} />),
-    TableRow: StyledTableRow,
-    // eslint-disable-next-line react/display-name
-    TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
-    TableCell: StyledTableCell,
-  };
-  function fixedHeaderContent() {
-    const allIds = sinhViensInCourse.map((row) => row.id); 
-    const isAllSelected = selectedSinhViens.length === allIds.length && allIds.length > 0;
-    const isIndeterminate = selectedSinhViens.length > 0 && !isAllSelected;
-  
-    return (
-      <StyledTableRow>
-        {columns.map((column) => (
-          <StyledTableCell
-            key={column.dataKey}
-            align={column.align}
-            style={{
-              width: column.width,
-              padding: "4px 8px",
-              backgroundColor: "#0071A6",
-              color: "white",
-            }}
-          >
-            {column.dataKey === "select" ? (
-              <Checkbox
-                sx={{ color: "#fff", padding: "0" }}
-                indeterminate={isIndeterminate}
-                checked={isAllSelected}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setselectedSinhViens(allIds); // ✅ chọn tất cả đúng list
-                  } else {
-                    setselectedSinhViens([]); // ✅ bỏ chọn
-                  }
-                }}
-              />
-            ) : (
-              column.label
-            )}
-          </StyledTableCell>
-        ))}
-      </StyledTableRow>
-    );
-  }
-  
-  
-  function fixedHeaderContentAdd() {
-    const allIds = sinhViensNotInCourse.map((row) => row.id);
-    const isAllSelected = selectedAddSinhVien.length === allIds.length && allIds.length > 0;
-    const isIndeterminate = selectedAddSinhVien.length > 0 && !isAllSelected;
-  
-    return (
-      <StyledTableRow>
-        {columns.map((column) => (
-          <StyledTableCell
-            key={column.dataKey}
-            align={column.align}
-            style={{
-              width: column.width,
-              padding: "4px 8px",
-              backgroundColor: "#0071A6",
-              color: "white",
-            }}
-          >
-            {column.dataKey === "select" ? (
-              <Checkbox
-                sx={{ color: "#fff", padding: "0" }}
-                indeterminate={isIndeterminate}
-                checked={isAllSelected}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setSelectedAddSinhVien(allIds); // ✅ chọn tất cả
-                  } else {
-                    setSelectedAddSinhVien([]); // ✅ bỏ chọn
-                  }
-                }}
-              />
-            ) : (
-              column.label
-            )}
-          </StyledTableCell>
-        ))}
-      </StyledTableRow>
-    );
-  }
-  
-  
-  function rowContent(index, row) {
-    return (
-      <>
-        <StyledTableCell align="center">
-          <Checkbox
-            checked={selectedSinhViens.includes(row.id)}
-            onChange={() => handleSelectSinhVien(row.id)}
-          />
-        </StyledTableCell>
-        <StyledTableCell align="center">{index + 1}</StyledTableCell>
-        <StyledTableCell align="center">{row.maSinhVien}</StyledTableCell>
-        <StyledTableCell align="left">{row.ten}</StyledTableCell>
-        <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
-      </>
-    );
-  }
-  function rowContentAdd(index, row) {
-    return (
-      <>
-        <StyledTableCell align="center">
-          <Checkbox
-            checked={selectedAddSinhVien.includes(row.id)}
-            onChange={() => handleSelectAddSinhVien(row.id)}
-          />
-        </StyledTableCell>
-        <StyledTableCell align="center">{index + 1}</StyledTableCell>
-        <StyledTableCell align="center">{row.maSinhVien}</StyledTableCell>
-        <StyledTableCell align="left">{row.ten}</StyledTableCell>
-        <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
-      </>
-    );
-  }
-  
-  
-  
-  
   
   const fetchCourseInfo = async () => {
     try {
-      const res = await getLopHocPhanById(courseId);
+      const res = await getClassById(courseId);
       setCourseInfo(res);
+      console.log("Thông tin lớp học phần:", res);
     } catch (err) {
       console.error("Lỗi khi lấy thông tin lớp học phần:", err);
     }
@@ -294,65 +139,34 @@ const handleCloseDialogAdd = () => {
 
   const fetchSinhViensInCourse = async () => {
     try {
-      const res = await getSinhViensByLopHocPhanId(courseId);
-      console.log("Sinh viên trong lớp:", res);
-      setSinhViensInCourse(res);
+      const res = await getStudentsInClass(courseId);
+  
+      // 👉 Sort theo tên tăng dần (bạn có thể đổi thành code hoặc bất kỳ field nào)
+      const sortedList = res.sort((a, b) => a.name.localeCompare(b.name));
+  
+      console.log("Sinh viên trong lớp (đã sắp xếp):", sortedList);
+      setSinhViensInCourse(sortedList);
     } catch (err) {
       console.error("Lỗi khi lấy sinh viên trong lớp:", err);
     }
   };
-
-  const fetchSinhViensNotInCourse = async () => {
-    try {
-      const res = await getSinhViensNotInLopHocPhanId(courseId);
-      setSinhViensNotInCourse(res);
-    } catch (err) {
-      console.error("Lỗi khi lấy sinh viên chưa thuộc lớp:", err);
-    }
-  };
-
+  
   useEffect(() => {
     if (courseId) {
       fetchCourseInfo();
       fetchSinhViensInCourse();
     }
   }, [courseId]);
+// Trong component cha
+const handleSaveSuccess = (message) => {
+  setSnackbarMessage(message);
+  setSnackbarSeverity("success");
+  setOpenSnackbar(true);
+  fetchSinhViensInCourse(); // Refresh danh sách
+};
 
-  const handleSubmitAddSinhVien = async () => {
-    if (selectedAddSinhVien.length === 0) {
-      setSnackbarSeverity("warning");
-      setSnackbarMessage("Vui lòng chọn ít nhất một sinh viên để thêm.");
-      setOpenSnackbar(true);
-      return;
-    }
   
-    try {
-      const response = await addSinhViensToLopHocPhan(courseId, selectedAddSinhVien);
-      if (response?.status === 201) {
-        setSnackbarSeverity("success");
-        setSnackbarMessage("Thêm sinh viên vào lớp học phần thành công!");
-        setOpenSnackbar(true);
-        setOpenAddDialog(false);
-        setSelectedAddSinhVien([]);
-        await fetchSinhViensInCourse();
-      } else {
-        setSnackbarSeverity("error");
-        setSnackbarMessage("Thêm sinh viên thất bại. Vui lòng thử lại.");
-        setOpenSnackbar(true);
-        setOpenAddDialog(false);
-        setSelectedAddSinhVien([]);
-        setSinhViensNotInCourse([]);
-      }
-    } catch (error) {
-      setSnackbarSeverity("error");
-      setSnackbarMessage(error.message || "Đã xảy ra lỗi khi thêm sinh viên.");
-      setOpenSnackbar(true);
-      setOpenAddDialog(false);
-      setSelectedAddSinhVien([]);
-      setSinhViensNotInCourse([]);
-    }
-  };
-  
+
   return (
     <Layout>
       <div style={styles.main}>
@@ -373,8 +187,9 @@ const handleCloseDialogAdd = () => {
   >
     Danh sách sinh viên thuộc lớp học phần:{" "}
     <Box component="span" sx={{ color: '#0A65CC' }}>
-      {courseInfo.ten}
-    </Box>
+  {courseInfo?.data?.name || '---'}
+</Box>
+
   </Typography>
 
   <Box sx={{ display: 'flex', gap: 1 }}>
@@ -392,43 +207,162 @@ const handleCloseDialogAdd = () => {
       sx={{ height: "36px", minWidth: "140px" }} 
       variant="contained" 
       endIcon={<AddIcon />}
-      onClick={handleOpenAddDialog} // Mở dialog thêm sinh viên 
+      onClick={handleOpenDialogAddSinhVien} // Mở dialog thêm sinh viên
     >
       Thêm sinh viên
     </Button>
   </Box>
 </Box>
-<TableVirtuoso
-  ref={virtuosoRef}
-  data={sinhViensInCourse}
-  components={VirtuosoTableComponents}
-  fixedHeaderContent={fixedHeaderContent}
-  itemContent={rowContent}
-  firstItemIndex={0}
+<div style={styles.table}>
+          <TableContainer component={Paper}>
+            <Table sx={{ minWidth: 700 }} aria-label="customized table">
+              <TableHead
+                sx={{
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 1,
+                  backgroundColor: "#0071A6",
+                }}
+              >
+                <TableRow>
+                  <StyledTableCell align="center">STT</StyledTableCell>
+                  <StyledTableCell align="center">Mã sinh viên</StyledTableCell>
+                  <StyledTableCell align="center">Tên sinh viên</StyledTableCell>
+                  <StyledTableCell align="center">Thuộc CTĐT</StyledTableCell>
+                  <StyledTableCell align="center">Xóa</StyledTableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody sx={{ overflowY: "auto" }}>
+                {paginatedData.map((row, index) => {
+                  const isSelected = selectedSinhViens.includes(row.id);
+                  return (
+                    <StyledTableRow key={row.id} selected={isSelected}>
+                      <StyledTableCell align="center">
+                        {(page - 1) * pageSize + index + 1}
+                      </StyledTableCell>
+                      <StyledTableCell align="center">{row.code}</StyledTableCell>
+                      <StyledTableCell align="center">{row.name}</StyledTableCell>
+                      <StyledTableCell align="center">{row.programmeName}</StyledTableCell>
+                      <StyledTableCell align="center">
+                        <Checkbox
+                        size="small"
+                          checked={isSelected}
+                          onChange={() => handleSelectSinhVien(row.id)}
+                          color="primary"
+                        />
+                      </StyledTableCell>
+                    </StyledTableRow>
+                  );
+                })}
+              </TableBody>
+
+
+            </Table>
+          </TableContainer>
+
+          <Snackbar
+            open={openSnackbar}
+            autoHideDuration={3000}
+            onClose={handleSnackbarClose}
+            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          >
+            <MuiAlert
+              variant="filled"
+              onClose={handleSnackbarClose}
+              severity={snackbarSeverity}
+              sx={{ width: "100%" }}
+            >
+              {snackbarMessage}
+            </MuiAlert>
+          </Snackbar>
+        </div>
+        <DialogAddSinhVienClass
+          open={openDialogAddSinhVien}
+          onClose={handleCloseDialogAddSinhVien}
+          nganhId={courseId}
+          onSuccess={handleSaveSuccess} // ✅ Truyền xuống
+        />
+
+        <div style={styles.divPagination}>
+  {/* Trái: các nút số trang */}
+  <Box display="flex" alignItems="center">
+  <Box
+    sx={{
+      ...styles.squareStyle,
+      borderLeft: '1px solid #ccc',
+      borderTopLeftRadius: '6px',
+      borderBottomLeftRadius: '6px',
+      opacity: page === 1 ? 0.5 : 1,
+      pointerEvents: page === 1 ? 'none' : 'auto',
+    }}
+    onClick={() => setPage(page - 1)}
+  >
+    <ArrowLeftIcon fontSize="small" />
+  </Box>
+
+  {pagesToShow.map((item, idx) =>
+  item === 'more' ? (
+    <Box key={`more-${idx}`} sx={{ ...styles.squareStyle, pointerEvents: 'none' }}>
+      <MoreHorizIcon fontSize="small" />
+    </Box>
+  ) : (
+    <Box
+      key={item}
+      sx={{
+        ...styles.squareStyle,
+        ...(page === item
+          ? { backgroundColor: '#0071A6', color: '#fff', fontWeight: 'bold' }
+          : {}),
+      }}
+      onClick={() => setPage(item)}
+    >
+      {item}
+    </Box>
+  )
+)}
+
+  <Box
+    sx={{
+      ...styles.squareStyle,
+      borderTopRightRadius: '6px',
+      borderBottomRightRadius: '6px',
+      opacity: page >= totalPages ? 0.5 : 1,
+      pointerEvents: page >= totalPages ? 'none' : 'auto',
+    }}
+    onClick={() => setPage(page + 1)}
+  >
+    <ArrowRightIcon fontSize="small" />
+  </Box>
+</Box>
+
+
+  {/* Phải: chọn số bản ghi + hiển thị dòng */}
+  <Box display="flex" alignItems="center" gap={2}>
+    <Box display="flex" alignItems="center" gap={1}>
+      <span style={{ fontSize: 14 }}>Số bản ghi/trang:</span>
+      <Autocomplete
+  disableClearable
+  options={pageSizeOptions}
+  size="small"
+  sx={{ width: 80, backgroundColor: "#fff", borderRadius: "4px" }}
+  value={pageSize}
+  getOptionLabel={(option) => option.toString()} // ✅ Convert số sang chuỗi
+  onChange={(event, newValue) => {
+    setPageSize(newValue);
+    setPage(1); // reset về trang 1
+  }}
+  renderInput={(params) => (
+    <TextField {...params} variant="outlined" size="small" />
+  )}
 />
 
+    </Box>
+    <span style={{ fontSize: 14, color: '#333' }}>
+      Dòng {startRow} đến {endRow} / {totalItems}
+    </span>
+  </Box>
 </div>
-<Dialog fullWidth maxWidth={"lg"} open={openAddDialog} onClose={handleCloseDialogAdd} 
-                
-                >
-                  <DialogTitle>Thêm sinh viên vào lớp học phần</DialogTitle>
-                  <DialogContent style={{ height: "400px", padding: 10 }}>
-                  <TableVirtuoso
-  ref={virtuosoRef}
-  data={sinhViensNotInCourse}
-  components={VirtuosoTableComponents}
-  fixedHeaderContent={fixedHeaderContentAdd}
-  itemContent={rowContentAdd}
-  firstItemIndex={0}
-/>
-
-  </DialogContent>
-
-                    <DialogActions>
-                      <Button onClick={() => setOpenAddDialog(false)}>Hủy</Button>
-                      <Button variant="contained" color="primary" onClick={handleSubmitAddSinhVien}  disabled={selectedAddSinhVien.length === 0}>Thêm</Button>
-                    </DialogActions>
-                </Dialog>
+</div>
 <Snackbar 
         open={openSnackbar} 
         autoHideDuration={3000} 
@@ -444,53 +378,61 @@ const handleCloseDialogAdd = () => {
   );
 }
 const styles = {
-  main:
-  {
-    width: '100%',
-    height: '90vh',
+  main: {
     display: 'flex',
     flexDirection: 'column',
-    overflowY: 'hidden',
-    padding: "10px",
+    height: '100%',
+    padding: '10px',
+    boxSizing: 'border-box',
+    overflow: 'hidden',
   },
-  title:
-  {
+
+  title: {
     width: '100%',
-    height: '6%',
     fontSize: '1.2em',
     fontFamily: 'Roboto',
     fontWeight: 'bold',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
-  btnMore:
-  {
+
+  btnMore: {
     display: 'flex',
     justifyContent: 'flex-end',
     marginLeft: 'auto',
   },
-  tbActions:
-  {
+
+  tbActions: {
     width: '100%',
-    height: '6%',
+    marginTop: 10,
     display: 'flex',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    flexDirection: 'row',
+    alignItems: 'center', // căn giữa dọc cho cả dòng
+    gap: '10px',          // khoảng cách giữa các phần tử
+    paddingBottom: '10px',
   },
-  ipSearch:
-  {
-    width: '25%',
-    height: '100%',
+  
+
+  ipSearch: {
+    width: '30%',
+    height: 40,
     justifyContent: 'flex-start',
     borderRadius: '5px',
   },
-  btnCreate:
-  {
+
+  cbKhoa: {
+    width: "22%",
+    display: "flex",
+    alignItems: "center",
+    height: 40, // 👈 Thêm chiều cao cụ thể
+    marginLeft: "10px",
+  },
+  
+  
+
+  btnCreate: {
     width: '10%',
-    height: '100%',
+    height: 40,
     display: 'flex',
     marginLeft: 'auto',
     justifyContent: 'center',
@@ -499,13 +441,42 @@ const styles = {
     color: 'white',
     cursor: 'pointer',
   },
-  table:
-  {
-    width: '100%',
-    height: '98%',
+
+  table: {
+    flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    paddingTop: '10px',
-    overflowY: 'auto',
-  }
+    overflow: 'hidden',
+    width: '100%', // 👈 thêm dòng này
+  },
+  
+
+  divPagination: {
+    flexShrink: 0,
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderTop: '1px solid #eee',
+    backgroundColor: '#f5f5f5',
+    padding: '5px 10px',
+  },
+
+  squareStyle: {
+    width: 40,
+    height: 35,
+    backgroundColor: '#fff',
+    border: '1px solid #ccc',
+    borderLeft: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 14,
+    cursor: 'pointer',
+    boxSizing: 'border-box',
+    transition: 'all 0.2s ease-in-out',
+    '&:hover': {
+      backgroundColor: '#0071A6',
+      color: '#fff',
+    },
+  },
 };

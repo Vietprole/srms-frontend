@@ -209,7 +209,7 @@ export default function CongThucDiemPage() {
     const loais = data.map(item => item.loai);
     const uniqueLoais = new Set(loais);
     if (loais.length !== uniqueLoais.size) {
-        setSnackbarMessage("Không được trùng loại bài kiểm tra");
+        setSnackbarMessage("Không được trùng loại thành phần đánh giá");
         setSnackbarSeverity("error");
         setOpenSnackbar(true);
       return;
@@ -221,7 +221,7 @@ export default function CongThucDiemPage() {
     });
 
       if (sum !== 1) {
-        setSnackbarMessage("Tổng trọng số phải bằng 1");
+        setSnackbarMessage("Tổng điểm bài/câu hỏi đánh giá (thang 10) phải bằng 1");
         setSnackbarSeverity("error");
         setOpenSnackbar(true);
         return;
@@ -313,13 +313,13 @@ export default function CongThucDiemPage() {
     try {
       setIsLoading(true);
       await addBaiKiemTra(baiKiemTraData);
-      setSnackbarMessage("Thêm bài kiểm tra thành công");
+      setSnackbarMessage("Thêm thành phần đánh giá thành công");
       setSnackbarSeverity("success");
       setOpenSnackbar(true);
       handleCloseAddDialog();
     await fetchData();
     } catch (error) {
-      setSnackbarMessage(error.message || "Lỗi khi thêm bài kiểm tra");
+      setSnackbarMessage(error.message || "Lỗi khi thêm thành phần đánh giá");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     } finally {
@@ -356,13 +356,13 @@ export default function CongThucDiemPage() {
     try {
       setIsLoading(true);
       await deleteBaiKiemTra(selectedBaiKiemTraId);
-      setSnackbarMessage("Xóa bài kiểm tra thành công");
+      setSnackbarMessage("Xóa thành phần đánh giá thành công");
       setSnackbarSeverity("success");
       setOpenSnackbar(true);
       handleCloseDeleteDialog();
       await fetchData();
     } catch (error) {
-      setSnackbarMessage(error.message || "Lỗi khi xóa bài kiểm tra");
+      setSnackbarMessage(error.message || "Lỗi khi xóa thành phần đánh giá");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     } finally {
@@ -452,13 +452,13 @@ export default function CongThucDiemPage() {
     try {
       setIsLoading(true);
       await updateBaiKiemTra(editBaiKiemTra.id, baiKiemTraData);
-      setSnackbarMessage("Cập nhật bài kiểm tra thành công");
+      setSnackbarMessage("Cập nhật thành phần đánh giá thành công");
       setSnackbarSeverity("success");
       setOpenSnackbar(true);
       handleCloseEditDialog();
       await fetchData();
     } catch (error) {
-      setSnackbarMessage(error.message || "Lỗi khi cập nhật bài kiểm tra");
+      setSnackbarMessage(error.message || "Lỗi khi cập nhật thành phần đánh giá");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     } finally {
@@ -523,7 +523,7 @@ export default function CongThucDiemPage() {
               sx={{ height: '40px' }}
               disabled={!lopHocPhanId}
             >
-              Thêm bài kiểm tra
+              Thêm thành phần đánh giá
                   </Button>
 
             <Button
@@ -547,7 +547,7 @@ export default function CongThucDiemPage() {
                 <TableRow>
                   <StyledTableCell align="center">STT</StyledTableCell>
                   <StyledTableCell align="center">Loại</StyledTableCell>
-                  <StyledTableCell align="center">Trọng số</StyledTableCell>
+                  <StyledTableCell align="center">Điểm bài/câu hỏi đánh giá (thang 10)</StyledTableCell>
                   <StyledTableCell align="center">Ngày mở nhập điểm</StyledTableCell>
                   <StyledTableCell align="center">Hạn nhập điểm</StyledTableCell>
                   <StyledTableCell align="center">Hạn đính chính</StyledTableCell>
@@ -574,12 +574,12 @@ export default function CongThucDiemPage() {
                       {row.ngayXacNhan ? new Date(row.ngayXacNhan).toLocaleDateString('vi-VN') : ''}
                     </StyledTableCell>
                     <StyledTableCell align="center">
-                      <Tooltip title="Sửa bài kiểm tra">
+                      <Tooltip title="Sửa thành phần đánh giá">
                         <IconButton onClick={() => handleOpenEditDialog(row)}>
                           <EditIcon />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Xóa bài kiểm tra">
+                      <Tooltip title="Xóa thành phần đánh giá">
                         <IconButton onClick={() => handleOpenDeleteDialog(row.id)}>
                           <DeleteIcon />
                         </IconButton>
@@ -599,12 +599,12 @@ export default function CongThucDiemPage() {
           maxWidth="sm"
           fullWidth
         >
-          <DialogTitle>Thêm bài kiểm tra mới</DialogTitle>
+          <DialogTitle>Thêm thành phần đánh giá mới</DialogTitle>
           <DialogContent>
             <Box sx={{ mt: 2 }}>
               <TextField
                 fullWidth
-                label="Loại bài kiểm tra"
+                label="Loại thành phần đánh giá"
                 value={newBaiKiemTra.loai}
                 onChange={handleInputChange('loai')}
                 error={formErrors.loai}
@@ -614,12 +614,12 @@ export default function CongThucDiemPage() {
               
               <TextField
                 fullWidth
-                label="Trọng số"
+                label="Điểm bài/câu hỏi đánh giá (thang 10)"
                 type="number"
                 value={newBaiKiemTra.trongSo}
                 onChange={handleInputChange('trongSo')}
                 error={formErrors.trongSo}
-                helperText={formErrors.trongSo ? "Trọng số phải nằm trong khoảng từ 0 đến 1" : ""}
+                helperText={formErrors.trongSo ? "Điểm bài/câu hỏi đánh giá (thang 10) phải nằm trong khoảng từ 0 đến 1" : ""}
                 margin="normal"
                 inputProps={{
                   step: 0.01,
@@ -693,7 +693,7 @@ export default function CongThucDiemPage() {
           <DialogTitle>Xác nhận xóa</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Bạn có chắc chắn muốn xóa bài kiểm tra này không?
+              Bạn có chắc chắn muốn xóa thành phần đánh giá này không?
               {data.find(item => item.id === selectedBaiKiemTraId)?.loai && (
                 <Box component="span" sx={{ display: 'block', mt: 1, fontWeight: 'bold' }}>
                   Loại: {data.find(item => item.id === selectedBaiKiemTraId)?.loai}
@@ -724,12 +724,12 @@ export default function CongThucDiemPage() {
           maxWidth="sm"
           fullWidth
         >
-          <DialogTitle>Sửa bài kiểm tra</DialogTitle>
+          <DialogTitle>Sửa thành phần đánh giá</DialogTitle>
           <DialogContent>
             <Box sx={{ mt: 2 }}>
               <TextField
                 fullWidth
-                label="Loại bài kiểm tra"
+                label="Loại thành phần đánh giá"
                 value={editBaiKiemTra.loai}
                 onChange={handleEditInputChange('loai')}
                 error={editFormErrors.loai}
@@ -739,12 +739,12 @@ export default function CongThucDiemPage() {
               
               <TextField
                 fullWidth
-                label="Trọng số"
+                label="Điểm bài/câu hỏi đánh giá (thang 10)"
                 type="number"
                 value={editBaiKiemTra.trongSo}
                 onChange={handleEditInputChange('trongSo')}
                 error={editFormErrors.trongSo}
-                helperText={editFormErrors.trongSo ? "Trọng số phải nằm trong khoảng từ 0 đến 1" : ""}
+                helperText={editFormErrors.trongSo ? "Điểm bài/câu hỏi đánh giá (thang 10) phải nằm trong khoảng từ 0 đến 1" : ""}
                 margin="normal"
                 inputProps={{
                   step: 0.01,

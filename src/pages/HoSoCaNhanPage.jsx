@@ -15,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import Layout from "@/pages/Layout";
 import { getFullname, getRole } from "@/utils/storage";
-import { changePassword } from "@/api/api-taikhoan";
+import { changePassword } from "@/api/api-accounts";
 import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({

@@ -14,9 +14,9 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { upsertKetQua, confirmKetQua, acceptKetQua } from "@/api/api-ketqua";
-import { upsertDiemDinhChinh } from "@/api/api-diemdinhchinh";
-import { useToast } from "@/hooks/use-toast";
+import { upsertKetQua, confirmKetQua, acceptKetQua } from "@/api-new/api-ketqua";
+import { upsertDiemDinhChinh } from "@/api-new/api-diemdinhchinh";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogTrigger,
@@ -36,6 +36,7 @@ export function GradeTable({
   questions,
   isGiangVienMode,
   isConfirmed,
+  useTemporaryScore = true, // Default to true
 }) {
   const role = getRole();
   const [tableData, setTableData] = React.useState(data);
@@ -43,18 +44,19 @@ export function GradeTable({
   const [modifiedRecords, setModifiedRecords] = React.useState([]);
   const [modifiedDiemDinhChinhRecords, setModifiedDiemDinhChinhRecords] =
     React.useState([]);
+  const [modifiedOfficialScoreRecords, setModifiedOfficialScoreRecords] =
+    React.useState([]);
   const [isAccepted, setIsAccepted] = React.useState(false);
   const [confirmationStatus, setConfirmationStatus] =
     React.useState(isConfirmed);
-  const { toast } = useToast();
-  const doAcceptAllowed = role === "Admin" || role === "PhongDaoTao";
-  console.log("doAcceptAllowed", doAcceptAllowed);
+  const hasHigherPermission = role === "Admin" || role === "AcademicAffairs";
+  console.log("hasHigherPermission", hasHigherPermission);
   console.log("isConfirmed", isConfirmed);
   React.useEffect(() => {
     setTableData(data);
     const hasNullChinhThucGrades = tableData.some(
       (record) =>
-        Object.values(record.diemChinhThucs) // Get all grade objects
+        Object.values(record.officialScores) // Get all grade objects
           .flatMap((gradeObj) => Object.values(gradeObj)) // Flatten values into single array
           .some((grade) => grade === null) // Check for null
     );
@@ -71,12 +73,12 @@ export function GradeTable({
         cell: ({ row }) => <div className="text-center">{row.index + 1}</div>,
       },
       {
-        accessorKey: "maSinhVien",
+        accessorKey: "code",
         header: "MSSV",
         size: 120,
       },
       {
-        accessorKey: "ten",
+        accessorKey: "name",
         header: "Họ và tên",
         size: 200,
       },
@@ -87,24 +89,24 @@ export function GradeTable({
       const componentQuestions = questions[component.id.toString()] || [];
       console.log("componentQuestions", componentQuestions);
       cols.push({
-        id: component.loai,
-        header: `${component.loai} (${component.trongSo * 100}%)`,
+        id: component.type,
+        header: `${component.type} (${component.weight * 100}%)`,
         columns: [
           ...componentQuestions.map((question) => ({
             accessorFn: (row) =>
-              row.grades[component.loai]?.[question.id.toString()] ?? "",
-            id: `${component.loai}_${question.id}`,
+              row.grades[component.type]?.[question.id.toString()] ?? "",
+            id: `${component.type}_${question.id}`,
             header: () => (
               <div>
-                <div>{question.ten}</div>
-                <div>{question.trongSo * 100}%</div>
+                <div>{question.name}</div>
+                <div>{question.weight * 100}%</div>
               </div>
             ),
             size: 80,
             cell: ({ row, column }) => (
               <EditableCell
                 value={row.getValue(column.id)}
-                maxValue={question.thangDiem}
+                maxValue={question.scale}
                 onChange={(value) => {
                   const newData = [...tableData];
                   console.log("newData", newData);
@@ -118,15 +120,21 @@ export function GradeTable({
                   newData[rowIndex].grades[componentId][questionId] = value;
                   // const ketQuaId = newData[rowIndex].ketQuas[componentId][questionId];
                   const modifiedRecord = {
-                    sinhVienId: newData[rowIndex].id,
-                    cauHoiId: parseInt(questionId),
-                    diemTam: value,
+                    studentId: newData[rowIndex].id,
+                    questionId: parseInt(questionId),
+                    temporaryScore: value,
                   };
 
                   const modifiedDiemDinhChinhRecord = {
-                    sinhVienId: newData[rowIndex].id,
-                    cauHoiId: parseInt(questionId),
-                    diemMoi: value,
+                    studentId: newData[rowIndex].id,
+                    questionId: parseInt(questionId),
+                    newScore: value,
+                  };
+
+                  const modifiedOfficialScoreRecord = {
+                    studentId: newData[rowIndex].id,
+                    questionId: parseInt(questionId),
+                    officialScore: value,
                   };
                   console.log("modifiedRecord", modifiedRecord);
                   console.log(
@@ -134,7 +142,7 @@ export function GradeTable({
                     modifiedDiemDinhChinhRecord
                   );
                   // upsertKetQua(modifiedRecord);
-                  if (modifiedRecord.diemTam !== null) {
+                  if (modifiedRecord.temporaryScore !== null) {
                     setModifiedRecords([...modifiedRecords, modifiedRecord]);
                   }
 
@@ -144,6 +152,13 @@ export function GradeTable({
                       modifiedDiemDinhChinhRecord,
                     ]);
                   }
+
+                  if (modifiedOfficialScoreRecord.officialScore !== null) {
+                    setModifiedOfficialScoreRecords([
+                      ...modifiedOfficialScoreRecords,
+                      modifiedOfficialScoreRecord,
+                    ]);
+                  }
                   setTableData(newData);
                 }}
                 isEditing={isEditing}
@@ -151,11 +166,11 @@ export function GradeTable({
             ),
           })),
           // {
-          //   id: `${component.loai}_total`,
+          //   id: `${component.type}_total`,
           //   header: "Tổng",
           //   size: 80,
           //   accessorFn: (row) => {
-          //     const grades = row.grades[component.loai] || {};
+          //     const grades = row.grades[component.type] || {};
           //     return Object.values(grades).reduce(
           //       (sum, score) => sum + score,
           //       0
@@ -174,6 +189,7 @@ export function GradeTable({
     tableData,
     modifiedRecords,
     modifiedDiemDinhChinhRecords,
+    modifiedOfficialScoreRecords,
   ]);
 
   const table = useReactTable({
@@ -189,17 +205,10 @@ export function GradeTable({
         console.log("modifiedRecords[i]", modifiedRecords[i]);
         await upsertKetQua(modifiedRecords[i]);
       }
-      toast({
-        title: "Đã cập nhật điểm",
-        variant: "success",
-      });
+      toast.success("Đã cập nhật điểm");
       fetchData();
     } catch (error) {
-      toast({
-        title: "Lỗi lưu điểm",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(`Lỗi lưu điểm: ${error.message}`);
     }
   };
 
@@ -213,18 +222,12 @@ export function GradeTable({
         );
         await upsertDiemDinhChinh(modifiedDiemDinhChinhRecords[i]);
       }
-      toast({
-        title: "Đã cập nhật điểm đính chính",
-        description: "Xem điểm đính chính đã tạo ở mục Điểm Đính Chính",
-        variant: "success",
-      });
+      toast.success(
+        "Đã cập nhật điểm đính chính. Xem điểm đính chính đã tạo ở mục Điểm Đính Chính"
+      );
       fetchData();
     } catch (error) {
-      toast({
-        title: "Lỗi lưu điểm đính chính",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(`Lỗi lưu điểm đính chính: ${error.message}`);
     }
   };
   console.log("components, questions", components, questions);
@@ -239,61 +242,46 @@ export function GradeTable({
       );
 
       if (hasNullGrades) {
-        toast({
-          title: "Chưa nhập đủ điểm",
-          description:
-            "Vui lòng nhập đủ điểm cho tất cả sinh viên trước khi xác nhận",
-          variant: "destructive",
-        });
+        toast.error(
+          "Chưa nhập đủ điểm. Vui lòng nhập đủ điểm cho tất cả sinh viên trước khi xác nhận"
+        );
         return;
       }
 
       const confirmKetQuaDTOs = tableData.flatMap((record) =>
-        record.cauHois.map((cauHoiId) => ({
-          sinhVienId: record.id,
-          cauHoiId: cauHoiId,
+        record.cauHois.map((questionId) => ({
+          studentId: record.id,
+          questionId: questionId,
         }))
       );
 
       await Promise.all(confirmKetQuaDTOs.map((dto) => confirmKetQua(dto)));
 
-      toast({
-        title: "Đã xác nhận điểm",
-        description: "Điểm đã được xác nhận và không thể chỉnh sửa",
-        variant: "success",
-      });
+      toast.success(
+        "Đã xác nhận điểm. Điểm đã được xác nhận và không thể chỉnh sửa"
+      );
 
       await fetchData();
     } catch (error) {
       console.error("Error confirming records:", error);
-      toast({
-        title: "Lỗi xác nhận điểm",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(`Lỗi xác nhận điểm: ${error.message}`);
     }
-
-    // toast({
-    //   title: "Đã xác nhận điểm",
-    //   description: "Điểm đã được xác nhận và không thể chỉnh sửa",
-    //   variant: "success",
-    // });
   };
 
   const handleAccept = async () => {
     try {
-      const latestHanDinhChinh = new Date(
+      const latestScoreCorrectionDeadline = new Date(
         Math.max(
-          ...components.map((component) => new Date(component.hanDinhChinh))
+          ...components.map(
+            (component) => new Date(component.scoreCorrectionDeadline)
+          )
         )
       );
 
-      if (!isDatePassed(latestHanDinhChinh)) {
-        toast({
-          title: "Chưa hết hạn đính chính điểm",
-          description: "Hãy duyệt sau khi hết hạn đính chính điểm",
-          variant: "destructive",
-        });
+      if (!isDatePassed(latestScoreCorrectionDeadline)) {
+        toast.error(
+          "Chưa hết hạn đính chính điểm. Hãy duyệt sau khi hết hạn đính chính điểm"
+        );
         return;
       }
 
@@ -306,21 +294,18 @@ export function GradeTable({
         );
 
         if (hasNullGrades) {
-          toast({
-            title: "Điểm chưa đầy đủ",
-            description:
-              "Vui lòng đảm bảo điểm đã có cho tất cả sinh viên trước khi duyệt",
-            variant: "destructive",
-          });
+          toast.error(
+            "Điểm chưa đầy đủ. Vui lòng đảm bảo điểm đã có cho tất cả sinh viên trước khi duyệt"
+          );
           return;
         }
 
         console.log("tableData 252", tableData);
 
         const acceptKetQuaDTOs = tableData.flatMap((record) =>
-          record.cauHois.map((cauHoiId) => ({
-            sinhVienId: record.id,
-            cauHoiId: cauHoiId,
+          record.cauHois.map((questionId) => ({
+            studentId: record.id,
+            questionId: questionId,
           }))
         );
 
@@ -329,18 +314,11 @@ export function GradeTable({
           console.log(acceptKetQuaDTO);
         });
 
-        toast({
-          title: "Duyệt điểm thành công",
-          variant: "success",
-        });
+        toast.success("Duyệt điểm thành công");
       }
     } catch (error) {
       console.error("Error accepting records:", error);
-      toast({
-        title: "Lỗi xác nhận điểm",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(`Lỗi duyệt điểm: ${error.message}`);
     }
     fetchData();
   };
@@ -355,30 +333,61 @@ export function GradeTable({
   const canEditDiem =
     !isGiangVienMode ||
     (isGiangVienMode &&
-      isDatePassed(components[0].ngayMoNhapDiem) &&
-      !isDatePassed(components[0].hanNhapDiem));
+      isDatePassed(components[0].scoreEntryStartDate) &&
+      !isDatePassed(components[0].scoreEntryDeadline));
   const canDinhChinhDiem =
     isGiangVienMode &&
-    !isDatePassed(components[0].hanDinhChinh) &&
+    !isDatePassed(components[0].scoreCorrectionDeadline) &&
     confirmationStatus;
+
+  const handleSaveOfficialScores = async () => {
+    setIsEditing(false);
+    try {
+      for (let i = 0; i < modifiedOfficialScoreRecords.length; i++) {
+        console.log(
+          "modifiedOfficialScoreRecords[i]",
+          modifiedOfficialScoreRecords[i]
+        );
+        await upsertKetQua(modifiedOfficialScoreRecords[i]);
+      }
+      toast.success("Đã cập nhật điểm chính thức.");
+      fetchData();
+    } catch (error) {
+      toast.error(`Lỗi lưu điểm chính thức: ${error.message}`);
+    }
+  };
 
   return (
     <div className="space-y-4">
       <div className="flex justify-end gap-1">
-        {role!=="PhongDaoTao" && (
-            <Button
-            disabled={confirmationStatus || !canEditDiem}
-            onClick={() => (isEditing ? handleSaveChanges() : setIsEditing(true))}
-          >
-            {isEditing ? "Lưu" : "Sửa Điểm"}
-          </Button>
-        )}
-        {doAcceptAllowed && (
+        <Button
+          disabled={confirmationStatus || !canEditDiem}
+          onClick={() => (isEditing ? handleSaveChanges() : setIsEditing(true))}
+        >
+          {isEditing ? "Lưu" : "Nhập Điểm"}
+        </Button>
+        {hasHigherPermission && (
           <Button
             disabled={isEditing || isAccepted || !confirmationStatus}
             onClick={handleAccept}
           >
             {!isAccepted ? "Duyệt" : "Đã Duyệt"}
+          </Button>
+        )}
+        {console.log("!useTemporaryScore", !useTemporaryScore)}
+        {console.log("!isAccepted", !isAccepted)}
+        {console.log(
+          "!isAccepted && !useTemporaryScore)",
+          !isAccepted && !useTemporaryScore
+        )}
+        {hasHigherPermission && (
+          <Button
+            disabled={!isAccepted || useTemporaryScore}
+            onClick={() =>
+              isEditing ? handleSaveOfficialScores() : setIsEditing(true)
+            }
+          >
+            {isEditing ? "Lưu điểm phúc khảo" : "Nhập điểm phúc khảo"}
           </Button>
         )}
         <Dialog>
@@ -440,7 +449,7 @@ export function GradeTable({
                   colSpan={questions[component.id.toString()]?.length}
                   className="text-center border"
                 >
-                  {component.loai} ({component.trongSo * 100}%)
+                  {component.type} ({component.weight * 100}%)
                 </TableHead>
               ))}
             </TableRow>
@@ -449,12 +458,12 @@ export function GradeTable({
                 ...(questions[component.id.toString()] || []).map(
                   (question) => (
                     <TableHead
-                      key={`${component.loai}_${question.id}`}
+                      key={`${component.type}_${question.id}`}
                       className="text-center px-1 border"
                     >
-                      <div>{question.ten}</div>
-                      <div>TS: {question.trongSo}</div>
-                      <div>TĐ: {question.thangDiem}</div>
+                      <div>{question.name}</div>
+                      <div>TS: {question.weight}</div>
+                      <div>TĐ: {question.scale}</div>
                     </TableHead>
                   )
                 ),

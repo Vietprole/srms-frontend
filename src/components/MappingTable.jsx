@@ -28,7 +28,7 @@ const ToggleCell = ({ rowItemId, columnItemId, isEditable, table, getRowItemsByC
 
   return (
     <div
-      className={`p-2 ${toggled ? "bg-blue-500 text-white" : "bg-white text-black"} ${isEditable ? "cursor-pointer" : "cursor-not-allowed opacity-50"}`}
+      className={`p-2 text-center ${toggled ? "bg-blue-500 text-white" : "bg-white text-black"} ${isEditable ? "cursor-pointer" : "cursor-not-allowed opacity-50"}`}
       onClick={onToggle}
     >
       {toggled ? "✓" : ""}
@@ -37,18 +37,15 @@ const ToggleCell = ({ rowItemId, columnItemId, isEditable, table, getRowItemsByC
 };
 
 export default function MappingTable({listRowItem, listColumnItem, extraHeaders, toggledDataFromParent, updateRowItemsToColumnItem, getRowItemsByColumnItemId}) {
-  console.log("toggleDataFromParent", toggledDataFromParent);
   const [isEditable, setIsEditable] = useState(false);
   const [toggledData, setToggledData] = useState(toggledDataFromParent);
 
   // Add effect to update toggledData when prop changes
   useEffect(() => {
     setToggledData(toggledDataFromParent);
-    console.log("toggledDataFromParent changed:", toggledDataFromParent);
   }, [toggledDataFromParent]);
   
   useEffect(() => {
-    console.log("toggledData updated:", toggledData);
   }, [toggledData]);
 
   const handleSaveChanges = async () => {
@@ -57,7 +54,6 @@ export default function MappingTable({listRowItem, listColumnItem, extraHeaders,
         await updateRowItemsToColumnItem(columnItemId, rowItemIdList);
       }
       setIsEditable(false);
-      console.log("Changes saved successfully");
     } catch (error) {
       console.error("Error saving changes:", error);
     }
@@ -85,12 +81,12 @@ export default function MappingTable({listRowItem, listColumnItem, extraHeaders,
 
   const columns = [
     {
-      accessorKey: "ten",
+      accessorKey: "name",
       header: "",
     },
     ...listColumnItem.map(columnItem => ({
       accessorKey: columnItem.id.toString(),
-      header: columnItem.ten ?? columnItem.loai,
+      header: columnItem.name ?? columnItem.loai,
       cell: ({ row }) => (
         <ToggleCell
           rowItemId={row.original.id}
@@ -105,6 +101,7 @@ export default function MappingTable({listRowItem, listColumnItem, extraHeaders,
 
   return (
     <div>
+      <div className="flex justify-end">
       <button
         onClick={() => {
           if (isEditable) {
@@ -117,6 +114,7 @@ export default function MappingTable({listRowItem, listColumnItem, extraHeaders,
       >
         {isEditable ? "Lưu" : "Sửa"}
       </button>
+      </div>
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           {extraHeaders && (
@@ -138,7 +136,7 @@ export default function MappingTable({listRowItem, listColumnItem, extraHeaders,
           )}
           <tr>
             {columns.map((column) => (
-              <th key={column.accessorKey} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border">
+              <th key={column.accessorKey} className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border">
                 {column.header}
               </th>
             ))}

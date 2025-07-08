@@ -6,8 +6,8 @@ import SinhVienPage from "@/pages/SinhVienPage";
 import GiangVienPage from "@/pages/Admin/GiangVienPage";
 import HocPhanPage from "@/pages/Admin/HocPhanPage";
 import PLOPage from "@/pages/PLOPage";
-import MapHocPhanPLOPage from "@/pages/MapHocPhanPLOPage";
-import NoiCLOPLO from "@/pages/chuandaura/MapPLOCLO";
+// import NoiCLOPLO from "@/pages/chuandaura/MapPLOCLO";
+import MapPLOCLOPage from "@/pages/MapPLOCLOPage";
 import LopHocPhanPage from "@/pages/LopHocPhanPage";
 import CongThucDiemPage from "@/pages/CongThucDiemPage";
 import NhapDiemPage from "@/pages/NhapDiemPage";
@@ -34,6 +34,7 @@ import HocKiPage from "@/pages/Admin/HocKyPage";
 import QuanLyCLO from "@/pages/chuandaura/QuanLyCLO";
 import MapPLOCLO from "@/pages/chuandaura/MapPLOCLO";
 import StudentInCoursePage from "../pages/StudentInCoursePage";
+import CTDTPage from "../pages/Admin/CTDTPage";
 const role = getRole();
 const RoleBasedRoute = ({ giangVienElement, defaultElement }) => {
   return role === "GiangVien" ? giangVienElement : defaultElement;
@@ -57,6 +58,10 @@ const routes = [
     element: <NganhPage />,
   },
   {
+    path: "/programme",
+    element: <CTDTPage />,
+  },
+  {
     path: "/giangvien",
     element: <GiangVienPage />,
   },
@@ -73,12 +78,8 @@ const routes = [
     element: <PLOPage />,
   },
   {
-    path: "/maphocphanplo",
-    element: <MapHocPhanPLOPage />,
-  },
-  {
-    path: "/mapcloplo",
-    element: <NoiCLOPLO />,
+    path: "/mapploclo",
+    element: <MapPLOCLOPage />,
   },
   {
     path: "/lophocphan",
@@ -93,9 +94,17 @@ const routes = [
     element: <NhapDiemPage />,
     children: [
       { path: ":lopHocPhanId/quan-ly-cau-hoi", element: <QuanLyCauHoi /> },
-      { path: ":lopHocPhanId/bang-diem", element: <RoleBasedRoute giangVienElement={<BangDiemGiangVienPage />} defaultElement={<BangDiem/>} /> },
+      {
+        path: ":lopHocPhanId/bang-diem",
+        element: (
+          <RoleBasedRoute
+            giangVienElement={<BangDiemGiangVienPage />}
+            defaultElement={<BangDiem />}
+          />
+        ),
+      },
       { path: ":lopHocPhanId/tao-clo", element: <TaoCLO /> },
-      { path: ":lopHocPhanId/noi-plo-clo", element: <NoiCLOPLO /> },
+      { path: ":lopHocPhanId/noi-plo-clo", element: <MapPLOCLOPage /> },
       { path: ":lopHocPhanId/noi-cau-hoi-clo", element: <NoiCauHoiCLO /> },
       { path: ":lopHocPhanId/diem-clo", element: <DiemCLO /> },
       { path: ":lopHocPhanId/diem-pk", element: <DiemPk /> },
@@ -105,12 +114,14 @@ const routes = [
   },
   {
     path: "/chuandaura",
-    children: [
-      { path: "quan-ly-clo", element: <QuanLyCLO /> },
-    ],
+    children: [{ path: "quan-ly-clo", element: <QuanLyCLO /> }],
   },
   {
-    path: "/hocki",
+    path: "/clo",
+    element: <QuanLyCLO />,
+  },
+  {
+    path: "/semester",
     element: <HocKiPage />,
   },
   {
@@ -144,12 +155,12 @@ const routes = [
   {
     path: "/test",
     element: <TestPage />,
-  },  
+  },
   {
     path: "/lophocphan/:courseId/sinhvien",
     element: <StudentInCoursePage />,
   },
-]
+];
 const router = createBrowserRouter(routes, {
   future: {
     v7_fetcherPersist: true,
@@ -157,6 +168,6 @@ const router = createBrowserRouter(routes, {
     v7_partialHydration: true,
     v7_relativeSplatPath: true,
     v7_skipActionErrorRevalidation: true,
-  }
+  },
 });
 export default router;

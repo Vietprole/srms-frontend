@@ -1,11 +1,11 @@
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getBaiKiemTrasByLopHocPhanId } from "@/api/api-baikiemtra";
+import { getBaiKiemTrasByLopHocPhanId } from "@/api-new/api-baikiemtra";
 import {
-  getCauHoisByBaiKiemTraId,
+  getQuestionsByExamId,
   // getAllCauHois,
   // deleteCauHoi,
-} from "@/api/api-cauhoi";
+} from "@/api-new/api-cauhoi";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,145 +27,152 @@ import { useState, useEffect, useCallback } from "react";
 import { ComboBox } from "@/components/ComboBox";
 import { useSearchParams } from "react-router-dom";
 import { useNavigate, useParams } from "react-router-dom";
-import { Table, TableBody, TableCell, TableHead, TableRow, TableHeader } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TableHeader,
+} from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu";
 import { useReactTable } from "@tanstack/react-table";
 import { flexRender } from "@tanstack/react-table";
 import { ChevronDown } from "lucide-react";
-import { getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel } from "@tanstack/react-table";
-import { useToast } from "@/hooks/use-toast";
-import { updateListCauHoi } from "@/api/api-baikiemtra";
+import {
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+} from "@tanstack/react-table";
+import { toast } from "sonner";
+import { updateQuestions } from "@/api-new/api-baikiemtra";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function QuanLyCauHoi() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { lopHocPhanId } = useParams();
-  const baiKiemTraIdParam = searchParams.get("baiKiemTraId");
+  const examIdParam = searchParams.get("examId");
   const [data, setData] = useState([]);
   const [baiKiemTraItems, setBaiKiemTraItems] = useState([]);
-  const [baiKiemTraId, setBaiKiemTraId] = useState(baiKiemTraIdParam);
+  const [examId, setExamId] = useState(examIdParam);
   // const [lopHocPhanId, setLopHocPhanId] = useState(lopHocPhanIdParam);
-  const [comboBoxBaiKiemTraId, setComboBoxBaiKiemTraId] =
-    useState(baiKiemTraIdParam);
-  const { toast } = useToast();
+  const [comboBoxExamId, setComboBoxExamId] = useState(examIdParam);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
   const [maxId, setMaxId] = useState(0);
-  const columnToBeFiltered = "ten";
-  const entity = "Câu Hỏi";
+  const columnToBeFiltered = "name";
+  const entity = "Bài/câu hỏi đánh giá";
   const ItemForm = CauHoiForm;
 
   const fetchData = useCallback(async () => {
     const dataBaiKiemTra = await getBaiKiemTrasByLopHocPhanId(lopHocPhanId);
     // Map baiKiemTra items to be used in ComboBox
     const mappedComboBoxItems = dataBaiKiemTra.map((baiKiemTra) => ({
-      label: baiKiemTra.loai,
+      label: baiKiemTra.type,
       value: baiKiemTra.id,
     }));
     setBaiKiemTraItems(mappedComboBoxItems);
-    const data = await getCauHoisByBaiKiemTraId(baiKiemTraId);
-    
-    const maxId = data.length > 0 
-    ? Math.max(...data.map(item => item.id))
-    : 0;
-    
+    const data = await getQuestionsByExamId(examId);
+
+    const maxId =
+      data.length > 0 ? Math.max(...data.map((item) => item.id)) : 0;
+
     console.log("maxId = ", maxId);
     setData(data);
     setMaxId(maxId);
-  }, [baiKiemTraId, lopHocPhanId]);
+  }, [examId, lopHocPhanId]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
   const handleGoClick = () => {
-    setBaiKiemTraId(comboBoxBaiKiemTraId);
-    if (comboBoxBaiKiemTraId === "") {
+    setExamId(comboBoxExamId);
+    if (comboBoxExamId === "") {
       navigate(`.`);
       return;
     }
-    navigate(`.?baiKiemTraId=${comboBoxBaiKiemTraId}`);
+    navigate(`.?examId=${comboBoxExamId}`);
   };
 
   const handleAdd = (newItem) => {
     setMaxId(maxId + 1);
     console.log("maxId 96 ", maxId);
     setData([...data, newItem]);
+    toast.success("Tạo bài/câu hỏi đánh giá thành công");
   };
-  
+
   const handleEdit = (editedItem) => {
     setData(
       data.map((item) => (item.id === editedItem.id ? editedItem : item))
     );
+    toast.success("Sửa bài/câu hỏi đánh giá thành công");
   };
-  
+
   const handleDelete = async (itemId) => {
     setData(data.filter((item) => item.id !== itemId));
+    toast.success("Xoá bài/câu hỏi đánh giá thành công");
   };
 
   const handleSave = async () => {
-    const tens = data.map(item => item.ten);
+    const tens = data.map((item) => item.name);
     const uniqueTens = new Set(tens);
     if (tens.length !== uniqueTens.size) {
-      toast({
-        variant: "destructive",
-        title: "Đã xảy ra lỗi",
-        description: "Không được trùng tên câu hỏi",
-      });
+      toast.error("Không được trùng tên bài/câu hỏi đánh giá");
       return;
     }
 
     let sum = 0;
     data.forEach(async (item) => {
-      sum += item.trongSo;
+      sum += item.weight;
     });
     console.log("data = ", data);
 
     console.log("sum - 10 = ", sum - 10);
     if (Math.abs(sum - 10) > 0.0001) {
-      console.log("toast here")
-      toast({
-        variant: "destructive",
-        title: "Đã xảy ra lỗi",
-        description: "Tổng trọng số phải bằng 10",
-      });
+      console.log("toast here");
+      toast.error("Tổng điểm bài/câu hỏi đánh giá (thang 10) phải bằng 10");
       return;
     }
 
     try {
-      await updateListCauHoi(baiKiemTraId, data);
-    }
-    catch(error) {
-      toast({
-        variant: "destructive",
-        title: "Đã xảy ra lỗi",
-        description: error.message,
-      });
+      await updateQuestions(examId, data);
+    } catch (error) {
       await fetchData();
       return;
     }
-    toast({
-      variant: "success",
-      title: "Lưu thành công",
-      description: "Danh sách câu hỏi đã được lưu",
-    })
+    // toast.success("Danh sách bài/câu hỏi đánh giá đã được lưu");
     await fetchData();
   };
 
   const createCauHoiColumns = (handleEdit, handleDelete) => [
     {
-      accessorKey: "tt",
+      accessorKey: "id",
       header: ({ column }) => {
         return (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            TT
+            Id
             <ArrowUpDown />
           </Button>
         );
@@ -173,7 +180,7 @@ export default function QuanLyCauHoi() {
       cell: ({ row }) => <div className="px-4 py-2">{row.index + 1}</div>,
     },
     {
-      accessorKey: "ten",
+      accessorKey: "name",
       header: ({ column }) => {
         return (
           <Button
@@ -185,40 +192,42 @@ export default function QuanLyCauHoi() {
           </Button>
         );
       },
-      cell: ({ row }) => <div className="px-4 py-2">{row.getValue("ten")}</div>,
-    },
-    {
-      accessorKey: "trongSo",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Trọng Số
-            <ArrowUpDown />
-          </Button>
-        );
-      },
       cell: ({ row }) => (
-        <div className="px-4 py-2">{row.getValue("trongSo")}</div>
+        <div className="px-4 py-2">{row.getValue("name")}</div>
       ),
     },
     {
-      accessorKey: "thangDiem",
+      accessorKey: "weight",
       header: ({ column }) => {
         return (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Thang Điểm
+            Điểm bài/câu hỏi đánh giá (thang 10)
             <ArrowUpDown />
           </Button>
         );
       },
       cell: ({ row }) => (
-        <div className="px-4 py-2">{row.getValue("thangDiem")}</div>
+        <div className="px-4 py-2">{row.getValue("weight")}</div>
+      ),
+    },
+    {
+      accessorKey: "scale",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Điểm tối đa của bài/câu hỏi đánh giá
+            <ArrowUpDown />
+          </Button>
+        );
+      },
+      cell: ({ row }) => (
+        <div className="px-4 py-2">{row.getValue("scale")}</div>
       ),
     },
     {
@@ -240,15 +249,13 @@ export default function QuanLyCauHoi() {
               <Dialog>
                 <DialogTrigger asChild>
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                    Sửa Câu Hỏi
+                    Sửa Bài/câu hỏi đánh giá
                   </DropdownMenuItem>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>Sửa câu hỏi</DialogTitle>
-                    <DialogDescription>
-                      Sửa câu hỏi hiện tại
-                    </DialogDescription>
+                    <DialogTitle>Sửa bài/câu hỏi đánh giá</DialogTitle>
+                    <DialogDescription>Sửa bài/câu hỏi đánh giá hiện tại</DialogDescription>
                   </DialogHeader>
                   <CauHoiForm cauHoi={item} handleEdit={handleEdit} />
                 </DialogContent>
@@ -256,17 +263,15 @@ export default function QuanLyCauHoi() {
               <Dialog>
                 <DialogTrigger asChild>
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                    Xóa Câu Hỏi
+                    Xóa Bài/câu hỏi đánh giá
                   </DropdownMenuItem>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>Xóa câu hỏi</DialogTitle>
-                    <DialogDescription>
-                      Xóa câu hỏi hiện tại
-                    </DialogDescription>
+                    <DialogTitle>Xóa bài/câu hỏi đánh giá</DialogTitle>
+                    <DialogDescription>Xóa bài/câu hỏi đánh giá hiện tại</DialogDescription>
                   </DialogHeader>
-                  <p>Bạn có chắc muốn xóa câu hỏi này?</p>
+                  <p>Bạn có chắc muốn xóa bài/câu hỏi đánh giá này?</p>
                   <DialogFooter>
                     <Button type="submit" onClick={() => handleDelete(item.id)}>
                       Xóa
@@ -282,7 +287,7 @@ export default function QuanLyCauHoi() {
   ];
 
   const columns = createCauHoiColumns(handleEdit, handleDelete);
-  
+
   const table = useReactTable({
     data,
     columns,
@@ -306,19 +311,19 @@ export default function QuanLyCauHoi() {
     <div className="w-full">
       <div className="flex">
         <ComboBox
-          placeholder="Chọn bài kiểm tra..."
           items={baiKiemTraItems}
-          setItemId={setComboBoxBaiKiemTraId}
-          initialItemId={comboBoxBaiKiemTraId}
+          setItemId={setComboBoxExamId}
+          initialItemId={comboBoxExamId}
+          placeholder="Chọn thành phần đánh giá"
         />
         <Button onClick={handleGoClick}>Go</Button>
       </div>
       <>
         {/* <h1>This is {entity} Page</h1> */}
         <div className="w-full">
-          <div className="flex items-center py-4">
+          <div className="flex items-center justify-between py-1">
             <Input
-              placeholder={`Filter ${columnToBeFiltered}s...`}
+              placeholder={`Tìm kiếm...`}
               value={
                 table.getColumn(`${columnToBeFiltered}`)?.getFilterValue() ?? ""
               }
@@ -329,7 +334,7 @@ export default function QuanLyCauHoi() {
               }
               className="max-w-sm"
             />
-            <DropdownMenu>
+            {/* <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="ml-auto">
                   Hiện cột <ChevronDown />
@@ -354,34 +359,33 @@ export default function QuanLyCauHoi() {
                     );
                   })}
               </DropdownMenuContent>
-            </DropdownMenu>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="ml-2"
-                  disabled={!lopHocPhanId}
-                >
-                  Tạo {entity}
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Tạo {entity}</DialogTitle>
-                  <DialogDescription>
-                    Tạo {entity} mới.
-                  </DialogDescription>
-                </DialogHeader>
-                <ItemForm
-                  handleAdd={handleAdd}
-                  setIsDialogOpen={setIsDialogOpen}
-                  maxId={maxId}
-                />
-              </DialogContent>
-            </Dialog>
-            <Button disabled={!lopHocPhanId} onClick={handleSave}>
-              Lưu Câu Hỏi
-            </Button>
+            </DropdownMenu> */}
+            <div>
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    className="mr-2"
+                    disabled={!lopHocPhanId || !examId}
+                  >
+                    Tạo {entity}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Tạo {entity}</DialogTitle>
+                    <DialogDescription>Tạo {entity} mới.</DialogDescription>
+                  </DialogHeader>
+                  <ItemForm
+                    handleAdd={handleAdd}
+                    setIsDialogOpen={setIsDialogOpen}
+                    maxId={maxId}
+                  />
+                </DialogContent>
+              </Dialog>
+              <Button disabled={!lopHocPhanId || !examId} onClick={handleSave}>
+                Lưu Bài/câu hỏi đánh giá
+              </Button>
+            </div>
           </div>
           <div className="rounded-md border">
             <Table>
@@ -411,7 +415,7 @@ export default function QuanLyCauHoi() {
                       data-state={row.getIsSelected() && "selected"}
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <TableCell className="px-2 py-4" key={cell.id}>
+                        <TableCell key={cell.id}>
                           {flexRender(
                             cell.column.columnDef.cell,
                             cell.getContext()
@@ -433,24 +437,76 @@ export default function QuanLyCauHoi() {
               </TableBody>
             </Table>
           </div>
-          <div className="flex items-center justify-end space-x-2 py-4">
-            <div className="space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
-              >
-                Trang trước
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
-              >
-                Trang sau
-              </Button>
+          <div className="flex items-center justify-between px-2">
+            <div className="flex-1 text-sm text-muted-foreground">
+              {/* {table.getFilteredSelectedRowModel().rows.length} of{" "}
+              {table.getFilteredRowModel().rows.length} row(s) selected. */}
+            </div>
+            <div className="flex items-center space-x-6 lg:space-x-8">
+              <div className="flex items-center space-x-2">
+                <p className="text-sm font-medium">Số dòng mỗi trang</p>
+                <Select
+                  value={`${table.getState().pagination.pageSize}`}
+                  onValueChange={(value) => {
+                    table.setPageSize(Number(value));
+                  }}
+                >
+                  <SelectTrigger className="h-8 w-[70px]">
+                    <SelectValue
+                      placeholder={table.getState().pagination.pageSize}
+                    />
+                  </SelectTrigger>
+                  <SelectContent side="top">
+                    {[10, 20, 30, 40, 50].map((pageSize) => (
+                      <SelectItem key={pageSize} value={`${pageSize}`}>
+                        {pageSize}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+                Trang {table.getState().pagination.pageIndex + 1} /{" "}
+                {table.getPageCount()}
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  className="hidden h-8 w-8 p-0 lg:flex"
+                  onClick={() => table.setPageIndex(0)}
+                  disabled={!table.getCanPreviousPage()}
+                >
+                  <span className="sr-only">Go to first page</span>
+                  <ChevronsLeft />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-8 w-8 p-0"
+                  onClick={() => table.previousPage()}
+                  disabled={!table.getCanPreviousPage()}
+                >
+                  <span className="sr-only">Go to previous page</span>
+                  <ChevronLeft />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-8 w-8 p-0"
+                  onClick={() => table.nextPage()}
+                  disabled={!table.getCanNextPage()}
+                >
+                  <span className="sr-only">Go to next page</span>
+                  <ChevronRight />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="hidden h-8 w-8 p-0 lg:flex"
+                  onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                  disabled={!table.getCanNextPage()}
+                >
+                  <span className="sr-only">Go to last page</span>
+                  <ChevronsRight />
+                </Button>
+              </div>
             </div>
           </div>
         </div>

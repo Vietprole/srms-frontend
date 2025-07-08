@@ -17,72 +17,80 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import {Tooltip } from '@mui/material';
 import Box from '@mui/material/Box';
 import { useState, useEffect,useRef } from "react";
 import Autocomplete from '@mui/material/Autocomplete';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import {
-  getAllKhoas
-} from "@/api/api-khoa";
-import { getAllHocPhans,addHocPhan,getHocPhanById,updateHocPhan,deleteHocPhan } from '@/api/api-hocphan';
+  getAllFaculties
+} from "@/api/api-faculties";
 import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 import Layout from '../Layout';
-import { getHocPhansByNganhId, getAllNganhs } from "@/api/api-nganh";
-import { getLopHocPhans } from "@/api/api-lophocphan";
-import { TableVirtuoso } from "react-virtuoso";
+import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
+import ArrowRightIcon from '@mui/icons-material/ArrowRight';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import MenuItem from '@mui/material/MenuItem';
+import Popover from '@mui/material/Popover';
+import { getCourses,createCourse,getCourseById,updateCourse } from "@/api/api-courses";
 function HocPhanPage() 
 {
   const styles = {
-    main:
-    {
-      width: '100%',
-      height: '91vh',
+    main: {
       display: 'flex',
       flexDirection: 'column',
-      overflowY: 'hidden',
-      padding: "10px",
+      height: '100%',
+      padding: '10px',
+      boxSizing: 'border-box',
+      overflow: 'hidden',
     },
-    title:
-    {
+  
+    title: {
       width: '100%',
-      height: '6%',
       fontSize: '1.2em',
       fontFamily: 'Roboto',
       fontWeight: 'bold',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'flex-start',
-      flexDirection: 'row',
+      justifyContent: 'space-between',
     },
-    btnMore:
-    {
+  
+    btnMore: {
       display: 'flex',
       justifyContent: 'flex-end',
       marginLeft: 'auto',
     },
-    tbActions:
-    {
+  
+    tbActions: {
       width: '100%',
-      height: '6%',
+      marginTop: 10,
       display: 'flex',
-      justifyContent: 'flex-start',
-      alignItems: 'center',
-      flexDirection: 'row',
+      alignItems: 'center', // căn giữa dọc cho cả dòng
+      gap: '10px',          // khoảng cách giữa các phần tử
+      paddingBottom: '10px',
     },
-    ipSearch:
-    {
+    
+  
+    ipSearch: {
       width: '25%',
-      height: '100%',
+      height: 40,
       justifyContent: 'flex-start',
       borderRadius: '5px',
     },
-    btnCreate:
-    {
+  
+    cbKhoa: {
+      width: "22%",
+      display: "flex",
+      alignItems: "center",
+      height: 40, // 👈 Thêm chiều cao cụ thể
+      marginLeft: "10px",
+    },
+    
+    
+  
+    btnCreate: {
       width: '15%',
-      height: '100%',
+      height: 40,
       display: 'flex',
       marginLeft: 'auto',
       justifyContent: 'center',
@@ -91,21 +99,43 @@ function HocPhanPage()
       color: 'white',
       cursor: 'pointer',
     },
-    table:
-    {
-      width: '100%',
-      height: '98%',
+  
+    table: {
+      flex: 1,
       display: 'flex',
       flexDirection: 'column',
-      paddingTop: '10px',
-      overflowY: 'auto',
+      overflow: 'hidden',
+      width: '100%', // 👈 thêm dòng này
     },
-    cbKhoa:
-    {
-      width: '22%',
-      height: '80%',
-      marginLeft: '10px',
-      marginBottom: '10px',
+    
+  
+    divPagination: {
+      flexShrink: 0,
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      borderTop: '1px solid #eee',
+      backgroundColor: '#f5f5f5',
+      padding: '5px 10px',
+    },
+  
+    squareStyle: {
+      width: 35,
+      height: 35,
+      backgroundColor: '#fff',
+      border: '1px solid #ccc',
+      borderLeft: 'none',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: 14,
+      cursor: 'pointer',
+      boxSizing: 'border-box',
+      transition: 'all 0.2s ease-in-out',
+      '&:hover': {
+        backgroundColor: '#0071A6',
+        color: '#fff',
+      },
     },
   };
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -123,26 +153,72 @@ function HocPhanPage()
   const [selectedKhoa, setSelectedKhoa] = useState(null);
   const [errorTenHocPhan, setErrorTenHocPhan] = useState(false);
   const [errorSoTinChi, setErrorSoTinChi] = useState(false);
+  const [errorMaHocPhan , setErrorMaHocPhan] = useState(false);
   const soTinChiRef = useRef("");
   const tenHocPhanRef = useRef("");
   const [maHocPhan, setMaHocPhan] = useState("");
   const [tenKhoa, setTenKhoa] = useState("");
   const [hocPhanId, setHocPhanId] = useState("");
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [selectedHocPhanId, setSelectedHocPhanId] = useState(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20); // mặc định
+  const pageSizeOptions = [20,50,100]; // các lựa chọn
 
+  const totalItems = filteredData.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const startIndex = (page - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedData = filteredData.slice(startIndex, endIndex);
+  const startRow = startIndex + 1;
+  const endRow = Math.min(endIndex, totalItems);
+
+  const [anchorPosition, setAnchorPosition] = useState(null);
+  const [selectedRowId, setSelectedRowId] = useState(null);
+
+  const handleOpenPopover = (event, rowId) => {
+    setAnchorPosition({ top: event.clientY + 5, left: event.clientX + 5 });
+    setSelectedRowId(rowId);
+  };
+
+  const handleClosePopover = () => {
+    setAnchorPosition(null);
+    setSelectedRowId(null);
+  };
+
+
+  const pagesToShow = () => {
+    const pages = [];
+    const total = totalPages;
+  
+    if (total <= 5) {
+      for (let i = 1; i <= total; i++) pages.push(i);
+    } else {
+      if (page <= 3) {
+        pages.push(1, 2, 3, 4, '...', total);
+      } else if (page >= total - 2) {
+        pages.push(1, '...', total - 3, total - 2, total - 1, total);
+      } else {
+        pages.push(1, '...', page - 1, page, page + 1, '...', total);
+      }
+    }
+  
+    return pages;
+  };
+  
+  
+  
   const handleOpenEditDialog = async(hocPhanId) => {
-    const hocphan = await getHocPhanById(hocPhanId);
+    const hocphan = await getCourseById(hocPhanId);
+    console.log(hocphan);
     if(hocphan.status===200)
     {
      
-      setTenHocPhan(hocphan.data.ten);
-      setSoTinChi(hocphan.data.soTinChi);
-      setSelectedKhoa(hocphan.data.khoa);
-      tenHocPhanRef.current = hocphan.data.ten;
-      soTinChiRef.current = hocphan.data.soTinChi;
-      setMaHocPhan(hocphan.data.maHocPhan);
-      setTenKhoa(hocphan.data.tenKhoa);
+      setTenHocPhan(hocphan.data.name);
+      setSoTinChi(hocphan.data.credits);
+      setSelectedKhoa(hocphan.data.facultyId);
+      tenHocPhanRef.current = hocphan.data.name;
+      soTinChiRef.current = hocphan.data.credits;
+      setMaHocPhan(hocphan.data.code);
+      setTenKhoa(hocphan.data.facultyName);
       setHocPhanId(hocPhanId);
       setOpenEditDialog(true);
 
@@ -183,14 +259,17 @@ function HocPhanPage()
     setErrorTenHocPhan(false);
     setErrorSoTinChi(false);
     setOpenAddDialog(false);
+    setErrorMaHocPhan(false);
+    setMaHocPhan("");
   };
 
   const handleKhoaChange = (event, newValue) => {
+    setPage(1); // Reset page to 1 when filter changes
     setSelectedKhoaFilter(newValue);
     if (!newValue) {
       setFilteredData(data);
     } else {
-      const filtered = data.filter((row) => row.tenKhoa === newValue.ten);
+      const filtered = data.filter((row) => row.facultyName === newValue.name);
       setFilteredData(filtered);
     }
   };
@@ -203,11 +282,11 @@ function HocPhanPage()
   
   const fetchData = async () => {
     try {
-      const hocphans = await getAllHocPhans();
+      const hocphans = await getCourses();
       // Đảm bảo response từ API trả về thêm thông tin tenNganh
       setData(hocphans);
       setFilteredData(hocphans);
-      const khoa = await getAllKhoas();
+      const khoa = await getAllFaculties();
       setKhoas(khoa);
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu:", error);
@@ -225,7 +304,7 @@ function HocPhanPage()
       setFilteredData(data); // If search query is empty, show all data
     } else {
       const filtered = data.filter((row) =>
-        row.ten.toLowerCase().includes(query.toLowerCase())
+        row.name.toLowerCase().includes(query.toLowerCase())
       );
       setFilteredData(filtered);
     }
@@ -237,6 +316,7 @@ function HocPhanPage()
 
   
   const handleSearchChange = (event) => {
+    setPage(1); // Reset page to 1 when search query changes
     const value = event.target.value;
     setSearchQuery(value); 
     filterData(value); 
@@ -265,62 +345,79 @@ function HocPhanPage()
     cursor: 'pointer', // Tùy chọn: Thêm hiệu ứng con trỏ
   },
   }));
+   const columns = [
+    { width: 50, label: "STT", dataKey: "index", align: "center" },
+    { width: 150, label: "Mã Học Phần", dataKey: "maHocPhan", align: "center" },
+    { label: "Tên Học Phần", dataKey: "tenHocPhan", align: "left" },
+    { width: 100, label: "Số Tín Chỉ", dataKey: "soTinChi", align: "center" },
+    { width: 200, label: "Tên Khoa", dataKey: "tenKhoa", align: "center" },
+    { width: 150, label: "", dataKey: "actions", align: "center" },
+  ];
 
   const handleAddSubmit = async () => {
     if (tenHocPhan.trim() === "") {
-      
       setErrorTenHocPhan(true);
       setSnackbarMessage("Vui lòng nhập tên học phần");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       return;
     }
-    if(soTinChi.trim() === "")
-    {
+  
+    if (maHocPhan.trim() === "") {
+      setErrorMaHocPhan(true);
+      setSnackbarMessage("Vui lòng nhập mã học phần");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+      return;
+    }
+  
+    if (soTinChi.trim() === "") {
       setErrorSoTinChi(true);
       setSnackbarMessage("Vui lòng nhập số tín chỉ");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       return;
     }
+  
     if (!selectedKhoa) {
       setSnackbarMessage("Vui lòng chọn khoa");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       return;
     }
-    const hocphanData = {
-      ten: tenHocPhan,
-      soTinChi: soTinChi,
-      khoaId: selectedKhoa.id,
+  
+    const courseData = {
+      name: tenHocPhan,
+      code: maHocPhan,
+      credits: parseFloat(soTinChi),
+      facultyId: selectedKhoa.id,
     };
     try {
-      const rp =await addHocPhan(hocphanData);
-      if(rp.status===201)
-      {
+      const response = await createCourse(courseData);
+  
+      if (response.status === 201) {
         setSnackbarMessage("Thêm học phần thành công");
         setSnackbarSeverity("success");
         setOpenSnackbar(true);
         handleCloseDialogAddHocPhans();
         fetchData();
-      }
-      else
-      {
-        setSnackbarMessage("Thêm học phần thất bại");
+      } else {
+        setSnackbarMessage(" Thêm học phần thất bại");
         setSnackbarSeverity("error");
         setOpenSnackbar(true);
       }
     } catch (error) {
-      setSnackbarMessage(error.message);
+      setSnackbarMessage(` ${error.message}`);
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     }
   };
-  const handleSubmitEdit = async () => {
-    // Kiểm tra giá trị của soTinChiRef.current
-    const soTinChiValue = String(soTinChiRef.current || "").trim();
   
-    if (tenHocPhanRef.current.trim() === "") {
+  const handleSubmitEdit = async () => {
+    const nameValue = tenHocPhanRef.current?.trim() || "";
+    const creditsValue = String(soTinChiRef.current || "").trim();
+  
+    if (nameValue === "") {
       setErrorTenHocPhan(true);
       setSnackbarMessage("Vui lòng nhập tên học phần");
       setSnackbarSeverity("error");
@@ -328,7 +425,7 @@ function HocPhanPage()
       return;
     }
   
-    if (soTinChiValue === "") {
+    if (creditsValue === "") {
       setErrorSoTinChi(true);
       setSnackbarMessage("Vui lòng nhập số tín chỉ");
       setSnackbarSeverity("error");
@@ -337,18 +434,21 @@ function HocPhanPage()
     }
   
     const hocphanData = {
-      ten: tenHocPhanRef.current,
-      soTinChi: parseFloat(soTinChiValue) // Chuyển đổi thành số
+      name: nameValue,
+      credits: parseFloat(creditsValue),
+      // Optional: code, facultyId nếu cần sửa thêm
+      // code: maHocPhanRef.current?.trim(), // nếu có ref mã học phần
+      // facultyId: selectedKhoa?.id ?? null
     };
   
     try {
-      const response = await updateHocPhan(hocPhanId, hocphanData);
+      const response = await updateCourse(hocPhanId, hocphanData);
       if (response.status === 200) {
         setSnackbarMessage("Cập nhật học phần thành công");
         setSnackbarSeverity("success");
         setOpenSnackbar(true);
         handleCloseDialogEditHocPhans();
-        fetchData(); // Refresh data
+        fetchData(); // Refresh lại danh sách
       } else {
         setSnackbarMessage("Cập nhật học phần thất bại");
         setSnackbarSeverity("error");
@@ -360,184 +460,10 @@ function HocPhanPage()
       setOpenSnackbar(true);
     }
   };
-  
 
-  const handleOpenDeleteDialog = (hocPhanId) => {
-    setSelectedHocPhanId(hocPhanId);
-    setOpenDeleteDialog(true);
-  };
 
-  const handleCloseDeleteDialog = () => {
-    setOpenDeleteDialog(false);
-    setSelectedHocPhanId(null);
-  };
 
-  const getHocPhanNganh = async (hocPhanId) => {
-    try {
-      // Lấy danh sách tất cả ngành
-      const nganhs = await getAllNganhs();
-      const tenNganhs = []; // Mảng chứa tên các ngành mà học phần thuộc về
-      
-      // Kiểm tra từng ngành xem có chứa học phần cần xóa không
-      for (const nganh of nganhs) {
-        const hocPhansInNganh = await getHocPhansByNganhId(nganh.id);
-        const found = hocPhansInNganh.find(hp => hp.id === hocPhanId);
-        if (found) {
-          tenNganhs.push(nganh.ten); // Thêm tên ngành vào mảng
-        }
-      }
-      
-      return tenNganhs; // Trả về mảng tên các ngành, rỗng nếu không thuộc ngành nào
-    } catch (error) {
-      console.error("Lỗi khi kiểm tra ngành của học phần:", error);
-      return [];
-    }
-  };
-
-  const getHocPhanLopHocPhan = async (hocPhanId) => {
-    try {
-      const lopHocPhans = await getLopHocPhans(hocPhanId, null, null, null);
-      return lopHocPhans.map(lhp => lhp.ten);
-    } catch (error) {
-      console.error("Lỗi khi kiểm tra lớp học phần:", error);
-      return [];
-    }
-  };
-
-  const handleDeleteHocPhan = async () => {
-    try {
-      // Kiểm tra học phần thuộc những ngành nào
-      const tenNganhs = await getHocPhanNganh(selectedHocPhanId);
-      // Kiểm tra học phần thuộc những lớp học phần nào
-      const tenLopHocPhans = await getHocPhanLopHocPhan(selectedHocPhanId);
-      
-      let errorMessage = "";
-      
-      // Xử lý thông báo cho ngành
-      if (tenNganhs.length > 0) {
-        if (tenNganhs.length > 1) {
-          errorMessage += `Học phần đã được thêm vào các ngành: ${tenNganhs.join(", ")}`;
-        } else {
-          errorMessage += `Học phần đã được thêm vào ngành ${tenNganhs[0]}`;
-        }
-      }
-
-      // Xử lý thông báo cho lớp học phần
-      if (tenLopHocPhans.length > 0) {
-        if (errorMessage) {
-          errorMessage += " và ";
-        }
-        if (tenLopHocPhans.length > 1) {
-          errorMessage += `Học phần thuộc các lớp học phần: ${tenLopHocPhans.join(", ")}`;
-        } else {
-          errorMessage += `Học phần thuộc lớp học phần ${tenLopHocPhans[0]}`;
-        }
-      }
-
-      // Nếu có bất kỳ ràng buộc nào
-      if (errorMessage) {
-        errorMessage += ". Vui lòng xóa học phần khỏi các ràng buộc trước khi thao tác";
-        setSnackbarMessage(errorMessage);
-        setSnackbarSeverity("error");
-        setOpenSnackbar(true);
-        handleCloseDeleteDialog();
-        return;
-      }
-
-      // Nếu không có ràng buộc nào thì tiến hành xóa
-      await deleteHocPhan(selectedHocPhanId);
-      setSnackbarMessage("Xóa học phần thành công");
-      setSnackbarSeverity("success");
-      setOpenSnackbar(true);
-      handleCloseDeleteDialog();
-      fetchData(); // Refresh data
-    } catch (error) {
-      if (error.message.includes("404")) {
-        setSnackbarMessage("Học phần đã được xóa trước đó");
-        setSnackbarSeverity("info");
-        setOpenSnackbar(true);
-        handleCloseDeleteDialog();
-        fetchData();
-      } else {
-        setSnackbarMessage("Xóa học phần thất bại: " + error.message);
-        setSnackbarSeverity("error");
-        setOpenSnackbar(true);
-      }
-    }
-  };
-  const columns = [
-    { width: 50, label: "STT", dataKey: "index", align: "center" },
-    { width: 150, label: "Mã Học Phần", dataKey: "maHocPhan", align: "center" },
-    { label: "Tên Học Phần", dataKey: "tenHocPhan", align: "left" },
-    { width: 100, label: "Số Tín Chỉ", dataKey: "soTinChi", align: "center" },
-    { width: 200, label: "Tên Khoa", dataKey: "tenKhoa", align: "center" },
-    { width: 150, label: "", dataKey: "actions", align: "center" },
-  ];
-  
-  const VirtuosoTableComponents = {
-    // eslint-disable-next-line react/display-name
-    Scroller: React.forwardRef((props, ref) => (
-      <TableContainer component={Paper} {...props} ref={ref} sx={{ height: "calc(100vh - 200px)", overflowY: "auto" }} />
-    )),
-    Table: (props) => (
-      <Table {...props} sx={{ borderCollapse: "separate", tableLayout: "fixed", backgroundColor: "white" }} />
-    ),
-    // eslint-disable-next-line react/display-name
-    TableHead: React.forwardRef((props, ref) => (
-      <TableHead {...props} ref={ref} sx={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#0071A6" }} />
-    )),
-    TableRow: StyledTableRow,
-    // eslint-disable-next-line react/display-name
-    TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
-    TableCell: StyledTableCell,
-  };
-  
-  function fixedHeaderContent() {
-    return (
-      <StyledTableRow>
-        {columns.map((column) => (
-          <StyledTableCell
-            key={column.dataKey}
-            variant="head"
-            align="center"
-            style={{ width: column.width, textAlign: "center" }}
-          >
-            {column.label}
-          </StyledTableCell>
-        ))}
-      </StyledTableRow>
-    );
-  }
-  
-  function rowContent(index, row) {
-    return (
-      <>
-        <StyledTableCell align="center">{index + 1}</StyledTableCell>
-        <StyledTableCell align="center">{row.maHocPhan}</StyledTableCell>
-        <StyledTableCell align="left">{row.ten}</StyledTableCell>
-        <StyledTableCell align="center">{row.soTinChi}</StyledTableCell>
-        <StyledTableCell align="center">{row.tenKhoa}</StyledTableCell>
-        <StyledTableCell align="center" width={150}>
-          <Tooltip title="Sửa học phần">
-          <IconButton
-                      onClick={() => handleOpenEditDialog(row.id)}
-                    >
-              <EditIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Xóa học phần">
-              <IconButton
-                  onClick={() => handleOpenDeleteDialog(row.id)}
-              >
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
-        </StyledTableCell>
-      </>
-    );
-  }
-  
-  
+ 
 
   return (
     <Layout>
@@ -545,7 +471,7 @@ function HocPhanPage()
       <div style={styles.title}>
         <span>Danh sách học phần</span>
         <div style={styles.btnMore}>
-          <IconButton aria-label="more actions"><MoreVertIcon/></IconButton>
+          <IconButton aria-label="more actions" size='small'><MoreVertIcon fontSize='small'/></IconButton>
         </div>
       </div>
       <div style={styles.tbActions}>
@@ -590,7 +516,7 @@ function HocPhanPage()
         <Autocomplete
           sx={{ width: "100%" }}
           options={khoas}
-          getOptionLabel={(option) => option.ten || ""}
+          getOptionLabel={(option) => option.name || ""}
           required
           // disableClearable
           value={selectedKhoaFilter}
@@ -627,6 +553,20 @@ function HocPhanPage()
                         <TextField
                           autoFocus
                           required
+                          id='maHocPhan'
+                          margin="dense"
+                          label="Mã học phần"
+                          fullWidth
+                          variant="standard"
+                          onBlur={(e) => setMaHocPhan(e.target.value.trim())}
+                          error={errorMaHocPhan}
+                          onInput={(e) => setErrorMaHocPhan(e.target.value.trim() === "")}
+                          helperText="Vui lòng nhập mã học phần"
+                          autoComplete='off'
+                        />
+                        <TextField
+                          autoFocus
+                          required
                           id="soTinChi"
                           margin="dense"
                           label="Số tín chỉ"
@@ -646,7 +586,7 @@ function HocPhanPage()
                             }
                           }}
                           onBlur={(e) => setSoTinChi(e.target.value.trim())}
-                          inputProps={{ maxLength: 5 }}
+                          inputProps={{ maxLength: 3 }}
                           error={errorSoTinChi}
                           helperText={errorSoTinChi ? "Vui lòng nhập số hợp lệ" : "Vui lòng nhập số tín chỉ"}  
                           autoComplete="off"
@@ -655,7 +595,7 @@ function HocPhanPage()
 
                        <Autocomplete
                           options={khoas}
-                          getOptionLabel={(option) => option.ten || ''}
+                          getOptionLabel={(option) => option.name || ''}
                           noOptionsText="Không tìm thấy khoa"
                           required
                           id="disable-clearable"
@@ -678,26 +618,70 @@ function HocPhanPage()
         </div>
       </div>
       <div style={styles.table}>
-     <TableVirtuoso
+      <TableContainer component={Paper}>
+  <Table sx={{ minWidth: 700 }} aria-label="customized table">
+    <TableHead sx={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#0071A6" }}>
+      <TableRow>
+        {columns.map((col) => (
+          <StyledTableCell key={col.dataKey} align={col.align || "center"}>
+            {col.label}
+          </StyledTableCell>
+        ))}
+      </TableRow>
+    </TableHead>
+    <TableBody>
+  {paginatedData.map((row, index) => (
+    <StyledTableRow key={row.id}>
+      <StyledTableCell align="center">{(page - 1) * pageSize + index + 1}</StyledTableCell>
+      <StyledTableCell align="center">{row.code}</StyledTableCell>
+      <StyledTableCell align="left">{row.name}</StyledTableCell>
+      <StyledTableCell align="center">{row.credits}</StyledTableCell>
+      <StyledTableCell align="center">{row.facultyName}</StyledTableCell>
+      <StyledTableCell align="center">
+        <IconButton
+          size="small"
+          onClick={(e) => handleOpenPopover(e, row.id)}
+        >
+          <MoreHorizIcon fontSize="small" />
+        </IconButton>
+
+        {/* Chỉ hiển thị popover nếu đúng hàng */}
+        {selectedRowId === row.id && (
+          <Popover
+            open={Boolean(anchorPosition)}
+            anchorReference="anchorPosition"
+            anchorPosition={anchorPosition}
+            onClose={handleClosePopover}
+            anchorOrigin={{ vertical: "top", horizontal: "left" }}
+            transformOrigin={{ vertical: "top", horizontal: "left" }}
+            PaperProps={{ sx: { p: 1.5, minWidth: 120 } }}
+          >
+            <MenuItem
+              onClick={() => {
+                handleOpenEditDialog(row.id);
+                handleClosePopover();
+              }}
+            >
+              <EditIcon fontSize="small" sx={{ mr: 1 }} />
+              Sửa
+            </MenuItem>
+          </Popover>
+        )}
+      </StyledTableCell>
+    </StyledTableRow>
+  ))}
+</TableBody>
+
+  </Table>
+</TableContainer>
+
+     {/* <TableVirtuoso
       data={filteredData}
       components={VirtuosoTableComponents}
       fixedHeaderContent={fixedHeaderContent}
       itemContent={rowContent}
-    />
-     <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
-              <DialogTitle>Xóa Học Phần</DialogTitle>
-              <DialogContent>
-                <DialogContentText>
-                  Bạn có chắc chắn muốn xóa học phần này không?
-                </DialogContentText>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={handleCloseDeleteDialog}>Hủy</Button>
-                <Button onClick={handleDeleteHocPhan} color="error">
-                  Xóa
-                </Button>
-              </DialogActions>
-            </Dialog>
+    /> */}
+
      <Dialog id='suaHocPhan' fullWidth open={openEditDialog} onClose={handleCloseDialogEditHocPhans}>
                       <DialogTitle>Sửa học phần:</DialogTitle>
                       <DialogContent>
@@ -791,6 +775,86 @@ function HocPhanPage()
       </Snackbar>
       
       </div>
+      <div style={styles.divPagination}>
+  <Box display="flex" alignItems="center">
+    {/* Previous */}
+    <Box
+      sx={{
+        ...styles.squareStyle,
+        borderLeft: '1px solid #ccc',
+        borderTopLeftRadius: '6px',
+        borderBottomLeftRadius: '6px',
+        opacity: page === 1 ? 0.5 : 1,
+        pointerEvents: page === 1 ? 'none' : 'auto',
+      }}
+      onClick={() => setPage(page - 1)}
+    >
+      <ArrowLeftIcon fontSize="small" />
+    </Box>
+
+    {/* Page buttons */}
+    {pagesToShow().map((item, idx) =>
+      item === '...' ? (
+        <Box key={`ellipsis-${idx}`} sx={{ ...styles.squareStyle, pointerEvents: 'none' }}>
+          <MoreHorizIcon fontSize="small" />
+        </Box>
+      ) : (
+        <Box
+          key={`page-${item}`}
+          sx={{
+            ...styles.squareStyle,
+            ...(page === item
+              ? { backgroundColor: '#0071A6', color: '#fff', fontWeight: 'bold' }
+              : {}),
+          }}
+          onClick={() => setPage(item)}
+        >
+          {item}
+        </Box>
+      )
+    )}
+
+    {/* Next */}
+    <Box
+      sx={{
+        ...styles.squareStyle,
+        borderTopRightRadius: '6px',
+        borderBottomRightRadius: '6px',
+        opacity: page >= totalPages ? 0.5 : 1,
+        pointerEvents: page >= totalPages ? 'none' : 'auto',
+      }}
+      onClick={() => setPage(page + 1)}
+    >
+      <ArrowRightIcon fontSize="small" />
+    </Box>
+  </Box>
+
+  {/* Selector + label */}
+  <Box display="flex" alignItems="center" gap={2}>
+    <Box display="flex" alignItems="center" gap={1}>
+      <span style={{ fontSize: 14 }}>Số bản ghi/trang:</span>
+      <Autocomplete
+        disableClearable
+        options={pageSizeOptions}
+        size="small"
+        sx={{ width: 80, backgroundColor: "#fff", borderRadius: "4px" }}
+        value={pageSize}
+        getOptionLabel={(option) => option.toString()}
+        onChange={(event, newValue) => {
+          setPageSize(newValue);
+          setPage(1);
+        }}
+        renderInput={(params) => (
+          <TextField {...params} variant="outlined" size="small" />
+        )}
+      />
+    </Box>
+    <span style={{ fontSize: 14, color: '#333' }}>
+      Dòng {startRow} đến {endRow} / {totalItems}
+    </span>
+  </Box>
+</div>
+
     </div>
     </Layout>
   );

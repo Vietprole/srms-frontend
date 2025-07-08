@@ -1,11 +1,11 @@
-import * as React from "react"
+import * as React from "react";
 import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table"
+} from "@tanstack/react-table";
 
 import {
   Table,
@@ -14,45 +14,74 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 // import { Switch } from "@/components/ui/switch"
-import { ArrowUpDown } from 'lucide-react'
-import { Label } from "@/components/ui/label"
-// import { calculateDiemPLO, calculateDiemPLOMax } from "@/api/api-ketqua"
-import { calculateDiemPLO } from "@/api/api-ketqua"
-// import { getSinhViensByLopHocPhanId } from "@/api/api-lophocphan"
+import { ArrowUpDown } from "lucide-react";
+import { Label } from "@/components/ui/label";
+// import { calculatePLOScore, calculateDiemPLOMax } from "@/api-new/api-ketqua"
+import {
+  calculatePLOScore,
+  getAllStudentPLOScoresForProgramme,
+} from "@/api-new/api-ketqua";
+// import { getStudentsInClass } from "@/api-new/api-lophocphan"
 // import { useParams } from "react-router-dom"
-import { getPLOsByNganhId } from "@/api/api-plo"
-import Layout from "./Layout"
-import { getSinhViens } from "@/api/api-sinhvien"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
-import { Check, ChevronsUpDown} from "lucide-react"
-import { getAllNganhs } from "@/api/api-nganh"
-import { cn } from "@/lib/utils"
-import { Switch } from "@/components/ui/switch"
-import { getSinhVienById } from "@/api/api-sinhvien"
-import { getRole, getSinhVienId } from "@/utils/storage"
+import { getFilteredPLOs } from "@/api-new/api-plo";
+import Layout from "./Layout";
+import { getFilteredStudents } from "@/api-new/api-student";
+import ResultTable from "@/components/ResultTable";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { getAllProgrammes } from "@/api-new/api-programme";
+import { cn } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
+import { getStudentById } from "@/api-new/api-student";
+import { getRole, getStudentId } from "@/utils/storage";
+import { useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { ComboBox } from "@/components/ComboBox";
+import { PercentageChart } from "@/components/PercentageChart";
+import { getPLOPassedPercentages } from "@/api-new/api-ketqua";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+// import { StudentPIScore } from "@/components/StudentPIScore";
+import MaxPkScoreTable from "@/components/MaxPkScoreTable";
 
 // const PLOs = [
 //   {
 //     "id": 1,
-//     "ten": "PLO 1",
-//     "moTa": "Kỹ Năng Làm Việc Nhóm",
+//     "name": "PLO 1",
+//     "description": "Kỹ Năng Làm Việc Nhóm",
 //     "lopHocPhanId": 1
 //   },
 //   {
 //     "id": 9,
-//     "ten": "PLO 2",
-//     "moTa": "Kỹ Năng Ngoại Ngữ",
+//     "name": "PLO 2",
+//     "description": "Kỹ Năng Ngoại Ngữ",
 //     "lopHocPhanId": 1
 //   },
 //   {
 //     "id": 10,
-//     "ten": "PLO 3",
-//     "moTa": "Kỹ Năng Giao Tiếp",
+//     "name": "PLO 3",
+//     "description": "Kỹ Năng Giao Tiếp",
 //     "lopHocPhanId": 1
 //   }
 // ]
@@ -60,141 +89,244 @@ import { getRole, getSinhVienId } from "@/utils/storage"
 // const sinhViens = [
 //   {
 //     "id": 8,
-//     "ten": "Lê Phan Phú Việt"
+//     "name": "Lê Phan Phú Việt"
 //   },
 //   {
 //     "id": 9,
-//     "ten": "Huỳnh Duy Tin"
+//     "name": "Huỳnh Duy Tin"
 //   },
 //   {
 //     "id": 10,
-//     "ten": "Hà Ngọc Hưng"
+//     "name": "Hà Ngọc Hưng"
 //   },
 //   {
 //     "id": 11,
-//     "ten": "Phạm Minh Quân"
+//     "name": "Phạm Minh Quân"
 //   }
 // ]
 
 // const createColumns = (PLOs, listDiemPkMax, isBase10, diemDat) => [
-const createColumns = (PLOs, diemDat) => [
-  {
-    accessorKey: "id",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          ID
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-  },
-  {
-    accessorKey: "ten",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Name
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-  },
-  ...PLOs.map((plo) => ({
-    accessorKey: `plo_${plo.id}`,
-    header: ({ column }) => {
-      // const diemPLOMax = listDiemPkMax[index];
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          <div>
-            <div>{plo.ten}</div>
-            {/* {isBase10 ? <div>10</div> : <div>{diemPLOMax}</div>} */}
-          </div>
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-    cell: ({ row }) => {
-      // const base10Score = (row.original[`plo_${plo.id}`] === 0 ? 0 : row.original[`plo_${plo.id}`] / listDiemPkMax[index] * 10);
-      // const score = isBase10 ? base10Score : row.original[`plo_${plo.id}`];
-      const score = row.original[`plo_${plo.id}`];
-      // const cellClass = base10Score >= diemDat ? "bg-green-500 text-white" : "bg-red-500 text-white";
-      const cellClass = score >= diemDat ? "bg-green-500 text-white" : "bg-red-500 text-white";
-      return (
-        <div className={score === "" ? "" : cellClass}>
-          {score === "" ? "null" : score}
-        </div>
-      )
-    }
-  }))
-]
 
 export default function XetChuanDauRaPage() {
-  const [data, setData] = React.useState([])
-  const [columnFilters, setColumnFilters] = React.useState([])
-  const [sorting, setSorting] = React.useState([])
-  const [PLOs, setPLOs] = React.useState([])
-  // const [listDiemPkMax, setListDiemPkMax] = React.useState([])
-  // const [isBase10, setIsBase10] = React.useState(false)
-  const [diemDat, setDiemDat] = React.useState(5.0)
+  const [data, setData] = React.useState([]);
+  const [columnFilters, setColumnFilters] = React.useState([]);
+  const [sorting, setSorting] = React.useState([]);
+  const [PLOs, setPLOs] = React.useState([]);
+  const [diemDat, setDiemDat] = React.useState(5.0);
   const [inputValue, setInputValue] = React.useState(diemDat);
-  const [open, setOpen] = React.useState(false) // Use for combobox
-  const [value, setValue] = React.useState(null) // Use for combobox
-  const [comboBoxItems, setComboBoxItems] = React.useState([])
-  const [nganhId, setNganhId] = React.useState(null)
-  const [useDiemTam, setUseDiemTam] = React.useState(true);
-  const sinhVienId = getSinhVienId();
-  const role = getRole();
+  const [comboBoxItems, setComboBoxItems] = React.useState([]);
+  const [searchParams] = useSearchParams();
+  const programmeIdParam = searchParams.get("programmeId");
+  const [nganhId, setNganhId] = React.useState(programmeIdParam);
+  const [useTemporaryScore, setUseTemporaryScore] = React.useState(true);
+  const [comboBoxItemId, setComboBoxItemId] = React.useState(programmeIdParam);
+  const studentId = getStudentId();
+  const navigate = useNavigate();
+  const [chartData, setChartData] = React.useState([]);
+  const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [selectedStudentId, setSelectedStudentId] = React.useState(null);
+  const [selectedPLOId, setSelectedPLOId] = React.useState(null);
+  const [passedTarget, setPassedTarget] = React.useState(50);
+  const [inputValue2, setInputValue2] = React.useState(passedTarget);
+
+  const createColumns = (PLOs, diemDat) => [
+    {
+      accessorKey: "tt",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            TT
+            <ArrowUpDown />
+          </Button>
+        );
+      },
+      cell: ({ row }) => <div className="px-4">{row.index + 1}</div>,
+    },
+    {
+      accessorKey: "code",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            MSSV
+            <ArrowUpDown />
+          </Button>
+        );
+      },
+      cell: ({ row }) => <div className="px-4">{row.getValue("code")}</div>,
+    },
+    {
+      accessorKey: "name",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Tên
+            <ArrowUpDown />
+          </Button>
+        );
+      },
+      cell: ({ row }) => <div className="px-4">{row.getValue("name")}</div>,
+    },
+    ...PLOs.map((plo) => ({
+      accessorKey: `plo_${plo.id}`,
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="w-full px-0"
+          >
+            {plo.name}
+            <ArrowUpDown />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        const score = row.original[`plo_${plo.id}`];
+        const formattedScore =
+          score !== null && score !== "" && !isNaN(score)
+            ? Number(score).toFixed(2)
+            : score;
+        const cellClass =
+          score >= diemDat
+            ? "bg-green-500 text-white"
+            : "bg-red-500 text-white";
+
+        const studentId = row.original.id;
+        return (
+          <button
+            className={cellClass + " w-full text-center"}
+            onClick={() => openPLOBreakdownModal(studentId, plo.id)}
+          >
+            {formattedScore}
+          </button>
+        );
+      },
+    })),
+  ];
+
+  const openPLOBreakdownModal = (studentId, ploId) => {
+    console.log("Opening modal for studentId:", studentId, "and ploId:", ploId);
+    setSelectedStudentId(studentId);
+    setSelectedPLOId(ploId);
+    setDialogOpen(true);
+  };
 
   React.useEffect(() => {
-    const fetchData = async () => {
-      const comboBoxItems = await getAllNganhs();
-      const mappedComboBoxItems = comboBoxItems.map(nganh => ({ label: nganh.ten, value: nganh.id }));
+    const fetchProgrammeData = async () => {
+      const comboBoxItems = await getAllProgrammes();
+      const mappedComboBoxItems = comboBoxItems.map((nganh) => ({
+        label: `${nganh.code} - ${nganh.name}`,
+        value: nganh.id,
+      }));
       setComboBoxItems(mappedComboBoxItems);
-      let sinhViens = await getSinhViens(null, nganhId, null);
-      if (sinhVienId) {
-        sinhViens = await getSinhVienById(sinhVienId).then((sv) => [sv]);
+    };
+    fetchProgrammeData();
+  }, [nganhId, useTemporaryScore, studentId]);
+
+  console.log("nganhId: ", nganhId);
+
+  React.useEffect(() => {
+    const fetchChartData = async () => {
+      const chartData = await getPLOPassedPercentages(
+        nganhId,
+        diemDat / 10,
+        useTemporaryScore
+      );
+      // Add threshold: 50 to each record in chartData
+      const chartDataWithThreshold = chartData.map((record) => ({
+        ...record,
+        threshold: 50,
+      }));
+
+      setChartData(chartDataWithThreshold);
+      console.log("Chart Data with threshold: ", chartDataWithThreshold);
+    };
+    fetchChartData();
+  }, [diemDat, useTemporaryScore, nganhId]);
+
+  React.useEffect(() => {
+    const fetchScoreData = async () => {
+      let sinhViens = await getFilteredStudents(null, nganhId, null);
+      if (studentId) {
+        sinhViens = await getStudentById(studentId).then((sv) => [sv]);
         setNganhId(sinhViens[0].nganhId);
-        setValue(sinhViens[0].nganhId);
       }
-      let PLOs = await getPLOsByNganhId(nganhId);
-      
-      const newData = await Promise.all(sinhViens.map(async (sv) => {
-        const ploScores = await Promise.all(PLOs.map(async (plo) => {
-          let score = 0;
-          try {
-            score = await calculateDiemPLO(sv.id, plo.id, useDiemTam)
-          }
-          catch (error) {
-            score = null;
-          }
-          console.log("calculateDiemPLO", sv.id, plo.id, score)
-          return { [`plo_${plo.id}`]: score}
-        }))
-        return { ...sv, ...Object.assign({}, ...ploScores) }
-      }))
+      let PLOs = await getFilteredPLOs(nganhId, null, null);
+
+      const ploScores = await getAllStudentPLOScoresForProgramme(
+        nganhId,
+        useTemporaryScore
+      );
+
+      console.log("PLO Scores: ", ploScores);
+
+      const newData = sinhViens.map((sv) => {
+        // Create an object with all PI scores for this student
+        const studentPLOScores = {};
+
+        PLOs.forEach((plo) => {
+          // Find the score for this student and PI
+          const scoreObj = ploScores.find(
+            (item) => item.studentId === sv.id && item.ploId === plo.id
+          );
+          // Add it to the student's scores object
+          studentPLOScores[`plo_${plo.id}`] = scoreObj?.ploScore;
+        });
+
+        // Return student with their PI scores
+        return { ...sv, ...studentPLOScores };
+      });
+
+      setData(newData);
+
+      // const newData = await Promise.all(
+      //   sinhViens.map(async (sv) => {
+      //     const ploScores = await Promise.all(
+      //       PLOs.map(async (plo) => {
+      //         let score = 0;
+      //         try {
+      //           score = await calculatePLOScore(
+      //             sv.id,
+      //             plo.id,
+      //             useTemporaryScore
+      //           );
+      //         } catch (error) {
+      //           score = null;
+      //         }
+      //         console.log("calculatePLOScore", sv.id, plo.id, score);
+      //         return { [`plo_${plo.id}`]: score };
+      //       })
+      //     );
+      //     return { ...sv, ...Object.assign({}, ...ploScores) };
+      //   })
+      // );
 
       // const listDiemPkMax = await Promise.all(PLOs.map(async (plo) => {
       //   const maxScore = await calculateDiemPLOMax(plo.id);
       //   return maxScore;
       // }));
-      
-      setData(newData)
-      setPLOs(PLOs)
-      // setListDiemPLOMax(listDiemPkMax)
-    }
-    fetchData()
-  }, [nganhId, useDiemTam, sinhVienId])
 
+      setData(newData);
+      setPLOs(PLOs);
+      // setListDiemPLOMax(listDiemPkMax)
+    };
+    if (nganhId) {
+      fetchScoreData();
+    } else {
+      setData([]);
+      setPLOs([]);
+      // setListDiemPIMax([])
+    }
+  }, [nganhId, studentId, useTemporaryScore]);
   // const columns = createColumns(PLOs, listDiemPLOMax, isBase10, diemDat);
   const columns = createColumns(PLOs, diemDat);
 
@@ -210,135 +342,120 @@ export default function XetChuanDauRaPage() {
       columnFilters,
       sorting,
     },
-  })
+  });
+
+  const handleGoClick = () => {
+    setNganhId(comboBoxItemId);
+    if (!comboBoxItemId) {
+      navigate(`/xetchuandaura`);
+      return;
+    }
+    navigate(`/xetchuandaura?programmeId=${comboBoxItemId}`);
+  };
+
+  const chartConfig = {
+    passedPercentage: {
+      label: "Tỷ lệ đạt",
+      color: "#2563eb",
+    },
+
+    ploName: {
+      label: "PLO",
+      color: "#4b5563",
+    },
+  };
+  const dataKey = "ploName";
 
   return (
     <Layout>
-      <h1>Tính điểm đạt chuẩn đầu ra của Ngành của Sinh Viên</h1>
-      <div className="flex gap-1">
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={open}
-              className="w-fit min-w-[200px] justify-between"
-              disabled={role === "SinhVien"}
-            >
-              {value !== null
-                ? comboBoxItems.find((comboBoxItem) => comboBoxItem.value === value)?.label
-                : "Chọn Ngành..."}
-              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+      <div className="overflow-y-auto h-full">
+        <h1>Tính điểm đạt chuẩn đầu ra của CTĐT của Sinh Viên</h1>
+        <div className="flex gap-1">
+          <ComboBox
+            items={comboBoxItems}
+            setItemId={setComboBoxItemId}
+            initialItemId={comboBoxItemId}
+            placeholder="Chọn CTĐT"
+            width="500px"
+          />
+          <Button onClick={handleGoClick}>Go</Button>
+        </div>
+        <div>
+          <div className="flex items-center py-1">
+            <Input
+              placeholder="Tìm kiếm..."
+              value={table.getColumn("name")?.getFilterValue() ?? ""}
+              onChange={(event) =>
+                table.getColumn("name")?.setFilterValue(event.target.value)
+              }
+              className="max-w-sm"
+            />
+          </div>
+          <div className="flex items-center py-1">
+            <Label htmlFor="DiemDat">Nhập điểm đạt hệ 10: </Label>
+            <Input
+              id="DiemDat"
+              placeholder="5.0..."
+              className="w-16 ml-2 mr-2"
+              type="number"
+              value={inputValue}
+              min={0}
+              max={10}
+              step={1}
+              onChange={(e) => setInputValue(parseFloat(e.target.value))}
+            />
+            <Button type="button" onClick={() => setDiemDat(inputValue)}>
+              Go
             </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-[200px] p-0">
-            <Command>
-              <CommandInput placeholder="Tìm Ngành..." className="h-9" />
-              <CommandList>
-                <CommandEmpty>Không tìm thấy Ngành.</CommandEmpty>
-                <CommandGroup>
-                  {comboBoxItems.map((comboBoxItem) => (
-                    <CommandItem
-                      key={comboBoxItem.value}
-                      value={comboBoxItem.label}
-                      onSelect={() => {
-                        setValue(value === comboBoxItem.value ? null : comboBoxItem.value)
-                        setOpen(false)
-                      }}
-                    >
-                      {comboBoxItem.label}
-                      <Check
-                        className={cn(
-                          "ml-auto h-4 w-4",
-                          value === comboBoxItem.value ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-        <Button onClick={() => setNganhId(value)}>Go</Button>
-      </div>
-      <div>
-        <div className="flex items-center py-4">
-          <Input
-            placeholder="Tìm kiếm theo"
-            value={(table.getColumn("ten")?.getFilterValue()) ?? ""}
-            onChange={(event) =>
-              table.getColumn("ten")?.setFilterValue(event.target.value)
-            }
-            className="max-w-sm"
+          </div>
+          <div className="flex items-center py-1">
+            <Label htmlFor="PassedTarget">Nhập chỉ tiêu đạt (%): </Label>
+            <Input
+              id="PassedTarget"
+              placeholder="50..."
+              className="w-16 ml-2 mr-2"
+              type="number"
+              value={inputValue2}
+              min={0}
+              max={100}
+              step={10}
+              onChange={(e) => setInputValue2(parseFloat(e.target.value))}
+            />
+            <Button type="button" onClick={() => setPassedTarget(inputValue2)}>
+              Go
+            </Button>
+          </div>
+          <PercentageChart
+            chartData={chartData}
+            chartConfig={chartConfig}
+            dataKey={dataKey}
+            passedTarget={passedTarget}
           />
-        </div>
-        <div className="flex items-center py-4">
-          <Label htmlFor="DiemDat">Nhập điểm đạt hệ 10: </Label>
-          <Input
-            id="DiemDat"
-            placeholder="5.0..."
-            className="max-w-sm"
-            type="number"
-            value={inputValue}
-            min={0}
-            max={10}
-            step={1}
-            onChange={(e) => setInputValue(parseFloat(e.target.value))}
-          />
-          <Button type="button" onClick={() => setDiemDat(inputValue)}>Go</Button>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Label htmlFor="diem-mode">Điểm tạm</Label>
-          <Switch id="diem-mode"
-            onCheckedChange={(check) => {setUseDiemTam(!check);}}
-          />
-          <Label htmlFor="diem-mode">Điểm chính thức</Label>
-        </div>
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="pl-8 pr-3">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={columns.length} className="h-24 text-center">
-                    Không tìm thấy kết quả
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+          <div className="flex items-center space-x-2">
+            <Label htmlFor="diem-mode">Điểm tạm</Label>
+            <Switch
+              id="diem-mode"
+              onCheckedChange={(check) => {
+                setUseTemporaryScore(!check);
+              }}
+            />
+            <Label htmlFor="diem-mode">Điểm chính thức</Label>
+          </div>
+          <ResultTable table={table} columns={columns} />
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogContent className="max-w-fit">
+              <DialogHeader>
+                <DialogTitle>Chi tiết điểm Pk học phần cấu thành điểm PLO</DialogTitle>
+              </DialogHeader>
+              <MaxPkScoreTable
+                studentId={selectedStudentId}
+                ploId={selectedPLOId}
+                useTemporaryScore={useTemporaryScore}
+              />
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </Layout>
-  )
+  );
 }
-

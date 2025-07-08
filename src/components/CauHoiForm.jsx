@@ -13,62 +13,80 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { addCauHoi, updateCauHoi } from "@/api/api-cauhoi";
+import { addCauHoi, updateCauHoi } from "@/api-new/api-cauhoi";
 import { useSearchParams } from "react-router-dom";
 // import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ChevronsUpDown } from "lucide-react";
 import { useParams } from "react-router-dom";
-import { getBaiKiemTrasByLopHocPhanId } from "@/api/api-baikiemtra";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { getBaiKiemTrasByLopHocPhanId } from "@/api-new/api-baikiemtra";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   id: z.number(),
 
-  ten: z.string().min(2, {
-    message: "Ten must be at least 2 characters.",
+  name: z.string().min(2, {
+    message: "Tên phải có ít nhất 2 ký tự.",
   }),
 
-  trongSo: z.coerce.number()
-  .refine((val) => !isNaN(parseFloat(val)), {
-    message: "Trong so must be a number",
-  })
-  .refine((val) => parseFloat(val) >= 0.1 && parseFloat(val) <= 10, {
-    message: "Trong so must be between 0.1 and 10",
-  }),
+  weight: z.coerce
+    .number()
+    .refine((val) => !isNaN(parseFloat(val)), {
+      message: "Điểm bài/câu hỏi đánh giá (thang 10) phải là một số",
+    })
+    .refine((val) => parseFloat(val) >= 0.1 && parseFloat(val) <= 10, {
+      message: "Điểm bài/câu hỏi đánh giá (thang 10) phải trong khoảng 0.1 đến 10",
+    }),
 
-  thangDiem: z.coerce.number()
-  .refine((val) => !isNaN(parseFloat(val)), {
-    message: "Thang diem must be a number",
-  })
-  .refine((val) => parseFloat(val) >= 0.1 && parseFloat(val) <= 10, {
-    message: "Thang diem must be between 0.1 and 10",
-  }),
+  scale: z.coerce
+    .number()
+    .refine((val) => !isNaN(parseFloat(val)), {
+      message: "Điểm tối đa của bài/câu hỏi đánh giá phải là một số",
+    })
+    .refine((val) => parseFloat(val) > 0, {
+      message: "Điểm tối đa của bài/câu hỏi đánh giá phải lớn hơn 0",
+    }),
 
-  baiKiemTraId: z.coerce.number(
-    {
+  examId: z.coerce
+    .number({
       message: "Bai Kiem Tra Id must be a number",
-    }
-  ).min(1, {
-    message: "Bai Kiem Tra Id must be at least 1 characters.",
-  }),
+    })
+    .min(1, {
+      message: "Bai Kiem Tra Id must be at least 1 characters.",
+    }),
 });
 
-export function CauHoiForm({ cauHoi, handleAdd, handleEdit, setIsDialogOpen, maxId }) {
+export function CauHoiForm({
+  cauHoi,
+  handleAdd,
+  handleEdit,
+  setIsDialogOpen,
+  maxId,
+}) {
   const [searchParams] = useSearchParams();
-  const baiKiemTraIdParam = searchParams.get("baiKiemTraId");
+  const examIdParam = searchParams.get("examId");
   const { lopHocPhanId } = useParams();
   const [comboBoxItems, setComboBoxItems] = useState([]);
-  console.log("maxId 63", maxId);
 
   useEffect(() => {
     const fetchData = async () => {
       const comboBoxItems = await getBaiKiemTrasByLopHocPhanId(lopHocPhanId);
       const mappedComboBoxItems = comboBoxItems.map((khoa) => ({
-        label: khoa.loai,
+        label: khoa.type,
         value: khoa.id,
       }));
       setComboBoxItems(mappedComboBoxItems);
@@ -78,12 +96,12 @@ export function CauHoiForm({ cauHoi, handleAdd, handleEdit, setIsDialogOpen, max
   // 1. Define your form.
   const form = useForm({
     resolver: zodResolver(formSchema),
-    defaultValues: cauHoi ||{
+    defaultValues: cauHoi || {
       id: maxId + 1,
-      ten: "",
-      trongSo: "",
-      thangDiem: "",
-      baiKiemTraId: baiKiemTraIdParam ? parseInt(baiKiemTraIdParam) : null,
+      name: "",
+      weight: "",
+      scale: "",
+      examId: examIdParam ? parseInt(examIdParam) : null,
     },
   });
 
@@ -93,11 +111,9 @@ export function CauHoiForm({ cauHoi, handleAdd, handleEdit, setIsDialogOpen, max
     // ✅ This will be type-safe and validated.
     if (cauHoi) {
       // const data = await updateCauHoi(cauHoi.id, values);
-      console.log("values", values);
       handleEdit(values);
     } else {
       // const data = await addCauHoi(values);
-      console.log("values", values);
       handleAdd(values);
       setIsDialogOpen(false);
     }
@@ -126,7 +142,7 @@ export function CauHoiForm({ cauHoi, handleAdd, handleEdit, setIsDialogOpen, max
         )} */}
         <FormField
           control={form.control}
-          name="ten"
+          name="name"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Tên</FormLabel>
@@ -134,7 +150,7 @@ export function CauHoiForm({ cauHoi, handleAdd, handleEdit, setIsDialogOpen, max
                 <Input placeholder="Câu 1a" {...field} />
               </FormControl>
               <FormDescription>
-                Tên của câu hỏi không được trùng nhau trong một bài kiểm tra
+                Tên của bài/câu hỏi đánh giá không được trùng nhau trong một thành phần đánh giá
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -142,15 +158,15 @@ export function CauHoiForm({ cauHoi, handleAdd, handleEdit, setIsDialogOpen, max
         />
         <FormField
           control={form.control}
-          name="trongSo"
+          name="weight"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Trọng Số</FormLabel>
+              <FormLabel>Điểm bài/câu hỏi đánh giá (thang 10)</FormLabel>
               <FormControl>
                 <Input placeholder="1.5" {...field} />
               </FormControl>
               <FormDescription>
-                Là tỉ lệ điểm trên thang 10 của bài kiểm tra
+                Là tỉ lệ điểm trên thang 10 của thành phần đánh giá
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -158,33 +174,31 @@ export function CauHoiForm({ cauHoi, handleAdd, handleEdit, setIsDialogOpen, max
         />
         <FormField
           control={form.control}
-          name="thangDiem"
+          name="scale"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Thang Điểm</FormLabel>
+              <FormLabel>Điểm tối đa của bài/câu hỏi đánh giá</FormLabel>
               <FormControl>
                 <Input placeholder="1.5" {...field} />
               </FormControl>
-              <FormDescription>
-                Là điểm số tối đa của câu hỏi
-              </FormDescription>
+              <FormDescription>Là điểm số tối đa của bài/câu hỏi đánh giá</FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
         <FormField
           control={form.control}
-          name="baiKiemTraId"
+          name="examId"
           render={({ field }) => (
             <FormItem className=" flex flex-col">
-              <FormLabel>Chọn Bài Kiểm Tra</FormLabel>
+              <FormLabel>Chọn Thành phần đánh giá</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
                       variant="outline"
                       role="combobox"
-                      disabled={!!baiKiemTraIdParam}
+                      disabled={!!examIdParam}
                       className={cn(
                         "w-[200px] justify-between",
                         !field.value && "text-muted-foreground"
@@ -194,14 +208,14 @@ export function CauHoiForm({ cauHoi, handleAdd, handleEdit, setIsDialogOpen, max
                         ? comboBoxItems.find(
                             (item) => item.value === field.value
                           )?.label
-                        : "Select BaiKiemTra..."}
+                        : "Chọn Thành phần đánh giá"}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
                 <PopoverContent className="w-[200px] p-0">
                   <Command>
-                    <CommandInput placeholder="Search baiKiemTra..." />
+                    <CommandInput placeholder="Tìm kiếm..." />
                     <CommandList>
                       <CommandEmpty>Không tìm thấy</CommandEmpty>
                       <CommandGroup>
@@ -210,7 +224,7 @@ export function CauHoiForm({ cauHoi, handleAdd, handleEdit, setIsDialogOpen, max
                             value={item.label}
                             key={item.value}
                             onSelect={() => {
-                              form.setValue("baiKiemTraId", item.value);
+                              form.setValue("examId", item.value);
                             }}
                           >
                             {item.label}
@@ -230,13 +244,15 @@ export function CauHoiForm({ cauHoi, handleAdd, handleEdit, setIsDialogOpen, max
                 </PopoverContent>
               </Popover>
               <FormDescription>
-                Chọn bài kiểm tra mà câu hỏi thuộc về
+                Chọn thành phần đánh giá mà bài/câu hỏi đánh giá thuộc về
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <div className="flex justify-end">
+          <Button type="submit">Xác nhận</Button>
+        </div>
       </form>
     </Form>
   );
