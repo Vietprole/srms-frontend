@@ -36,6 +36,7 @@ import ListIcon from '@mui/icons-material/List';
 import VirtualizedAutocomplete from '../components/VirtualizedAutocomplete';
 import {getAllSemesters} from '../api/api-semester';
 import  Stack  from '@mui/material/Stack';
+import { useNavigate } from 'react-router-dom';
 function HocPhanPage() 
 {
   const styles = {
@@ -178,6 +179,8 @@ function HocPhanPage()
 
   const [anchorPosition, setAnchorPosition] = useState(null);
   const [selectedRowId, setSelectedRowId] = useState(null);
+
+  const navigate = useNavigate();
 
   const handleOpenPopover = (event, rowId) => {
     setAnchorPosition({ top: event.clientY + 5, left: event.clientX + 5 });
@@ -706,13 +709,14 @@ function HocPhanPage()
             </MenuItem>
             <MenuItem
               onClick={() => {
-                // handleOpenEditDialog(row.id);
-                // handleClosePopover();
+                navigate(`/lophocphan/${row.id}/sinhvien`);
+                handleClosePopover();
               }}
             >
               <ListIcon fontSize="small" sx={{ mr: 1 }} />
-                Nối câu hỏi - PLO
+              Quản lý sinh viên
             </MenuItem>
+
           </Popover>
         )}
       </StyledTableCell>
