@@ -192,7 +192,7 @@ export default function NoiCLOPLO() {
   const fetchData = useCallback(async () => {
     try {
       // const lopHocPhanData = await getLopHocPhanById(lopHocPhanId);
-      if (role === "NguoiPhuTrachCTĐT" && nguoiQuanLyCTDTId !== 0) {
+      if (role === "ProgrammeManager" && nguoiQuanLyCTDTId !== 0) {
         const nganhData = await getNganhsByNguoiQuanLyId(nguoiQuanLyCTDTId);
         setNganhs(nganhData);
         return;

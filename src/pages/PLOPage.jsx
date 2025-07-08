@@ -194,7 +194,7 @@ function TestPage() {
     try {
       let programmes = [];
   
-      if (role === "NguoiPhuTrachCTĐT" && nguoiQuanLyCTDTId !== 0) {
+      if (role === "ProgrammeManager" && nguoiQuanLyCTDTId !== 0) {
         // Gọi API với managerAccountId
         programmes = await getProgrammes({ managerAccountId: nguoiQuanLyCTDTId });
       } else {

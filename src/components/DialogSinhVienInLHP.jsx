@@ -359,7 +359,7 @@ function DialogSinhVienInLHP({ nganhId, open, onClose }) {
   
   
   const hasPermission = () => {
-    return userRole === 'Admin' || userRole === 'NguoiPhuTrachCTĐT';
+    return userRole === 'Admin' || userRole === 'ProgrammeManager';
   };
 
 

@@ -1,140 +1,66 @@
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import EmailIcon from "@/assets/icons/email-icon.png";  // Đảm bảo đúng đường dẫn
-import AvatarIcon from "@/assets/icons/avatar-icon.png";  // Đảm bảo đúng đường dẫn
-import SearchIcon from "@/assets/icons/search-icon.png";  // Đảm bảo đúng đường dẫn
-import BellIcon from "@/assets/icons/bell-icon.png";  // Đảm bảo đúng đường dẫn
-import { useEffect, useState } from "react";
-// import "@/utils/storage"
-// import { getFullname } from "@/utils/storage";
-import { jwtDecode } from "jwt-decode";
-const styles = `
-  .main {
-      width: 100%;
-      height: 50px;
-      align-items: center;
-      display: flex;
-      flex-direction: column;
-      flex-direction: row;
+import { getFullname, getRole } from "@/utils/storage";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+// Helper function to get initials from full name
+const getFirstLetters = (fullName) => {
+  if (!fullName) return "UN"; // UN for "Unknown Name" if name is empty
+
+  // Split the name by spaces
+  const nameParts = fullName.split(" ");
+
+  // Get the first letter of each part and join them
+  const initials = nameParts
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("");
+
+  // Return first two initials or all if less than two parts
+  return initials.length > 2 ? initials.substring(0, 2) : initials;
+};
+
+const mapRole = (role) => {
+  switch (role) {
+    case "Admin":
+      return "Admin";
+    case "AcademicAffairs":
+      return "Phòng Đào tạo";
+    case "ProgrammeManager":
+      return "Người phụ trách CTĐT";
+    case "Teacher":
+      return "Giảng viên";
+    case "Student":
+      return "Sinh viên";
+    default:
+      return "Không xác định";
   }
-  .main  .topLeft {
-    width: 300px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start
 }
-  .main  .topRight {
-    width: 100%;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-  }
-  .main  .search {
-    width: 250px;
-    height: 30px;
-    display: flex;
-    background-color: #fff;
-    justify-content: flex-start;
-    align-items: center;
-    margin-left: 10px;
-    border-radius: 10px;
-    border: 2px solid black;
-  }
-  .main  .search img {
-    width: 20px;
-    height: 20px;
-    margin-left: 10px;
-  }
-  .main  .search input[type="text"] {
-    width: 100%;
-    height: 25px;
-    border: none;
-    border-radius: 10px;
-    padding-left: 10px;
-    padding-right: 10px;
-  }
-  .main  .search input[type="text"]:focus {
-    outline: none;
-  }
-  .main  .user {
-    width: 300px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-  }
-  .main  .user .icon,
-  .main  .user .avatar {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background-color: white;
-    margin-right: 10px;
-    justify-content: space-between;
 
-
-  }
-  .main  .user .icon:hover,
-  .main  .user .avatar:hover {
-    background-color: #d9f1ff;
-  }
-  .main  .user .icon img,
-  .main  .user .avatar img {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-  }
-  .main  .user .infor {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-end;
-    width: 300px;
-    margin-right: 10px;
-  }
-  .main  .user .infor .name {
-    font-size: 18px;
-    font-weight: bold;
-    margin: 0;
-  }
-  .main  .user .infor .role {
-    font-size: 14px;
-    color: gray;
-    margin: 0;
-  }
-`;
 export default function Header() {
-  const [fullname, setFullname] = useState("");
-  const [role, setRole] = useState("");
-  
-  useEffect(() => {
-    const token = sessionStorage.getItem('accessToken');
-    if (token) {
-      const decodedToken = jwtDecode(token);
-      setFullname(decodedToken.fullname);
-      setRole(decodedToken.role);
-    }
-  }, []); // Sử dụng useEffect chỉ khi component render lần đầu
+  const name = getFullname();
+  const role = mapRole(getRole());
+  const firstLetters = getFirstLetters(name);
 
   return (
-    <div className="main">
-      <div className="topLeft">
-        <SidebarTrigger />
-      </div>
-      <div className="topRight">
-        <div className="user">
-          <div className="infor">
-            <h4 className="name">{fullname}</h4>
-            <h5 className="role">{role}</h5>
+    <header className="sticky top-0 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-1 py-2 shadow-sm">
+      <div className="flex items-center justify-between mx-auto">
+        <div className="flex items-center gap-3">
+          <SidebarTrigger className="h-9 w-9 rounded-md hover:bg-accent hover:text-accent-foreground" />
+        </div>
+        
+        <div className="flex items-center gap-4">
+          <div className="flex flex-col items-end">
+            <span className="font-medium text-sm">{name}</span>
+            <span className="text-xs text-muted-foreground capitalize">{role}</span>
           </div>
-          <div className="avatar">
-            <img src={AvatarIcon} alt="Avatar" />
-          </div>
+          
+          <Avatar className="h-9 w-9 transition-all hover:ring-2 hover:ring-primary">
+            <AvatarImage src="" />
+            <AvatarFallback className="bg-primary/10 text-primary font-medium">
+              {firstLetters}
+            </AvatarFallback>
+          </Avatar>
         </div>
       </div>
-      <style>{styles}</style>
-    </div>
+    </header>
   );
 }

@@ -214,6 +214,7 @@ export default function XetChuanDauRaPage() {
   ];
 
   const openPLOBreakdownModal = (studentId, ploId) => {
+    console.log("Opening modal for studentId:", studentId, "and ploId:", ploId);
     setSelectedStudentId(studentId);
     setSelectedPLOId(ploId);
     setDialogOpen(true);
@@ -444,11 +445,11 @@ export default function XetChuanDauRaPage() {
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogContent className="max-w-fit">
               <DialogHeader>
-                <DialogTitle>Chi tiết điểm PI cấu thành điểm PLO</DialogTitle>
+                <DialogTitle>Chi tiết điểm Pk học phần cấu thành điểm PLO</DialogTitle>
               </DialogHeader>
               <MaxPkScoreTable
                 studentId={selectedStudentId}
-                plodId={selectedPLOId}
+                ploId={selectedPLOId}
                 useTemporaryScore={useTemporaryScore}
               />
             </DialogContent>

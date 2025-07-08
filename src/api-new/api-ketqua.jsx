@@ -172,11 +172,12 @@ export const calculatePkScore = async (classId, studentId, piId, useTemporarySco
   }
 }
 
-export const calculateMaxPkScoreForCourse = async (courseId, studentId, piId, useTemporaryScore = false) => {
+export const calculateMaxPkScoreForCourse = async (courseId, studentId, ploId, useTemporaryScore = false) => {
   try {
-    const response = await axios.get(`${API_RESULT}/calculate-max-pk-score-for-course?courseId=${courseId}&studentId=${studentId}&piId=${piId}&useTemporaryScore=${useTemporaryScore}`, {
+    const response = await axios.get(`${API_RESULT}/calculate-max-pk-score-for-course?courseId=${courseId}&studentId=${studentId}&ploId=${ploId}&useTemporaryScore=${useTemporaryScore}`, {
       headers: { Authorization: getAccessToken() }
     });
+    console.log("url", `${API_RESULT}/calculate-max-pk-score-for-course?courseId=${courseId}&studentId=${studentId}&ploId=${ploId}&useTemporaryScore=${useTemporaryScore}`);
     return response.data;
   } catch (error) {
     console.log("error message: ", error.response?.data);
@@ -184,17 +185,18 @@ export const calculateMaxPkScoreForCourse = async (courseId, studentId, piId, us
   }
 }
 
-export const calculatePIScore = async (studentId, piId, useTemporaryScore = false) => {
-  try {
-    const response = await axios.get(`${API_RESULT}/calculate-pi-score?studentId=${studentId}&piId=${piId}&useTemporaryScore=${useTemporaryScore}`, {
-      headers: { Authorization: getAccessToken() }
-    });
-    return response.data;
-  } catch (error) {
-    console.log("error message: ", error.response?.data);
-    throw new Error(error.response?.data || "Lỗi bất định");
-  }
-}
+// export const calculatePIScore = async (studentId, piId, useTemporaryScore = false) => {
+//   try {
+//     const response = await axios.get(`${API_RESULT}/calculate-pi-score?studentId=${studentId}&piId=${piId}&useTemporaryScore=${useTemporaryScore}`, {
+//       headers: { Authorization: getAccessToken() }
+//     });
+//     return response.data;
+//   } catch (error) {
+//     console.log("error message: ", error.response?.data);
+//     throw new Error(error.response?.data || "Lỗi bất định");
+//   }
+// }
+
 export const calculatePLOScore = async (studentId, ploId, useTemporaryScore = false) => {
   try {
     const response = await axios.get(`${API_RESULT}/calculate-plo-score?studentId=${studentId}&ploId=${ploId}&useTemporaryScore=${useTemporaryScore}`, {

@@ -20,32 +20,32 @@ import { Button } from "@/components/ui/button";
 // import { Switch } from "@/components/ui/switch"
 import { ArrowUpDown } from "lucide-react";
 import { Label } from "@/components/ui/label";
-// import { calculatePIScore, calculateDiemPIMax } from "@/api-new/api-ketqua"
+// import { calculatePLOScore, calculateDiemPLOMax } from "@/api-new/api-ketqua"
 import { calculateMaxPkScoreForCourse } from "@/api-new/api-ketqua";
 // import { getStudentsInClass } from "@/api-new/api-lophocphan"
 // import { useParams } from "react-router-dom"
-import { getCoursesOfPI, getFilteredPIs, getPIById } from "@/api-new/api-pi";
+import { getCoursesOfPLO, getFilteredPLOs, getPLOById } from "@/api-new/api-plo";
 import { Switch } from "@/components/ui/switch";
 import { getStudentById } from "@/api-new/api-student";
 import { getFilteredCourses } from "@/api-new/api-course";
 import { getCoursesInProgramme } from "@/api-new/api-programme";
 
-// const PIs = [
+// const PLOs = [
 //   {
 //     "id": 1,
-//     "name": "PI 1",
+//     "name": "PLO 1",
 //     "description": "Kỹ Năng Làm Việc Nhóm",
 //     "lopHocPhanId": 1
 //   },
 //   {
 //     "id": 9,
-//     "name": "PI 2",
+//     "name": "PLO 2",
 //     "description": "Kỹ Năng Ngoại Ngữ",
 //     "lopHocPhanId": 1
 //   },
 //   {
 //     "id": 10,
-//     "name": "PI 3",
+//     "name": "PLO 3",
 //     "description": "Kỹ Năng Giao Tiếp",
 //     "lopHocPhanId": 1
 //   }
@@ -70,8 +70,8 @@ import { getCoursesInProgramme } from "@/api-new/api-programme";
 //   }
 // ]
 
-// const createColumns = (PIs, listDiemPkMax, isBase10, diemDat) => [
-const createColumns = (PIs, diemDat) => [
+// const createColumns = (PLOs, listDiemPkMax, isBase10, diemDat) => [
+const createColumns = (PLOs, diemDat) => [
   {
     accessorKey: "tt",
     header: ({ column }) => {
@@ -118,41 +118,41 @@ const createColumns = (PIs, diemDat) => [
     cell: ({ row }) => <div className="px-4">{row.getValue("name")}</div>,
   },
   {
-    accessorKey: "weight",
+    accessorKey: "credits",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Điểm bài/câu hỏi đánh giá (thang 10)
+          Số tín chỉ
           <ArrowUpDown />
         </Button>
       );
     },
-    cell: ({ row }) => <div className="px-4 text-center">{row.getValue("weight")}</div>,
+    cell: ({ row }) => <div className="px-4 text-center">{row.getValue("credits")}</div>,
   },
-  ...PIs.map((pi) => ({
-    accessorKey: `pi_${pi.id}`,
+  ...PLOs.map((plo) => ({
+    accessorKey: `plo_${plo.id}`,
     header: ({ column }) => {
-      // const diemPIMax = listDiemPkMax[index];
+      // const diemPLOMax = listDiemPkMax[index];
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           <div>
-            <div>{pi.name}</div>
-            {/* {isBase10 ? <div>10</div> : <div>{diemPIMax}</div>} */}
+            <div>{plo.name}</div>
+            {/* {isBase10 ? <div>10</div> : <div>{diemPLOMax}</div>} */}
           </div>
           <ArrowUpDown />
         </Button>
       );
     },
     cell: ({ row }) => {
-      // const base10Score = (row.original[`pi_${pi.id}`] === 0 ? 0 : row.original[`pi_${pi.id}`] / listDiemPkMax[index] * 10);
-      // const score = isBase10 ? base10Score : row.original[`pi_${pi.id}`];
-      const score = row.original[`pi_${pi.id}`];
+      // const base10Score = (row.original[`plo_${plo.id}`] === 0 ? 0 : row.original[`plo_${plo.id}`] / listDiemPkMax[index] * 10);
+      // const score = isBase10 ? base10Score : row.original[`plo_${plo.id}`];
+      const score = row.original[`plo_${plo.id}`];
       const formattedScore =
         score !== null && score !== "" && !isNaN(score)
           ? Number(score).toFixed(2)
@@ -169,11 +169,11 @@ const createColumns = (PIs, diemDat) => [
   })),
 ];
 
-export default function MaxPkScoreTable({ studentId, piId, useTemporaryScore: initialUseTemporaryScore }) {
+export default function MaxPkScoreTable({ studentId, ploId, useTemporaryScore: initialUseTemporaryScore }) {
   const [data, setData] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
   const [sorting, setSorting] = React.useState([]);
-  const [PIs, setPIs] = React.useState([]);
+  const [PLOs, setPLOs] = React.useState([]);
   // const [listDiemPkMax, setListDiemPkMax] = React.useState([])
   // const [isBase10, setIsBase10] = React.useState(false)
   const [diemDat, setDiemDat] = React.useState(5.0);
@@ -181,66 +181,67 @@ export default function MaxPkScoreTable({ studentId, piId, useTemporaryScore: in
   const [useTemporaryScore, setUseTemporaryScore] = React.useState(initialUseTemporaryScore);
   const [displayFailedCourses, setDisplayFailedCourses] = React.useState(false);
   const [filteredData, setFilteredData] = React.useState([]);
+  console.log("ploId, studentId, useTemporaryScore", ploId, studentId, useTemporaryScore);
 
   React.useEffect(() => {
     const fetchScoreData = async () => {
       const student = await getStudentById(studentId);
-      // Fetch the PI information first to have it available for columns
-      const pi = await getPIById(piId);
-      setPIs([pi]); // Set as array with single PI
-      const courses = await getCoursesOfPI(piId);
+      // Fetch the PLO information first to have it available for columns
+      const plo = await getPLOById(ploId);
+      setPLOs([plo]); // Set as array with single PLO
+      const courses = await getCoursesOfPLO(ploId);
       const newData = await Promise.all(
         courses.map(async (course) => {
-          // const piScores = await Promise.all(
-          //   PIs.map(async (pi) => {
+          // const ploScores = await Promise.all(
+          //   PLOs.map(async (plo) => {
           //     let score = 0;
           //       score = await calculateMaxPkScoreForCourse(
           //         course.id,
           //         student.id,
-          //         pi.id,
+          //         plo.id,
           //         useTemporaryScore
           //       );
           //     console.log(
           //       "calculateMaxPkScoreForCourse",
           //       course.id,
           //       student.id,
-          //       pi.id,
+          //       plo.id,
           //       score
           //     );
-          //     return { [`pi_${pi.id}`]: score };
+          //     return { [`plo_${plo.id}`]: score };
           //   })
           // );
-          const piScore = await calculateMaxPkScoreForCourse(
+          const ploScore = await calculateMaxPkScoreForCourse(
             course.id,
             student.id,
-            piId,
+            ploId,
             useTemporaryScore
           );
-          return { ...course, [`pi_${piId}`]: piScore };
+          return { ...course, [`plo_${ploId}`]: ploScore };
         })
       );
 
-      // const listDiemPkMax = await Promise.all(PIs.map(async (pi) => {
-      //   const maxScore = await calculateDiemPIMax(pi.id);
+      // const listDiemPkMax = await Promise.all(PLOs.map(async (plo) => {
+      //   const maxScore = await calculateDiemPLOMax(plo.id);
       //   return maxScore;
       // }));
 
       setData(newData);
-      // setListDiemPIMax(listDiemPkMax)
+      // setListDiemPLOMax(listDiemPkMax)
     };
     fetchScoreData();
-  }, [piId, studentId, useTemporaryScore]);
+  }, [ploId, studentId, useTemporaryScore]);
 
   // Add this effect to filter data when needed
   React.useEffect(() => {
     if (displayFailedCourses) {
-      // Filter courses with ANY failing PI score
+      // Filter courses with ANY failing PLO score
       const filtered = data.filter((row) => {
-        const piColumns = Object.keys(row).filter((key) =>
-          key.startsWith("pi_")
+        const ploColumns = Object.keys(row).filter((key) =>
+          key.startsWith("plo_")
         );
-        return piColumns.some((piKey) => {
-          const score = row[piKey];
+        return ploColumns.some((ploKey) => {
+          const score = row[ploKey];
           return (
             score !== null &&
             score !== "" &&
@@ -256,8 +257,8 @@ export default function MaxPkScoreTable({ studentId, piId, useTemporaryScore: in
     }
   }, [displayFailedCourses, data, diemDat]);
 
-  // const columns = createColumns(PIs, listDiemPIMax, isBase10, diemDat);
-  const columns = createColumns(PIs, diemDat);
+  // const columns = createColumns(PLOs, listDiemPLOMax, isBase10, diemDat);
+  const columns = createColumns(PLOs, diemDat);
 
   const table = useReactTable({
     data: filteredData,

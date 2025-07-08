@@ -122,7 +122,7 @@ function NganhPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (role === "NguoiPhuTrachCTĐT" && nguoiQuanLyCTDTId !== 0) {
+      if (role === "ProgrammeManager" && nguoiQuanLyCTDTId !== 0) {
         const nganhData = await getNganhsByNguoiQuanLyId(nguoiQuanLyCTDTId);
         setData(nganhData);
       } else {

@@ -152,29 +152,29 @@ function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
 
   
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [nganhData, hocPhans] = await Promise.all([
+          getProgrammeById(nganhId),
+          // getCoursesNotInProgramme(nganhId),
+          getCourses({ programmeId: nganhId, excludeFromProgramme: true }),
+        ]);
+        console.log("Ngành data:", nganhData);
+        console.log("Học phần data:", hocPhans);
+        setNganh(nganhData);
+        setHocPhanList(hocPhans);
+      } catch (error) {
+        console.error("Lỗi khi load dữ liệu học phần/ctđt:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
     if (open && nganhId) {
       fetchData();
     }
   }, [open, nganhId]);
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const [nganhData, hocPhans] = await Promise.all([
-        getProgrammeById(nganhId),
-        // getCoursesNotInProgramme(nganhId),
-        getCourses({ programmeId: nganhId, excludeProgramme: true }),
-      ]);
-      console.log("Ngành data:", nganhData);
-      console.log("Học phần data:", hocPhans);
-      setNganh(nganhData);
-      setHocPhanList(hocPhans);
-    } catch (error) {
-      console.error("Lỗi khi load dữ liệu học phần/ctđt:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleClose = () => {
     onClose();

@@ -67,16 +67,16 @@ const adminItem = [
     url: "/hocphan",
     icon: BookMarked,
   },
-  {
-    title: "PLO",
-    url: "/plo",
-    icon: ListChecks,
-  },
-  {
-    title: "CLO",
-    url: "/clo",
-    icon: BookCheck,
-  },
+  // {
+  //   title: "PLO",
+  //   url: "/plo",
+  //   icon: ListChecks,
+  // },
+  // {
+  //   title: "CLO",
+  //   url: "/clo",
+  //   icon: BookCheck,
+  // },
   // {
   //   title: "Nối Học phần - PLO",
   //   url: "/mapcoursepi",
@@ -166,16 +166,16 @@ const academicAffairsItems = [
     url: "/hocphan",
     icon: BookMarked,
   },
-  {
-    title: "PLO",
-    url: "/plo",
-    icon: ListChecks,
-  },
-  {
-    title: "CLO",
-    url: "/clo",
-    icon: BookCheck,
-  },
+  // {
+  //   title: "PLO",
+  //   url: "/plo",
+  //   icon: ListChecks,
+  // },
+  // {
+  //   title: "CLO",
+  //   url: "/clo",
+  //   icon: BookCheck,
+  // },
   // {
   //   title: "Nối Học phần - PLO",
   //   url: "/mapcoursepi",
@@ -245,11 +245,11 @@ const programmeManagerItems = [
     url: "/programme",
     icon: ScrollText,
   },
-  {
-    title: "PLO",
-    url: "/plo",
-    icon: ListChecks,
-  },
+  // {
+  //   title: "PLO",
+  //   url: "/plo",
+  //   icon: ListChecks,
+  // },
   // {
   //   title: "Nối Học phần - PLO",
   //   url: "/mapcoursepi",

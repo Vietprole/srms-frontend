@@ -363,7 +363,7 @@ function DialogHocPhan({ nganhId, open, onClose }) {
   
   
   const hasPermission = () => {
-    return userRole === 'Admin' || userRole === 'NguoiPhuTrachCTĐT';
+    return userRole === 'Admin' ||userRole === 'AcademicAffairs' || userRole === 'ProgrammeManager';
   };
 
 
