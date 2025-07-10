@@ -24,7 +24,6 @@ import { useState, useEffect, useRef } from "react";
 import Autocomplete from "@mui/material/Autocomplete";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
-
 import Layout from "../Layout";
 import TestDialog from "@/components/DialogHocPhan";
 import { getProgrammeManagerId, getRole } from "@/utils/storage";
@@ -37,16 +36,11 @@ import Popover from "@mui/material/Popover";
 import DialogPLO from "../../components/DialogPLO";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import DialogPLOHocPhan from "../../components/DialogMappingPLO_Cource";
-import ChecklistRtlIcon from "@mui/icons-material/ChecklistRtl";
-import { getMajors } from "@/api/api-majors";
-import {
-  getProgrammes,
-  createProgramme,
-  getProgrammeById,
-  updateProgramme,
-} from "@/api/api-programmes";
-import { getNguoiQuanLyCTDTId } from "../../utils/storage";
-import { getAccountsByRole } from "@/api/api-accounts";
+import ChecklistRtlIcon from '@mui/icons-material/ChecklistRtl';
+import {getMajors} from "@/api/api-majors";
+import {getProgrammes,createProgramme,getProgrammeById,updateProgramme,copyProgrammeStructure} from "@/api/api-programmes";
+import {getAccountsByRole} from "@/api/api-accounts"
+import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
 function CTDTPage() {
   const styles = {
     main: {
@@ -109,7 +103,17 @@ function CTDTPage() {
       color: "white",
       cursor: "pointer",
     },
-
+    btnInte: {
+      width: '15%',
+      height: 40,
+      display: 'flex',
+      marginLeft: '0',
+      alignItems: 'center',
+      borderRadius: '5px',
+      color: 'white',
+      cursor: 'pointer',
+    },
+  
     table: {
       flex: 1,
       display: "flex",
@@ -167,11 +171,79 @@ function CTDTPage() {
   // const [selectedKhoaFilter, setSelectedKhoaFilter] = useState(null);
   const [page, setPage] = useState(1);
   const [openPLO, setOpenPLO] = useState(false); // Dialog PLO nếu cần sử dụng
-  const [openDialogPLOHocPhan, setOpenDialogPLOHocPhan] = useState(false); // Lấy id người quản lý CTĐT từ role, mặc định là 0 nếu không có
-  const [nganhs, setNganhs] = useState([]);
-  const [selectedNganh, setSelectedNganh] = useState(null);
-  const [selectedTaiKhoan, setSelectedTaiKhoan] = useState(null);
-  const [taikhoans, setTaiKhoans] = useState([]);
+  const [openDialogPLOHocPhan, setOpenDialogPLOHocPhan] = useState(false);// Lấy id người quản lý CTĐT từ role, mặc định là 0 nếu không có
+  const [nganhs,setNganhs] = useState([]);
+  const [selectedNganh,setSelectedNganh] =useState(null);
+  const [selectedTaiKhoan,setSelectedTaiKhoan] =useState(null);
+  const [taikhoans,setTaiKhoans]=useState([]);
+  const [selectedYearInName, setSelectedYearInName] = useState(null);
+
+  const [openDialogKeThua, setOpenDialogKeThua] = useState(false); // Dialog kế thừa CTĐT nếu cần sử dụng
+  const [sourceCtdt, setSourceCtdt] = useState(null); // Lưu CTĐT nguồn để kế thừa
+  const [copyCtdt, setCopyCtdt] = useState(null); // Lưu CTĐT đã sao chép để kế thừa
+  const [selectedSourceCtdt, setSelectedSourceCtdt] = useState(null); // Lưu CTĐT nguồn đã chọn để kế thừa
+  const [selectedCopyCtdt, setSelectedCopyCtdt] = useState(null); // Lưu CTĐT đã sao chép đã chọn để kế thừa
+
+  const handleOpenDialogKeThua =async () => {
+    const copy= await getProgrammes({}); // Lấy danh sách CTĐT để kế thừa
+    setCopyCtdt(copy);
+    setOpenDialogKeThua(true);
+  };
+  const handleCloseDialogKeThua = () => {
+    setOpenDialogKeThua(false);
+    setSourceCtdt(null);
+    setCopyCtdt(null);
+    setSelectedSourceCtdt(null);
+    setSelectedCopyCtdt(null);
+  };
+
+  const handleChangeCopyCtdt = async (event, newValue) => {
+    setSelectedCopyCtdt(newValue); // ngành muốn kế thừa
+    if (newValue) {
+      const source = await getProgrammes({ majorId: newValue.majorId });
+      setSourceCtdt(source); // Cập nhật danh sách CTĐT nguồn
+    } else {
+      setSourceCtdt([]);
+    }
+  };
+
+  const handleChangeSourceCtdt = (event, newValue) => {
+    setSelectedSourceCtdt(newValue); // CTĐT gốc đã chọn để sao chép
+  };
+
+  const handleSubmitKeThua = async () => {
+    if (!selectedCopyCtdt || !selectedSourceCtdt) {
+      setSnackbarMessage("Vui lòng chọn CTĐT cần kế thừa và CTĐT nguồn");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+      return;
+    }
+    console.log("Selected Copy CTDT:", selectedCopyCtdt.id);
+    console.log("Selected Source CTDT:", selectedSourceCtdt.id);
+    try {
+      const response = await copyProgrammeStructure(selectedCopyCtdt.id, selectedSourceCtdt.id);
+      console.log(response);
+      if (response.status === 200) {
+        setSnackbarMessage("Kế thừa chương trình đào tạo thành công");
+        setSnackbarSeverity("success");
+        setOpenDialogKeThua(false); // Đóng dialog sau khi kế thừa thành công
+        setOpenSnackbar(true);
+        fetchData(); // Làm mới danh sách CTĐT
+      } else {
+        setSnackbarMessage("Lỗi không xác định khi kế thừa chương trình đào tạo");
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
+      }
+    } catch (error) {
+      const errorMsg = error.message || "Lỗi: Không thể kế thừa chương trình đào tạo";
+      setSnackbarMessage(errorMsg);
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+    }
+  };
+
+
+
   const handleOpenPLO = (id) => {
     setNganhId(id); // Lưu id nganh để sử dụng trong Dialog PLO
     setOpenPLO(true);
@@ -210,10 +282,12 @@ function CTDTPage() {
   }
 
   // Lấy dữ liệu cho trang hiện tại
-  const paginatedData = filteredData.slice(
-    (page - 1) * pageSize,
-    page * pageSize
-  );
+  const paginatedData = filteredData.slice((page - 1) * pageSize, page * pageSize);
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: currentYear - 2020 + 1 }, (_, i) => (2020 + i).toString());
+  
+
+
 
   const role = getRole();
   const programmeManagerId = getProgrammeManagerId();
@@ -231,7 +305,6 @@ function CTDTPage() {
     setTaiKhoans(taikhoans);
 
     const nganh = await getProgrammeById(id);
-    console.log(nganh);
     setTenNganh(nganh.name);
     setMaNganh(nganh.code);
     setSelectedNganh(nganh.majorName);
@@ -308,7 +381,6 @@ function CTDTPage() {
       majorId: selectedNganh.id,
       managerAccountId: selectedTaiKhoan,
     };
-    console.log(majorData);
     try {
       const response = await createProgramme(majorData);
       if (response.status === 201) {
@@ -330,8 +402,7 @@ function CTDTPage() {
       setOpenSnackbar(true);
     }
   };
-
-  // console.log("role, nguoiQuanLyCTDTId: ", role, nguoiQuanLyCTDTId);
+  
   const fetchData = useCallback(async () => {
     try {
       if (role === "ProgrammeManager" && programmeManagerId !== 0) {
@@ -358,16 +429,29 @@ function CTDTPage() {
     setFilteredData(data);
   }, [data]);
 
-  const filterData = (query) => {
-    if (!query.trim()) {
-      setFilteredData(data); // If search query is empty, show all data
-    } else {
-      const filtered = data.filter((row) =>
-        row.name.toLowerCase().includes(query.toLowerCase())
+  const filterData = (query, yearInName = selectedYearInName) => {
+    let filtered = data;
+  
+    // Tìm theo chuỗi search tự do
+    if (query.trim()) {
+      const lowerQuery = query.toLowerCase();
+      filtered = filtered.filter((row) =>
+        Object.values(row).some((value) =>
+          String(value).toLowerCase().includes(lowerQuery)
+        )
       );
-      setFilteredData(filtered);
     }
+  
+    // Tìm theo năm nằm trong tên ngành
+    if (yearInName) {
+      filtered = filtered.filter((row) =>
+        row.name.toLowerCase().includes(yearInName.toLowerCase())
+      );
+    }
+  
+    setFilteredData(filtered);
   };
+  
 
   const handleSnackbarClose = () => {
     setOpenSnackbar(false);
@@ -509,8 +593,91 @@ function CTDTPage() {
               />
             </Box>
           </div>
-          <div style={styles.cbKhoa}></div>
+          <div style={styles.cbKhoa}>
+            <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
+              <Autocomplete
+                options={years}
+                value={selectedYearInName}
+                onChange={(event, newValue) => {
+                  setSelectedYearInName(newValue);
+                  setPage(1);
+                  filterData(searchQuery, newValue);
+                }}
+                renderInput={(params) => (
+                  <TextField {...params} label="Chọn năm học" size="small" />
+                )}
+                sx={{ width: 250 }}
+              />
+            </Box>
+          </div>
+          <div style={styles.btnInte}>
+               <Button
+                sx={{ width: "100%" }}
+                variant="contained"
+                startIcon={<MoveToInboxIcon />}
+                onClick={handleOpenDialogKeThua} // Mở dialog kế thừa CTĐT
+              >
+                Kế thừa ctđt 
+              </Button>
+              <Dialog
+                id="keThuaNganh"
+                fullWidth
+                open={openDialogKeThua}
+                onClose={handleCloseDialogKeThua}
+              >
+                <DialogTitle>Kế thừa chương trình đào tạo</DialogTitle>
+                <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                  <Autocomplete
+                    options={copyCtdt || []}
+                    getOptionLabel={(option) => `${option.code} - ${option.name}`}
+                    noOptionsText="Không tìm thấy CTĐT"
+                    disableClearable
+                    value={selectedCopyCtdt}
+                    onChange={handleChangeCopyCtdt}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Chọn CTĐT cần kế thừa"
+                        variant="standard"
+                      />
+                    )}
+                  />
+
+                  <Autocomplete
+                    options={
+                      (sourceCtdt || []).filter(
+                        (item) => item.id !== selectedCopyCtdt?.id // 👈 lọc bỏ chính CTĐT đã chọn ở trên
+                      )
+                    }
+                    getOptionLabel={(option) => `${option.code} - ${option.name}`}
+                    noOptionsText={
+                      selectedCopyCtdt
+                        ? "Không tìm thấy CTĐT nguồn"
+                        : "Vui lòng chọn CTĐT cần kế thừa trước"
+                    }
+                    disableClearable
+                    disabled={!selectedCopyCtdt}
+                    value={selectedSourceCtdt}
+                    onChange={handleChangeSourceCtdt}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Chọn CTĐT nguồn (ngành gốc)"
+                        variant="standard"
+                      />
+                    )}
+                  />
+
+                </DialogContent>
+                <DialogActions>
+                <Button onClick={handleCloseDialogKeThua}>Hủy</Button>
+                <Button onClick={handleSubmitKeThua}>Lưu</Button>
+              </DialogActions>
+              </Dialog>
+
+            </div>
           <div style={styles.btnCreate}>
+            
             {role === "Admin" && (
               <Button
                 sx={{ width: "100%" }}

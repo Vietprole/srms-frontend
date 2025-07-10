@@ -158,7 +158,7 @@ export const getCoursesNotInProgramme = async (id) => {
 export const copyProgrammeStructure = async (id, sourceProgrammeId) => {
   try {
     const response = await axios.post(
-      `${API_BASE_URL}/${id}/copy-structure`,
+      `${API_BASE_URL}/api/programmes/${id}/copy-structure`,
       sourceProgrammeId, // ✅ gửi trực tiếp int
       {
         ...getAuthHeader(),

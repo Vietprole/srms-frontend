@@ -30,7 +30,7 @@ import MuiAlert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
 import VirtualizedAutocomplete from "./VirtualizedAutocomplete";
-import {getProgrammeById,getCoursesNotInProgramme,addCoursesToProgramme,getProgrammes,copyProgrammeStructure} from "../api/api-programmes";
+import {getProgrammeById,addCoursesToProgramme,getProgrammes,copyProgrammeStructure} from "../api/api-programmes";
 import {getCourses} from "../api/api-courses";
 // eslint-disable-next-line react/prop-types
 function DialogAddHocPhan({ nganhId, open, onClose,onSavedSuccess  }) {
