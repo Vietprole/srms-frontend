@@ -716,7 +716,6 @@ function CTDTPage() {
                 />
 
                 <TextField
-                  autoFocus
                   required
                   id="tenNganh"
                   margin="dense"
@@ -732,7 +731,6 @@ function CTDTPage() {
                   autoComplete="off"
                 />
                 <TextField
-                  autoFocus
                   required
                   id="maNganh"
                   margin="dense"

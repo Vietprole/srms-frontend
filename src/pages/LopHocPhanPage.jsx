@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { styled } from '@mui/material/styles';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -82,7 +81,7 @@ function HocPhanPage()
     },
 
     cbKhoa: {
-      width: "22%",
+      width: "20%",
       display: "flex",
       alignItems: "center",
       height: 40, // 👈 Thêm chiều cao cụ thể
@@ -163,6 +162,8 @@ function HocPhanPage()
   const [selectedHocPhan, setSelectedHocPhan] = useState(null); // Học phần đã chọn
   const [selectedSemester, setSelectedSemester] = useState(null); // Học kỳ đã chọn
   const [selectedTeacher, setSelectedTeacher] = useState(null); // Giảng viên đã chọn
+  const [hocky, setHocky] = useState([]); // Danh sách học kỳ
+  const [selectedHocky, setSelectedHocky] = useState(null); // Học kỳ đã chọn
 
   const totalItems = filteredData.length;
   const totalPages = Math.ceil(totalItems / pageSize);
@@ -312,6 +313,16 @@ function HocPhanPage()
       setFilteredData(filtered);
     }
   };
+  const handleHocKyCHange = (event, newValue) => {
+    setPage(1); // Reset page to 1 when filter changes
+    setSelectedHocky(newValue);
+    if (!newValue) {
+      setFilteredData(data);
+    } else {
+      const filtered = data.filter((row) => row.semesterId === newValue.id);
+      setFilteredData(filtered);
+    }
+  };
 
   useEffect(() => {
     fetchData();
@@ -321,6 +332,8 @@ function HocPhanPage()
     try {
       const hocphans = await getAllClasses();
       // Đảm bảo response từ API trả về thêm thông tin tenNganh
+      const hocki = await getAllSemesters();
+      setHocky(hocki);
       setData(hocphans);
       setFilteredData(hocphans);
       const khoa = await getAllTeachers();
@@ -565,6 +578,17 @@ function HocPhanPage()
               label="Chọn theo tên giảng viên"
               variant="outlined"
             />
+          </div>
+          <div style={styles.cbKhoa}>
+          <VirtualizedAutocomplete
+            options={hocky}
+            value={selectedHocky}
+            onChange={(event, newValue) => handleHocKyCHange(event, newValue)}
+            getOptionLabel={(option) => `${option.name} - ${option.year}`}
+            label="Chọn học kỳ"
+            variant="outlined"
+          />
+
           </div>
           <div style={styles.btnCreate}>
             <Button
