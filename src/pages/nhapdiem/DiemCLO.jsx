@@ -32,8 +32,7 @@ import { getCLOsByClassId } from "@/api-new/api-clo";
 import ResultTable from "@/components/ResultTable";
 import { PercentageChart } from "@/components/PercentageChart";
 import { Download } from "lucide-react";
-import ExcelJS from "exceljs";
-import FileSaver from "file-saver";
+import html2pdf from "html2pdf.js";
 
 // const CLOs = [
 //   {
@@ -176,8 +175,8 @@ export default function DiemCLO() {
 
   React.useEffect(() => {
     const fetchData = async () => {
-            //   const lopHocPhan = await getLopHocPhanById(lopHocPhanId);
-            // const hocPhanId = lopHocPhan.hocPhanId;
+      //   const lopHocPhan = await getLopHocPhanById(lopHocPhanId);
+      // const hocPhanId = lopHocPhan.hocPhanId;
       const [sinhViens, CLOs] = await Promise.all([
         getFilteredStudents(null, null, lopHocPhanId),
         getCLOsByClassId(lopHocPhanId),
@@ -294,9 +293,9 @@ export default function DiemCLO() {
   const dataKey = "cloName";
   // const exportToExcel = async () => {
   //   // Fetch the template file using fetch API
-  //   const response = await fetch('/templates/clo_template.xlsx'); 
+  //   const response = await fetch('/templates/clo_template.xlsx');
   //   const templateArrayBuffer = await response.arrayBuffer();
-    
+
   //   // Load the template into ExcelJS
   //   const workbook = new ExcelJS.Workbook();
   //   await workbook.xlsx.load(templateArrayBuffer);
@@ -312,13 +311,25 @@ export default function DiemCLO() {
   //   const excel_extension = ".xlsx";
   //   FileSaver.saveAs(blob, `DiemCLO_${lopHocPhanId}${excel_extension}`);
   // };
+  const pdfRef = React.useRef(null);
   const exportToPDF = async () => {
-
-  }
+    const element = pdfRef.current;
+    html2pdf(element, {
+      margin: 1,
+      filename: `DiemCLO.pdf`,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit:"cm", format: "a4", orientation: "portrait" },
+    }).then(() => {
+      console.log("PDF exported successfully");
+    }).catch((error) => {
+      console.error("Error exporting PDF:", error);
+    });
+  };
 
   return (
     <div>
-      <div className="flex items-center py-1">
+      <div className="flex items-center py-1 gap-1">
         <Input
           placeholder="Tìm kiếm..."
           value={table.getColumn("name")?.getFilterValue() ?? ""}
@@ -328,74 +339,77 @@ export default function DiemCLO() {
           className="max-w-sm"
         />
         <Button
-          variant="outline"
           onClick={exportToPDF}
           className="flex items-center gap-2"
         >
           <Download className="h-4 w-4" />
-          Tải xuống Excel
+          Tải xuống PDF
         </Button>
       </div>
-      <div className="flex items-center py-1">
-        <Label htmlFor="DiemDat">Nhập điểm đạt hệ 10: </Label>
-        <Input
-          id="DiemDat"
-          placeholder="5.0..."
-          className="w-16 ml-2 mr-2"
-          type="number"
-          value={inputValue}
-          min={0}
-          max={10}
-          step={1}
-          onChange={(e) => setInputValue(parseFloat(e.target.value))}
+      <div ref={pdfRef}>
+        <p className="text-xl font-bold">Biểu đồ thống kê tỉ lệ đạt CLO</p>
+        <div className="flex items-center py-1" data-html2canvas-ignore>
+          <Label htmlFor="DiemDat">Nhập điểm đạt hệ 10: </Label>
+          <Input
+            id="DiemDat"
+            placeholder="5.0..."
+            className="w-16 ml-2 mr-2"
+            type="number"
+            value={inputValue}
+            min={0}
+            max={10}
+            step={1}
+            onChange={(e) => setInputValue(parseFloat(e.target.value))}
+          />
+          <Button type="button" onClick={() => setDiemDat(inputValue)}>
+            Go
+          </Button>
+        </div>
+        <div className="flex items-center py-1" data-html2canvas-ignore>
+          <Label htmlFor="PassedTarget">Nhập chỉ tiêu đạt (%): </Label>
+          <Input
+            id="PassedTarget"
+            placeholder="50..."
+            className="w-16 ml-2 mr-2"
+            type="number"
+            value={inputValue2}
+            min={0}
+            max={100}
+            step={10}
+            onChange={(e) => setInputValue2(parseFloat(e.target.value))}
+          />
+          <Button type="button" onClick={() => setPassedTarget(inputValue2)}>
+            Go
+          </Button>
+        </div>
+        <PercentageChart
+          chartData={chartData}
+          chartConfig={chartConfig}
+          dataKey={dataKey}
+          passedTarget={passedTarget}
         />
-        <Button type="button" onClick={() => setDiemDat(inputValue)}>
-          Go
-        </Button>
+        <p className="text-xl font-bold">Bảng điểm CLO</p>
+        <div className="flex items-center space-x-2" data-html2canvas-ignore>
+          <Switch
+            id="diem-mode"
+            onCheckedChange={(check) => {
+              setIsBase10(check);
+            }}
+          />
+          <Label htmlFor="diem-mode">Chuyển sang hệ 10</Label>
+        </div>
+        <div className="flex items-center space-x-2" data-html2canvas-ignore>
+          <Label htmlFor="diem-mode">Điểm tạm</Label>
+          <Switch
+            id="diem-mode"
+            onCheckedChange={(check) => {
+              setUseTemporaryScore(!check);
+            }}
+          />
+          <Label htmlFor="diem-mode">Điểm chính thức</Label>
+        </div>
+        <ResultTable table={table} columns={columns} />
       </div>
-      <div className="flex items-center py-1">
-        <Label htmlFor="PassedTarget">Nhập chỉ tiêu đạt (%): </Label>
-        <Input
-          id="PassedTarget"
-          placeholder="50..."
-          className="w-16 ml-2 mr-2"
-          type="number"
-          value={inputValue2}
-          min={0}
-          max={100}
-          step={10}
-          onChange={(e) => setInputValue2(parseFloat(e.target.value))}
-        />
-        <Button type="button" onClick={() => setPassedTarget(inputValue2)}>
-          Go
-        </Button>
-      </div>
-      <PercentageChart
-        chartData={chartData}
-        chartConfig={chartConfig}
-        dataKey={dataKey}
-        passedTarget={passedTarget}
-      />
-      <div className="flex items-center space-x-2">
-        <Switch
-          id="diem-mode"
-          onCheckedChange={(check) => {
-            setIsBase10(check);
-          }}
-        />
-        <Label htmlFor="diem-mode">Chuyển sang hệ 10</Label>
-      </div>
-      <div className="flex items-center space-x-2">
-        <Label htmlFor="diem-mode">Điểm tạm</Label>
-        <Switch
-          id="diem-mode"
-          onCheckedChange={(check) => {
-            setUseTemporaryScore(!check);
-          }}
-        />
-        <Label htmlFor="diem-mode">Điểm chính thức</Label>
-      </div>
-      <ResultTable table={table} columns={columns} />
     </div>
   );
 }
