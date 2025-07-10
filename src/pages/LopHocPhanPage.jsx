@@ -309,7 +309,7 @@ function HocPhanPage()
     if (!newValue) {
       setFilteredData(data);
     } else {
-      const filtered = data.filter((row) => row.teacherName === newValue.name);
+      const filtered = data.filter((row) => row.courseId === newValue.id);
       setFilteredData(filtered);
     }
   };
@@ -331,12 +331,13 @@ function HocPhanPage()
   const fetchData = async () => {
     try {
       const hocphans = await getAllClasses();
+      console.log(hocphans);
       // Đảm bảo response từ API trả về thêm thông tin tenNganh
       const hocki = await getAllSemesters();
       setHocky(hocki);
       setData(hocphans);
       setFilteredData(hocphans);
-      const khoa = await getAllTeachers();
+      const khoa = await getCourses();
       setKhoas(khoa);
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu:", error);
@@ -575,7 +576,7 @@ function HocPhanPage()
               value={selectedKhoaFilter}
               onChange={handleKhoaChange}
               getOptionLabel={(option) => option.name || ""}
-              label="Chọn theo tên giảng viên"
+              label="Chọn học phần"
               variant="outlined"
             />
           </div>
