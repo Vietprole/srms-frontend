@@ -32,6 +32,7 @@ import { useSearchParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { getRole, getTeacherId } from "@/utils/storage";
 import { useToast } from "@/hooks/use-toast";
+import { CorrectedResultDocument } from "@/components/CorrectedResultDocument";
 
 export default function DiemDinhChinhPage() {
   const navigate = useNavigate();
@@ -530,16 +531,35 @@ export default function DiemDinhChinhPage() {
   return (
     <Layout>
       <div className="overflow-x-auto">
-        <div className="flex">
-          <ComboBox
-            items={lophocphanItems}
-            setItemId={setComboBoxLopHocPhanId}
-            initialItemId={comboBoxLopHocPhanId}
-            placeholder="Chọn lớp học phần"
-          />
-          <Button onClick={handleGoClick}>Go</Button>
+        <div className="flex items-center justify-between">
+          <div className="flex gap-1">
+            <ComboBox
+              items={lophocphanItems}
+              setItemId={setComboBoxLopHocPhanId}
+              initialItemId={comboBoxLopHocPhanId}
+              placeholder="Chọn lớp học phần"
+            />
+            <Button onClick={handleGoClick}>Go</Button>
+          </div>
+          {role === "Teacher" && (
+            <div>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    disabled={!lophocphanId}
+                    onSelect={(e) => e.preventDefault()}
+                  >
+                    Lập đơn đính chính
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-[210mm] max-h-screen overflow-y-auto">
+                  <CorrectedResultDocument classId={lophocphanId} correctedResults={data}/>
+                </DialogContent>
+              </Dialog>
+            </div>
+          )}
         </div>
-        <div className="">
+        <div>
           <CRUDDataTable
             entity="DiemDinhChinh"
             createColumns={createDiemDinhChinhColumns}
