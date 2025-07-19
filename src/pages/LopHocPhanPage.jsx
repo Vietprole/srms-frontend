@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { styled } from '@mui/material/styles';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -82,7 +81,7 @@ function HocPhanPage()
     },
 
     cbKhoa: {
-      width: "22%",
+      width: "20%",
       display: "flex",
       alignItems: "center",
       height: 40, // 👈 Thêm chiều cao cụ thể
@@ -163,6 +162,8 @@ function HocPhanPage()
   const [selectedHocPhan, setSelectedHocPhan] = useState(null); // Học phần đã chọn
   const [selectedSemester, setSelectedSemester] = useState(null); // Học kỳ đã chọn
   const [selectedTeacher, setSelectedTeacher] = useState(null); // Giảng viên đã chọn
+  const [hocky, setHocky] = useState([]); // Danh sách học kỳ
+  const [selectedHocky, setSelectedHocky] = useState(null); // Học kỳ đã chọn
 
   const totalItems = filteredData.length;
   const totalPages = Math.ceil(totalItems / pageSize);
@@ -308,7 +309,17 @@ function HocPhanPage()
     if (!newValue) {
       setFilteredData(data);
     } else {
-      const filtered = data.filter((row) => row.teacherName === newValue.name);
+      const filtered = data.filter((row) => row.courseId === newValue.id);
+      setFilteredData(filtered);
+    }
+  };
+  const handleHocKyCHange = (event, newValue) => {
+    setPage(1); // Reset page to 1 when filter changes
+    setSelectedHocky(newValue);
+    if (!newValue) {
+      setFilteredData(data);
+    } else {
+      const filtered = data.filter((row) => row.semesterId === newValue.id);
       setFilteredData(filtered);
     }
   };
@@ -320,10 +331,13 @@ function HocPhanPage()
   const fetchData = async () => {
     try {
       const hocphans = await getAllClasses();
+      console.log(hocphans);
       // Đảm bảo response từ API trả về thêm thông tin tenNganh
+      const hocki = await getAllSemesters();
+      setHocky(hocki);
       setData(hocphans);
       setFilteredData(hocphans);
-      const khoa = await getAllTeachers();
+      const khoa = await getCourses();
       setKhoas(khoa);
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu:", error);
@@ -562,9 +576,20 @@ function HocPhanPage()
               value={selectedKhoaFilter}
               onChange={handleKhoaChange}
               getOptionLabel={(option) => option.name || ""}
-              label="Chọn theo tên giảng viên"
+              label="Chọn học phần"
               variant="outlined"
             />
+          </div>
+          <div style={styles.cbKhoa}>
+          <VirtualizedAutocomplete
+            options={hocky}
+            value={selectedHocky}
+            onChange={(event, newValue) => handleHocKyCHange(event, newValue)}
+            getOptionLabel={(option) => `${option.name} - ${option.year}`}
+            label="Chọn học kỳ"
+            variant="outlined"
+          />
+
           </div>
           <div style={styles.btnCreate}>
             <Button

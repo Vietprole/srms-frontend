@@ -24,7 +24,7 @@ import DiemCLO from "@/pages/nhapdiem/DiemCLO";
 import DiemPk from "@/pages/nhapdiem/DiemPk";
 import TongKetCLO from "@/pages/nhapdiem/TongKetCLO";
 import BaoCaoCLO from "@/pages/nhapdiem/BaoCaoCLO";
-import DangNhap from "@/pages/DangNhapPage/DangNhapPage";
+import DangNhap from "@/pages/DangNhapPage/LoginPage";
 import { getRole } from "@/utils/storage";
 import BangDiemGiangVienPage from "@/pages/nhapdiem/BangDiemGiangVienPage";
 import DiemDinhChinhPage from "@/pages/DiemDinhChinhPage";

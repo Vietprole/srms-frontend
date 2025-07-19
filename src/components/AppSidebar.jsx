@@ -72,11 +72,11 @@ const adminItem = [
   //   url: "/plo",
   //   icon: ListChecks,
   // },
-  // {
-  //   title: "CLO",
-  //   url: "/clo",
-  //   icon: BookCheck,
-  // },
+  {
+    title: "CLO",
+    url: "/clo",
+    icon: BookCheck,
+  },
   // {
   //   title: "Nối Học phần - PLO",
   //   url: "/mapcoursepi",
@@ -171,11 +171,11 @@ const academicAffairsItems = [
   //   url: "/plo",
   //   icon: ListChecks,
   // },
-  // {
-  //   title: "CLO",
-  //   url: "/clo",
-  //   icon: BookCheck,
-  // },
+  {
+    title: "CLO",
+    url: "/clo",
+    icon: BookCheck,
+  },
   // {
   //   title: "Nối Học phần - PLO",
   //   url: "/mapcoursepi",
@@ -255,6 +255,11 @@ const programmeManagerItems = [
   //   url: "/mapcoursepi",
   //   icon: Network,
   // },
+  {
+    title: "CLO",
+    url: "/clo",
+    icon: BookCheck,
+  },
   {
     title: "Nối PLO - CLO",
     url: "/mapploclo",
@@ -454,4 +459,3 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
-
