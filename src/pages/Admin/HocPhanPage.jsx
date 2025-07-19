@@ -665,6 +665,15 @@ function HocPhanPage()
               <EditIcon fontSize="small" sx={{ mr: 1 }} />
               Sửa
             </MenuItem>
+            <MenuItem
+              onClick={() => {
+                handleOpenEditDialog(row.id);
+                handleClosePopover();
+              }}
+            >
+              <EditIcon fontSize="small" sx={{ mr: 1 }} />
+              Quản lý CLO
+            </MenuItem>
           </Popover>
         )}
       </StyledTableCell>

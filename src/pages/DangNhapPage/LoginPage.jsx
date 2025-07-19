@@ -14,7 +14,7 @@ export default function LoginPage() {
         </div>
         <div className="ml-auto text-xl font-bold">Hệ thống quản lý điểm sinh viên</div>
       </header>
-      <div className="flex flex-grow w-full items-center justify-center p-6 md:p-10 bg-[url(public/campus.png)] bg-cover bg-center relative">
+      <div className="flex flex-grow w-full items-center justify-center p-6 md:p-10 bg-[url(campus.png)] bg-cover bg-center relative">
         <div className="absolute inset-0 bg-black opacity-10 pointer-events-none"></div>
         <div className="w-full max-w-sm border border-solid border-gray-200 rounded-xl p-6 shadow-sm bg-white z-10">
           <h1 className="text-2xl font-bold text-center mb-4">Đăng nhập</h1>
