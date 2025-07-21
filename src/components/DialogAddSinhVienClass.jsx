@@ -28,12 +28,8 @@ import Autocomplete from "@mui/material/Autocomplete";
 import { styled } from "@mui/material/styles";
 import MuiAlert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
-import {
-  getClassById,
-  // getStudentIdsNotInClass,
-  addStudentsToClass,
-} from "../api/api-classes";
-import { getAllStudents } from "../api/api-students";
+import { getClassById, addStudentsToClass } from "../api/api-classes";
+import { getAllStudents } from "@/api/api-students";
 // eslint-disable-next-line react/prop-types
 function DialogAddSinhVienClass({ nganhId, open, onClose, onSuccess }) {
   const styles = {
@@ -137,8 +133,7 @@ function DialogAddSinhVienClass({ nganhId, open, onClose, onSuccess }) {
       setLoading(true);
       const [nganhData, hocPhans] = await Promise.all([
         getClassById(nganhId),
-        // getStudentIdsNotInClass(nganhId),
-        getAllStudents({classId: nganhId, excludeFromClass: true}),
+        getAllStudents({ classId: nganhId, excludeFromClass: true }),
       ]);
       console.log("Ngành data:", nganhData);
       console.log("Học phần data:", hocPhans);

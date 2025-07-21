@@ -171,12 +171,12 @@ export const updateGradeComposition = async (id, examList) => {
     throw new Error(error.response?.data || "Lỗi khi cập nhật thành phần điểm");
   }
 };
-export const getStudentIdsNotInClass = async (id) => {
-  try {
-    const response = await axios.get(`${API_CLASSES}/${id}/students/not-in-class`, getAuthHeader());
-    return response.data; // Trả về mảng các studentId
-  } catch (error) {
-    console.error("getStudentIdsNotInClass error:", error);
-    throw new Error(error.response?.data || "Lỗi khi lấy danh sách sinh viên chưa trong lớp");
-  }
-};
+// export const getStudentIdsNotInClass = async (id) => {
+//   try {
+//     const response = await axios.get(`${API_CLASSES}/${id}/students/not-in-class`, getAuthHeader());
+//     return response.data; // Trả về mảng các studentId
+//   } catch (error) {
+//     console.error("getStudentIdsNotInClass error:", error);
+//     throw new Error(error.response?.data || "Lỗi khi lấy danh sách sinh viên chưa trong lớp");
+//   }
+// };
