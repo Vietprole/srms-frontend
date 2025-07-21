@@ -157,7 +157,7 @@ export function NewGradeTable({
           );
           if (input) {
             input.focus();
-            input.select(); // Select all text for immediate replacement
+            // input.select(); // Select all text for immediate replacement
           }
         }, 0);
       }
@@ -275,7 +275,7 @@ export function NewGradeTable({
             accessorFn: (row) => {
               const grades = row.grades[component.type] || {};
               return Object.values(grades).reduce(
-                (sum, score) => sum + score,
+                (sum, score) => parseFloat((sum + score).toFixed(2)),
                 0
               );
             },
@@ -620,7 +620,7 @@ function EditableCell({
   React.useEffect(() => {
     if (isFocused && inputRef.current) {
       inputRef.current.focus();
-      inputRef.current.select();
+      // inputRef.current.select();
     }
   }, [isFocused]);
 
