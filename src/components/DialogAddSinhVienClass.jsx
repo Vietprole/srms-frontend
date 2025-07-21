@@ -28,30 +28,31 @@ import Autocomplete from "@mui/material/Autocomplete";
 import { styled } from "@mui/material/styles";
 import MuiAlert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
-import {getClassById,getStudentIdsNotInClass,addStudentsToClass} from "../api/api-classes";
+import { getClassById, addStudentsToClass } from "../api/api-classes";
+import { getAllStudents } from "@/api/api-students";
 // eslint-disable-next-line react/prop-types
-function DialogAddSinhVienClass({ nganhId, open, onClose,onSuccess   }) {
+function DialogAddSinhVienClass({ nganhId, open, onClose, onSuccess }) {
   const styles = {
     main: {
       display: "flex",
-      width: '100%',
-      height: '450px',
-      overflowY: 'hidden',
-      flexDirection: 'column',
+      width: "100%",
+      height: "450px",
+      overflowY: "hidden",
+      flexDirection: "column",
     },
     mainAction: {
       display: "flex",
-      width: '100%',
-      height: '40px',
-      marginBottom: '15px',
+      width: "100%",
+      height: "40px",
+      marginBottom: "15px",
     },
     mainContent: {
       display: "flex",
       flexDirection: "column",
-      width: '100%',
-      height: '100%',
-      overflowY: 'auto',
-      paddingTop: '10px',
+      width: "100%",
+      height: "100%",
+      overflowY: "auto",
+      paddingTop: "10px",
     },
     tfSearch: {
       display: "flex",
@@ -74,33 +75,33 @@ function DialogAddSinhVienClass({ nganhId, open, onClose,onSuccess   }) {
       width: "18%",
       height: "100%",
     },
-    
+
     divPagination: {
-      width: '100%',
-      height: '100%',
+      width: "100%",
+      height: "100%",
       flexShrink: 0,
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      backgroundColor: '#f5f5f5',
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      backgroundColor: "#f5f5f5",
     },
-  
+
     squareStyle: {
       width: 40,
       height: 35,
-      backgroundColor: '#fff',
-      border: '1px solid #ccc',
-      borderLeft: 'none',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
+      backgroundColor: "#fff",
+      border: "1px solid #ccc",
+      borderLeft: "none",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
       fontSize: 14,
-      cursor: 'pointer',
-      boxSizing: 'border-box',
-      transition: 'all 0.2s ease-in-out',
-      '&:hover': {
-        backgroundColor: '#0071A6',
-        color: '#fff',
+      cursor: "pointer",
+      boxSizing: "border-box",
+      transition: "all 0.2s ease-in-out",
+      "&:hover": {
+        backgroundColor: "#0071A6",
+        color: "#fff",
       },
     },
   };
@@ -117,12 +118,10 @@ function DialogAddSinhVienClass({ nganhId, open, onClose,onSuccess   }) {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
-
   const handleSnackbarClose = () => {
     setOpenSnackbar(false);
   };
 
-  
   useEffect(() => {
     if (open && nganhId) {
       fetchData();
@@ -134,7 +133,7 @@ function DialogAddSinhVienClass({ nganhId, open, onClose,onSuccess   }) {
       setLoading(true);
       const [nganhData, hocPhans] = await Promise.all([
         getClassById(nganhId),
-        getStudentIdsNotInClass(nganhId),
+        getAllStudents({ classId: nganhId, excludeFromClass: true }),
       ]);
       console.log("Ngành data:", nganhData);
       console.log("Học phần data:", hocPhans);
@@ -236,7 +235,7 @@ function DialogAddSinhVienClass({ nganhId, open, onClose,onSuccess   }) {
         setSnackbarSeverity("error");
         setOpenSnackbar(true);
       }
-    // eslint-disable-next-line no-unused-vars
+      // eslint-disable-next-line no-unused-vars
     } catch (err) {
       setSnackbarMessage("Thêm sinh viên thất bại.");
       setSnackbarSeverity("error");
@@ -245,10 +244,6 @@ function DialogAddSinhVienClass({ nganhId, open, onClose,onSuccess   }) {
       setLoading(false);
     }
   };
-  
-
-  
-  
 
   return (
     <Dialog maxWidth="lg" fullWidth open={open} onClose={handleClose}>
@@ -303,7 +298,6 @@ function DialogAddSinhVienClass({ nganhId, open, onClose,onSuccess   }) {
                 />
               </Box>
               <Box sx={{ display: "flex", gap: 2 }}>
-               
                 <Button
                   variant="contained"
                   color="primary"
@@ -315,52 +309,73 @@ function DialogAddSinhVienClass({ nganhId, open, onClose,onSuccess   }) {
                   Lưu
                 </Button>
               </Box>
-
             </Box>
 
             <Box sx={{ height: 400, display: "flex", flexDirection: "column" }}>
-            <Box sx={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
-  <TableContainer component={Paper} sx={{ flex: 1, overflowY: "auto" }}>
-    <Table stickyHeader sx={{ minWidth: 400 }}>
-      <TableHead>
-        <TableRow>
-          <StyledTableCell align="center">STT</StyledTableCell>
-          <StyledTableCell align="center">Mã sinh viên</StyledTableCell>
-          <StyledTableCell align="center">Tên sinh viên</StyledTableCell>
-          <StyledTableCell align="center">Thuộc CTĐT</StyledTableCell>
-          <StyledTableCell align="center">Chọn</StyledTableCell>
-        </TableRow>
-      </TableHead>
-      <TableBody>
-        {paginatedData.length === 0 ? (
-          <TableRow>
-            <TableCell colSpan={6} align="center">
-              Không có học phần nào.
-            </TableCell>
-          </TableRow>
-        ) : (
-          paginatedData.map((row, index) => (
-            <StyledTableRow key={row.id}>
-             
-              <StyledTableCell align="center">{startRow + index}</StyledTableCell>
-              <StyledTableCell align="center">{row.code}</StyledTableCell>
-              <StyledTableCell align="left">{row.name}</StyledTableCell>
-              <StyledTableCell align="center">{row.programmeName}</StyledTableCell>
-              <StyledTableCell align="center">
-                <Checkbox
-                  size="small"
-                  checked={selectedHocPhan.includes(row.id)}
-                  onChange={() => handleToggle(row.id)}
-                />
-              </StyledTableCell>
-            </StyledTableRow>
-          ))
-        )}
-      </TableBody>
-    </Table>
-  </TableContainer>
-</Box>
-
+              <Box
+                sx={{
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  minHeight: 0,
+                }}
+              >
+                <TableContainer
+                  component={Paper}
+                  sx={{ flex: 1, overflowY: "auto" }}
+                >
+                  <Table stickyHeader sx={{ minWidth: 400 }}>
+                    <TableHead>
+                      <TableRow>
+                        <StyledTableCell align="center">STT</StyledTableCell>
+                        <StyledTableCell align="center">
+                          Mã sinh viên
+                        </StyledTableCell>
+                        <StyledTableCell align="center">
+                          Tên sinh viên
+                        </StyledTableCell>
+                        <StyledTableCell align="center">
+                          Thuộc CTĐT
+                        </StyledTableCell>
+                        <StyledTableCell align="center">Chọn</StyledTableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {paginatedData.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={6} align="center">
+                            Không có học phần nào.
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        paginatedData.map((row, index) => (
+                          <StyledTableRow key={row.id}>
+                            <StyledTableCell align="center">
+                              {startRow + index}
+                            </StyledTableCell>
+                            <StyledTableCell align="center">
+                              {row.code}
+                            </StyledTableCell>
+                            <StyledTableCell align="left">
+                              {row.name}
+                            </StyledTableCell>
+                            <StyledTableCell align="center">
+                              {row.programmeName}
+                            </StyledTableCell>
+                            <StyledTableCell align="center">
+                              <Checkbox
+                                size="small"
+                                checked={selectedHocPhan.includes(row.id)}
+                                onChange={() => handleToggle(row.id)}
+                              />
+                            </StyledTableCell>
+                          </StyledTableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Box>
 
               {/* Pagination */}
               <Box
@@ -368,7 +383,6 @@ function DialogAddSinhVienClass({ nganhId, open, onClose,onSuccess   }) {
                 display="flex"
                 alignItems="center"
                 justifyContent="space-between"
-
               >
                 {/* Pagination Buttons */}
                 <Box display="flex" alignItems="center">
@@ -399,7 +413,11 @@ function DialogAddSinhVienClass({ nganhId, open, onClose,onSuccess   }) {
                         sx={{
                           ...styles.squareStyle,
                           ...(page === item
-                            ? { backgroundColor: "#0071A6", color: "#fff", fontWeight: "bold" }
+                            ? {
+                                backgroundColor: "#0071A6",
+                                color: "#fff",
+                                fontWeight: "bold",
+                              }
                             : {}),
                         }}
                         onClick={() => setPage(item)}
@@ -430,7 +448,11 @@ function DialogAddSinhVienClass({ nganhId, open, onClose,onSuccess   }) {
                       disableClearable
                       options={pageSizeOptions}
                       size="small"
-                      sx={{ width: 80, backgroundColor: "#fff", borderRadius: "4px" }}
+                      sx={{
+                        width: 80,
+                        backgroundColor: "#fff",
+                        borderRadius: "4px",
+                      }}
                       value={pageSize}
                       getOptionLabel={(option) => option.toString()}
                       onChange={(event, newValue) => {
@@ -438,7 +460,11 @@ function DialogAddSinhVienClass({ nganhId, open, onClose,onSuccess   }) {
                         setPage(1);
                       }}
                       renderInput={(params) => (
-                        <TextField {...params} variant="outlined" size="small" />
+                        <TextField
+                          {...params}
+                          variant="outlined"
+                          size="small"
+                        />
                       )}
                     />
                   </Box>
@@ -457,13 +483,18 @@ function DialogAddSinhVienClass({ nganhId, open, onClose,onSuccess   }) {
           Đóng
         </Button>
       </DialogActions>
-      <Snackbar 
-        open={openSnackbar} 
-        autoHideDuration={3000} 
-        onClose={handleSnackbarClose} 
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} 
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
-        <MuiAlert variant='filled' onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+        <MuiAlert
+          variant="filled"
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
           {snackbarMessage}
         </MuiAlert>
       </Snackbar>
