@@ -180,3 +180,22 @@ export const getStudentIdsNotInClass = async (id) => {
     throw new Error(error.response?.data || "Lỗi khi lấy danh sách sinh viên chưa trong lớp");
   }
 };
+export const copyClassStructure = async (sourceClassId, targetClassId) => {
+  try {
+    const response = await axios.post(
+      `${API_CLASSES}/${targetClassId}/copy-structure`,
+      JSON.stringify(sourceClassId), // 👈 gửi số nguyên chứ không phải object
+      {
+        ...getAuthHeader(),
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeader().headers,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("copyClassStructure error:", error);
+    throw new Error(error.response?.data || "Lỗi khi sao chép cấu trúc lớp học phần");
+  }
+};

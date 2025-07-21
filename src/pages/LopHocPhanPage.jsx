@@ -29,7 +29,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import MenuItem from '@mui/material/MenuItem';
 import Popover from '@mui/material/Popover';
 import { getCourses } from "@/api/api-courses";
-import { getAllClasses , createClass, getClassById,updateClass} from '../api/api-classes';
+import { getAllClasses , createClass, getClassById,updateClass,copyClassStructure} from '../api/api-classes';
 import {getAllTeachers } from '../api/api-teachers';
 import ListIcon from '@mui/icons-material/List';
 import VirtualizedAutocomplete from '../components/VirtualizedAutocomplete';
@@ -164,6 +164,9 @@ function HocPhanPage()
   const [selectedTeacher, setSelectedTeacher] = useState(null); // Giảng viên đã chọn
   const [hocky, setHocky] = useState([]); // Danh sách học kỳ
   const [selectedHocky, setSelectedHocky] = useState(null); // Học kỳ đã chọn
+  const [classes, setClasses] = useState([]); // Danh sách lớp học phần
+  const [sourceClass, setSourceClasse] = useState([]); // Danh sách lớp học phần gốc
+  
 
   const totalItems = filteredData.length;
   const totalPages = Math.ceil(totalItems / pageSize);
@@ -175,6 +178,7 @@ function HocPhanPage()
 
   const [anchorPosition, setAnchorPosition] = useState(null);
   const [selectedRowId, setSelectedRowId] = useState(null);
+
 
   const navigate = useNavigate();
 
@@ -301,6 +305,8 @@ function HocPhanPage()
     setSelectedHocPhan(null);
     setSelectedSemester(null);
     setSelectedTeacher(null);
+    setClasses([]);
+    setSourceClasse(null);
   };
 
   const handleKhoaChange = (event, newValue) => {
@@ -418,7 +424,7 @@ function HocPhanPage()
       setOpenSnackbar(true);
       return;
     }
-
+  
     if (maHocPhan.trim() === "") {
       setErrorMaHocPhan(true);
       setSnackbarMessage("Vui lòng nhập mã học phần");
@@ -426,27 +432,28 @@ function HocPhanPage()
       setOpenSnackbar(true);
       return;
     }
+  
     if (!selectedHocPhan) {
       setSnackbarMessage("Vui lòng chọn học phần");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       return;
     }
-
+  
     if (!selectedSemester) {
       setSnackbarMessage("Vui lòng chọn học kỳ");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       return;
     }
-
+  
     if (!selectedTeacher) {
       setSnackbarMessage("Vui lòng chọn giảng viên dạy");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       return;
     }
-
+  
     const classData = {
       name: tenHocPhan,
       code: maHocPhan,
@@ -454,11 +461,31 @@ function HocPhanPage()
       semesterId: selectedSemester.id,
       teacherId: selectedTeacher.id,
     };
-
+  
     try {
       const response = await createClass(classData);
-
+    
       if (response.status === 201) {
+        const newClassId = response.data?.id;
+    
+        if (sourceClass?.id) {
+          try {
+            const rp = await copyClassStructure(sourceClass.id, newClassId);
+            if(rp.status === 200) {
+            setSnackbarMessage("Sao chép cấu trúc lớp thành công");
+            setSnackbarSeverity("success");
+            setOpenSnackbar(true);
+            return;
+            }
+            
+          } catch (err) {
+            console.error("Lỗi sao chép cấu trúc lớp:", err);
+            setSnackbarMessage("Tạo lớp thành công nhưng lỗi khi sao chép cấu trúc");
+            setSnackbarSeverity("warning");
+            setOpenSnackbar(true);
+          }
+        }
+    
         setSnackbarMessage("Thêm lớp học phần thành công");
         setSnackbarSeverity("success");
         setOpenSnackbar(true);
@@ -474,7 +501,9 @@ function HocPhanPage()
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     }
+    
   };
+  
 
   const handleSubmitEdit = async () => {
     const nameValue = tenHocPhanRef.current?.trim() || "";
@@ -615,14 +644,32 @@ function HocPhanPage()
                 <VirtualizedAutocomplete
                   options={hocPhans}
                   value={selectedHocPhan}
-                  onChange={(e, newValue) => setSelectedHocPhan(newValue)}
+                  onChange={async (event, newValue) => {
+                    setSelectedHocPhan(newValue);
+
+      
+                    if (!newValue) {
+                      setSourceClasse(null);
+                      setClasses([]);      
+                      return;
+                    }
+                    try {
+                      const classData = await getAllClasses({ courseId: newValue.id });
+                      setClasses(classData || []);
+                    } catch (error) {
+                      console.error("Lỗi khi lấy lớp học phần kế thừa:", error);
+                      setClasses([]);
+                    }
+                  }}
                   getOptionLabel={(option) => `${option.code} - ${option.name}`}
                   label="Chọn học phần"
                   variant="standard"
                 />
+
+
                 <TextField
                   autoFocus
-                  required
+                  required 
                   id="tenLopHocPhan"
                   margin="dense"
                   label="Tên lớp học phần"
@@ -665,10 +712,20 @@ function HocPhanPage()
                   options={semesters}
                   value={selectedSemester}
                   onChange={(e, newValue) => setSelectedSemester(newValue)}
-                  getOptionLabel={(option) => option?.name || ""}
+                  getOptionLabel={(option) => `${option.name} - ${option.year}`}
                   label="Chọn học kỳ"
                   variant="standard"
                 />
+                {selectedHocPhan && (
+                  <VirtualizedAutocomplete
+                    options={classes}
+                    onChange={(e, newValue) => setSourceClasse(newValue)}
+                    getOptionLabel={(option) => option?.name || ""}
+                    label="Kế thừa cấu trúc điểm từ lớp học phần khác (nếu có)"
+                    variant="standard"
+                  />
+                )}
+
               </DialogContent>
               <DialogActions>
                 <Button onClick={handleCloseDialogAddHocPhans}>Hủy</Button>

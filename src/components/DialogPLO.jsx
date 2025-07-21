@@ -280,13 +280,13 @@ function DialogPLO({ nganhId, open, onClose }) {
   };
 
   const handleAddSubmit = async () => {
-    if (tenPLO.trim() === "") {
-      setErrorTenPLO(true);
-      setSnackbarMessage("Vui lòng nhập tên PLO");
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
-      return;
-    }
+    // if (tenPLO.trim() === "") {
+    //   setErrorTenPLO(true);
+    //   setSnackbarMessage("Vui lòng nhập tên PLO");
+    //   setSnackbarSeverity("error");
+    //   setOpenSnackbar(true);
+    //   return;
+    // }
     if (moTaPLO.trim() === "") {
       setErrorMoTaPLO(true);
       setSnackbarMessage("Vui lòng nhập mô tả cho PLO");
@@ -295,7 +295,7 @@ function DialogPLO({ nganhId, open, onClose }) {
       return;
     }
     const ploData = {
-      name: tenPLO,
+
       description: moTaPLO,
       programmeId: nganhId,
     };
@@ -536,7 +536,7 @@ function DialogPLO({ nganhId, open, onClose }) {
                 <DialogTitle>Thêm mới PLO</DialogTitle>
                 <DialogContent>
                   <DialogContentText>Nhập thông tin PLO mới</DialogContentText>
-                  <TextField
+                  {/* <TextField
                     autoFocus
                     required
                     id="themTenPLO"
@@ -552,7 +552,7 @@ function DialogPLO({ nganhId, open, onClose }) {
                     error={errorTenPLO}
                     helperText={errorTenPLO ? "Vui lòng nhập tên PLO" : ""}
                     autoComplete="off"
-                  />
+                  /> */}
                   <TextField
                     required
                     id="themMoTaPLO"

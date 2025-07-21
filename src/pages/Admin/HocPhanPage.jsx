@@ -32,7 +32,9 @@ import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import MenuItem from '@mui/material/MenuItem';
 import Popover from '@mui/material/Popover';
+import DialogCLO from '../../components/DialogCLO';
 import { getCourses,createCourse,getCourseById,updateCourse } from "@/api/api-courses";
+import EditNoteIcon from '@mui/icons-material/EditNote';
 function HocPhanPage() 
 {
   const styles = {
@@ -162,6 +164,18 @@ function HocPhanPage()
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20); // mặc định
   const pageSizeOptions = [20,50,100]; // các lựa chọn
+  const [openDialogCLO,setOpenDialogCLO] = useState(false);
+  
+
+  const handleCloseDialogCLO = () => {
+    setOpenDialogCLO(false);
+  };
+  const handleOpenDialogCLO = (id) => {
+    setHocPhanId(id); // Lưu id học phần để truyền vào DialogCLO
+    setOpenDialogCLO(true);
+  };
+
+
 
   const totalItems = filteredData.length;
   const totalPages = Math.ceil(totalItems / pageSize);
@@ -284,6 +298,7 @@ function HocPhanPage()
     try {
       const hocphans = await getCourses();
       // Đảm bảo response từ API trả về thêm thông tin tenNganh
+      console.log(hocphans);
       setData(hocphans);
       setFilteredData(hocphans);
       const khoa = await getAllFaculties();
@@ -667,15 +682,20 @@ function HocPhanPage()
             </MenuItem>
             <MenuItem
               onClick={() => {
-                handleOpenEditDialog(row.id);
+                handleOpenDialogCLO(row.id);
                 handleClosePopover();
               }}
             >
-              <EditIcon fontSize="small" sx={{ mr: 1 }} />
+              <EditNoteIcon fontSize="small" sx={{ mr: 1 }} />
               Quản lý CLO
             </MenuItem>
           </Popover>
         )}
+        <DialogCLO
+          nganhId={hocPhanId}
+          open={openDialogCLO}
+          onClose={() => {handleCloseDialogCLO();}}
+        />
       </StyledTableCell>
     </StyledTableRow>
   ))}

@@ -1,27 +1,17 @@
 import * as React from "react";
 import {
-  flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { ArrowUpDown } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import {
-  calculateCLOScore,
   calculateCLOScoreMax,
   getAllStudentCLOScoresForClass,
   getCLOPassedPercentages,
@@ -175,8 +165,6 @@ export default function DiemCLO() {
 
   React.useEffect(() => {
     const fetchData = async () => {
-      //   const lopHocPhan = await getLopHocPhanById(lopHocPhanId);
-      // const hocPhanId = lopHocPhan.hocPhanId;
       const [sinhViens, CLOs] = await Promise.all([
         getFilteredStudents(null, null, lopHocPhanId),
         getCLOsByClassId(lopHocPhanId),
@@ -191,23 +179,6 @@ export default function DiemCLO() {
       );
 
       console.log("CLO Scores: ", cloScores);
-      // const newData = await Promise.all(
-      //   sinhViens.map(async (sv) => {
-      //     const cloScores = await Promise.all(
-      //       CLOs.map(async (clo) => {
-      //         const score = await calculateCLOScore(
-      //           sv.id,
-      //           lopHocPhanId,
-      //           clo.id,
-      //           useTemporaryScore
-      //         );
-      //         console.log("score: ", score);
-      //         return { [`clo_${clo.id}`]: score };
-      //       })
-      //     );
-      //     return { ...sv, ...Object.assign({}, ...cloScores) };
-      //   })
-      // );
 
       const newData = sinhViens.map((sv) => {
         // Create an object with all CLO scores for this student
@@ -291,25 +262,6 @@ export default function DiemCLO() {
     },
   };
   const dataKey = "cloName";
-  // const exportToExcel = async () => {
-  //   // Fetch the template file using fetch API
-  //   const response = await fetch('/templates/clo_template.xlsx');
-  //   const templateArrayBuffer = await response.arrayBuffer();
-
-  //   // Load the template into ExcelJS
-  //   const workbook = new ExcelJS.Workbook();
-  //   await workbook.xlsx.load(templateArrayBuffer);
-  //   let worksheet = workbook.getWorksheet("Sheet1");
-  //   // header id name dob
-  //   let row = worksheet.getRow(1);
-  //   console.log(row);
-  //   row.getCell('Q').value = 'test';
-  //   row.getCell('R').value = 'successful';
-  //   row.commit();
-  //   const buffer = await workbook.xlsx.writeBuffer();
-  //   const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8" });
-  //   const excel_extension = ".xlsx";
-  //   FileSaver.saveAs(blob, `DiemCLO_${lopHocPhanId}${excel_extension}`);
   // };
   const pdfRef = React.useRef(null);
   const exportToPDF = async () => {
