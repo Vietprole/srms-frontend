@@ -157,7 +157,8 @@ export default function BangDiemGiangVienPage() {
           isConfirmed={isConfirmed}
         />
       )}
-      {tableData.length > 0 && (
+
+      {/* tableData.length > 0 && (
         <NewGradeTable
           data={tableData}
           fetchData={fetchData}
@@ -166,7 +167,7 @@ export default function BangDiemGiangVienPage() {
           isGiangVienMode={true}
           isConfirmed={isConfirmed}
         />
-      )}
+      )*/}
     </div>
   );
 }
