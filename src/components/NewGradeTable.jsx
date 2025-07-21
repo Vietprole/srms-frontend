@@ -14,7 +14,11 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { upsertKetQua, confirmKetQua, acceptKetQua } from "@/api-new/api-ketqua";
+import {
+  upsertKetQua,
+  confirmKetQua,
+  acceptKetQua,
+} from "@/api-new/api-ketqua";
 import { upsertDiemDinhChinh } from "@/api-new/api-diemdinhchinh";
 import { toast } from "sonner";
 import {
@@ -36,7 +40,7 @@ export function NewGradeTable({
   questions,
   isGiangVienMode,
   isConfirmed,
-  useTemporaryScore = true, // Default to true
+  useTemporaryScore = true,
 }) {
   const role = getRole();
   const [tableData, setTableData] = React.useState(data);
@@ -49,9 +53,9 @@ export function NewGradeTable({
   const [isAccepted, setIsAccepted] = React.useState(false);
   const [confirmationStatus, setConfirmationStatus] =
     React.useState(isConfirmed);
+  const [focusedCell, setFocusedCell] = React.useState(null); // Add this state
   const hasHigherPermission = role === "Admin" || role === "AcademicAffairs";
-  console.log("hasHigherPermission", hasHigherPermission);
-  console.log("isConfirmed", isConfirmed);
+
   React.useEffect(() => {
     setTableData(data);
     const hasNullChinhThucGrades = tableData.some(
@@ -63,6 +67,103 @@ export function NewGradeTable({
     setConfirmationStatus(isConfirmed);
     setIsAccepted(!hasNullChinhThucGrades);
   }, [data, tableData, isConfirmed]);
+
+  // Add keyboard navigation handler
+  const handleKeyDown = React.useCallback(
+    (e, rowIndex, columnId) => {
+      if (!isEditing) return;
+
+      const editableCells = [];
+
+      // Build array of editable cell coordinates
+      tableData.forEach((_, rIdx) => {
+        components.forEach((component) => {
+          const componentQuestions = questions[component.id.toString()] || [];
+          componentQuestions.forEach((question) => {
+            editableCells.push({
+              rowIndex: rIdx,
+              columnId: `${component.type}_${question.id}`,
+            });
+          });
+        });
+      });
+
+      const currentIndex = editableCells.findIndex(
+        (cell) => cell.rowIndex === rowIndex && cell.columnId === columnId
+      );
+
+      let newIndex = currentIndex;
+
+      switch (e.key) {
+        case "ArrowUp":
+          e.preventDefault();
+          newIndex = editableCells.findIndex(
+            (cell) => cell.columnId === columnId && cell.rowIndex < rowIndex
+          );
+          if (newIndex === -1) {
+            // Find last row with same column
+            for (let i = editableCells.length - 1; i >= 0; i--) {
+              if (
+                editableCells[i].columnId === columnId &&
+                editableCells[i].rowIndex < rowIndex
+              ) {
+                newIndex = i;
+                break;
+              }
+            }
+          }
+          break;
+        case "ArrowDown":
+          e.preventDefault();
+          newIndex = editableCells.findIndex(
+            (cell) => cell.columnId === columnId && cell.rowIndex > rowIndex
+          );
+          break;
+        case "ArrowLeft":
+          e.preventDefault();
+          newIndex = Math.max(0, currentIndex - 1);
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          newIndex = Math.min(editableCells.length - 1, currentIndex + 1);
+          break;
+        case "Enter":
+          e.preventDefault();
+          newIndex = editableCells.findIndex(
+            (cell) => cell.columnId === columnId && cell.rowIndex > rowIndex
+          );
+          if (newIndex === -1) newIndex = currentIndex;
+          break;
+        case "Tab":
+          e.preventDefault();
+          if (e.shiftKey) {
+            newIndex = Math.max(0, currentIndex - 1);
+          } else {
+            newIndex = Math.min(editableCells.length - 1, currentIndex + 1);
+          }
+          break;
+        default:
+          return;
+      }
+
+      if (newIndex !== -1 && newIndex !== currentIndex) {
+        const newCell = editableCells[newIndex];
+        setFocusedCell(newCell);
+
+        // Focus the input after state update
+        setTimeout(() => {
+          const input = document.querySelector(
+            `input[data-cell="${newCell.rowIndex}-${newCell.columnId}"]`
+          );
+          if (input) {
+            input.focus();
+            input.select(); // Select all text for immediate replacement
+          }
+        }, 0);
+      }
+    },
+    [isEditing, tableData, components, questions]
+  );
 
   const columns = React.useMemo(() => {
     const cols = [
@@ -87,7 +188,6 @@ export function NewGradeTable({
     // Add columns for each component and its questions
     components.forEach((component) => {
       const componentQuestions = questions[component.id.toString()] || [];
-      console.log("componentQuestions", componentQuestions);
       cols.push({
         id: component.type,
         header: `${component.type} (${component.weight * 100}%)`,
@@ -107,9 +207,16 @@ export function NewGradeTable({
               <EditableCell
                 value={row.getValue(column.id)}
                 maxValue={question.scale}
+                rowIndex={row.index}
+                columnId={column.id}
+                isEditing={isEditing}
+                isFocused={
+                  focusedCell?.rowIndex === row.index &&
+                  focusedCell?.columnId === column.id
+                }
+                onKeyDown={handleKeyDown}
                 onChange={(value) => {
                   const newData = [...tableData];
-                  console.log("newData", newData);
                   const rowIndex = row.index;
                   const [componentId, questionId] = column.id.split("_");
 
@@ -118,7 +225,7 @@ export function NewGradeTable({
                   }
 
                   newData[rowIndex].grades[componentId][questionId] = value;
-                  // const ketQuaId = newData[rowIndex].ketQuas[componentId][questionId];
+
                   const modifiedRecord = {
                     studentId: newData[rowIndex].id,
                     questionId: parseInt(questionId),
@@ -136,15 +243,12 @@ export function NewGradeTable({
                     questionId: parseInt(questionId),
                     officialScore: value,
                   };
-                  console.log("modifiedRecord", modifiedRecord);
-                  console.log(
-                    "modifiedDiemDinhChinhRecord",
-                    modifiedDiemDinhChinhRecord
-                  );
-                  // upsertKetQua(modifiedRecord);
-                  if (modifiedRecord.temporaryScore !== null) {
-                    setModifiedRecords([...modifiedRecords, modifiedRecord]);
-                  }
+
+                  // if (modifiedRecord.temporaryScore !== null) {
+                  //   setModifiedRecords([...modifiedRecords, modifiedRecord]);
+                  // }
+
+                  setModifiedRecords([...modifiedRecords, modifiedRecord]);
 
                   if (modifiedDiemDinhChinhRecord.diemMoi !== null) {
                     setModifiedDiemDinhChinhRecords([
@@ -161,22 +265,21 @@ export function NewGradeTable({
                   }
                   setTableData(newData);
                 }}
-                isEditing={isEditing}
               />
             ),
           })),
-          // {
-          //   id: `${component.type}_total`,
-          //   header: "Tổng",
-          //   size: 80,
-          //   accessorFn: (row) => {
-          //     const grades = row.grades[component.type] || {};
-          //     return Object.values(grades).reduce(
-          //       (sum, score) => sum + score,
-          //       0
-          //     );
-          //   },
-          // },
+          {
+            id: `${component.type}_total`,
+            header: "Tổng",
+            size: 80,
+            accessorFn: (row) => {
+              const grades = row.grades[component.type] || {};
+              return Object.values(grades).reduce(
+                (sum, score) => sum + score,
+                0
+              );
+            },
+          },
         ],
       });
     });
@@ -190,6 +293,8 @@ export function NewGradeTable({
     modifiedRecords,
     modifiedDiemDinhChinhRecords,
     modifiedOfficialScoreRecords,
+    focusedCell,
+    handleKeyDown,
   ]);
 
   const table = useReactTable({
@@ -467,6 +572,7 @@ export function NewGradeTable({
                     </TableHead>
                   )
                 ),
+                <TableHead key={`${component.loai}_total`} className="text-center px-1 border">Tổng</TableHead>
               ])}
             </TableRow>
           </TableHeader>
@@ -493,36 +599,85 @@ export function NewGradeTable({
 //   isEditing: boolean
 // }
 
-function EditableCell({ value, maxValue, onChange, isEditing }) {
+// Updated EditableCell component
+function EditableCell({
+  value,
+  maxValue,
+  rowIndex,
+  columnId,
+  isEditing,
+  isFocused,
+  onKeyDown,
+  onChange,
+}) {
   const [editValue, setEditValue] = React.useState(value.toString());
+  const inputRef = React.useRef(null);
 
   React.useEffect(() => {
     setEditValue(value.toString());
   }, [value]);
 
+  React.useEffect(() => {
+    if (isFocused && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isFocused]);
+
   if (!isEditing) {
     return <span>{value}</span>;
   }
 
-  console.log("maxValue", maxValue);
-
   return (
     <Input
+      ref={inputRef}
       type="text"
       value={editValue}
+      data-cell={`${rowIndex}-${columnId}`}
       onChange={(e) => {
         const newValue = e.target.value;
-        if (
-          newValue === "" ||
-          (/^\d*\.?\d{0,2}$/.test(newValue) && parseFloat(newValue) <= maxValue)
-        ) {
+        
+        // Allow empty string
+        if (newValue === "") {
           setEditValue(newValue);
+          onChange(null);
+          return;
+        }
+        
+        // Improved regex to allow decimal input
+        // Allows: digits, one decimal point, up to 2 decimal places
+        if (/^\d*\.?\d{0,2}$/.test(newValue)) {
+          // Only validate max value if it's a complete number (not ending with decimal point)
+          if (newValue.endsWith('.')) {
+            // Allow typing decimal point
+            setEditValue(newValue);
+          } else {
+            const numValue = parseFloat(newValue);
+            if (!isNaN(numValue) && numValue <= maxValue) {
+              setEditValue(newValue);
+              onChange(numValue);
+            } else if (isNaN(numValue)) {
+              // This handles edge cases
+              setEditValue(newValue);
+            }
+          }
         }
       }}
+      onKeyDown={(e) => onKeyDown(e, rowIndex, columnId)}
       onBlur={() => {
+        // Handle final validation on blur
         const numValue = parseFloat(editValue);
         if (!isNaN(numValue)) {
-          onChange(numValue);
+          if (numValue > maxValue) {
+            // Reset to max value if exceeded
+            setEditValue(maxValue.toString());
+            onChange(maxValue);
+          } else {
+            onChange(numValue);
+          }
+        } else if (editValue === "" || editValue === ".") {
+          setEditValue("");
+          onChange(null);
         }
       }}
       className="h-8 w-16 text-center"
