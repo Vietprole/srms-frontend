@@ -2,50 +2,51 @@ import { useState, useEffect, useCallback } from "react";
 // import { getStudents, getGradeComponents, getQuestions, getGrades } from "@/lib/api"
 import { GradeTable } from "@/components/GradeTable";
 // import { StudentGrades, GradeComponent, Question, Grade } from "@/types/grades"
-import { getSinhViens } from "@/api/api-sinhvien";
+import { getFilteredStudents } from "@/api-new/api-student";
 import { useParams } from "react-router-dom";
-import { getBaiKiemTraById, getBaiKiemTrasByLopHocPhanId } from "@/api/api-baikiemtra";
-import { getKetQuas } from "@/api/api-ketqua";
-import { getCauHoisByBaiKiemTraId } from "@/api/api-cauhoi";
+import { getBaiKiemTraById, getBaiKiemTrasByLopHocPhanId } from "@/api-new/api-baikiemtra";
+import { getKetQuas } from "@/api-new/api-ketqua";
+import { getQuestionsByExamId } from "@/api-new/api-cauhoi";
 import { ComboBox } from "@/components/ComboBox";
 import { Button } from "@/components/ui/button";
 // import { set } from "react-hook-form";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { NewGradeTable } from "@/components/NewGradeTable";
 
 export default function BangDiemGiangVienPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const baiKiemTraIdParam = searchParams.get("baiKiemTraId");
+  const examIdParam = searchParams.get("examId");
   const [tableData, setTableData] = useState([]);
   const [components, setComponents] = useState([]);
   const [questions, setQuestions] = useState([]);
   const { lopHocPhanId } = useParams();
   const [baiKiemTraItems, setBaiKiemTraItems] = useState([]);
-  const [baiKiemTraId, setBaiKiemTraId] = useState(baiKiemTraIdParam);
-  const [comboBoxBaiKiemTraId, setComboBoxBaiKiemTraId] = useState(baiKiemTraIdParam);
+  const [examId, setExamId] = useState(examIdParam);
+  const [comboBoxExamId, setComboBoxExamId] = useState(examIdParam);
   const [isConfirmed, setIsConfirmed] = useState(false);
   console.log("lopHocPhanId", lopHocPhanId);
 
   const fetchData = useCallback(async () => {
     const baiKiemTraData = await getBaiKiemTrasByLopHocPhanId(lopHocPhanId);
-    const mappedComboBoxItems = baiKiemTraData.map(baiKiemTra => ({ label: baiKiemTra.loai, value: baiKiemTra.id }));
+    const mappedComboBoxItems = baiKiemTraData.map(baiKiemTra => ({ label: baiKiemTra.type, value: baiKiemTra.id }));
     setBaiKiemTraItems(mappedComboBoxItems);
     console.log("mappedComboBoxItems", mappedComboBoxItems);
     
     // Fetch all required data
     const [students, component, allGrades] = await Promise.all([
       // getStudents(),
-      getSinhViens(null, null, lopHocPhanId),
+      getFilteredStudents(null, null, lopHocPhanId),
       // getGradeComponents(),
-      getBaiKiemTraById(baiKiemTraId),
+      getBaiKiemTraById(examId),
       // getGrades(),
-      getKetQuas(baiKiemTraId, null, null),
+      getKetQuas(examId, null, null),
     ]);
     // Map khoa items to be used in ComboBox
     const components = [component];
     setComponents(components);
 
-    const isConfirmed = allGrades.length > 0 && allGrades.every(grade => grade.daXacNhan);
+    const isConfirmed = allGrades.length > 0 && allGrades.every(grade => grade.isConfirmed);
     console.log("allGrades", allGrades);
     setIsConfirmed(isConfirmed);
 
@@ -53,11 +54,11 @@ export default function BangDiemGiangVienPage() {
     const questionsPromises = components.map(async (component) => ({
       componentId: component.id,
       // questions: await getQuestions(component.id),
-      questions: await getCauHoisByBaiKiemTraId(baiKiemTraId),
+      questions: await getQuestionsByExamId(examId),
     }));
 
     const questionsData = await Promise.all(questionsPromises);
-    // const questionsData = await getCauHoisByBaiKiemTraId(baiKiemTraId);
+    // const questionsData = await getQuestionsByExamId(examId);
     const questions = Object.fromEntries(
       questionsData.map(({ componentId, questions }) => [
         // componentId.toString(),
@@ -74,33 +75,33 @@ export default function BangDiemGiangVienPage() {
       // tt: index + 1, // Add tt (ordinal number) to each student
       grades: Object.fromEntries(
         components.map((component) => [
-          component.loai,
+          component.type,
           Object.fromEntries(
             (questions[component.id.toString()] || []).map((question) => {
               const grade = allGrades.find(
                 (g) =>
-                  g.sinhVienId === student.id && g.cauHoiId === question.id
+                  g.studentId === student.id && g.questionId === question.id
               );
               // return [question.id.toString(), grade?.diem || 0];
-              return [question.id, grade?.diemTam === 0 ? 0 : grade?.diemTam || null];
-              // return [question.id, grade?.diemTam || 0];
+              return [question.id, grade?.temporaryScore === 0 ? 0 : grade?.temporaryScore || null];
+              // return [question.id, grade?.temporaryScore || 0];
             })
           ),
         ])
       ),
-      diemChinhThucs: Object.fromEntries(
+      officialScores: Object.fromEntries(
         components.map((component) => [
-          component.loai,
+          component.type,
           Object.fromEntries(
             (questions[component.id.toString()] || []).map((question) => {
               const grade = allGrades.find(
                 (g) =>
-                  g.sinhVienId === student.id && g.cauHoiId === question.id
+                  g.studentId === student.id && g.questionId === question.id
               );
               console.log("grade", grade);
               // return [question.id.toString(), grade?.diem || 0];
-              return [question.id, grade?.diemChinhThuc === 0 ? 0 : grade?.diemChinhThuc || null];
-              // return [question.id, grade?.diemTam || 0];
+              return [question.id, grade?.officialScore === 0 ? 0 : grade?.officialScore || null];
+              // return [question.id, grade?.temporaryScore || 0];
             })
           ),
         ])
@@ -108,19 +109,19 @@ export default function BangDiemGiangVienPage() {
       cauHois: questions[component.id.toString()].map(q => q.id),
     }));
     setTableData(tableData);
-  },[baiKiemTraId, lopHocPhanId]);
+  },[examId, lopHocPhanId]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
   const handleGoClick = () => {
-    setBaiKiemTraId(comboBoxBaiKiemTraId);
-    if (comboBoxBaiKiemTraId === "") {
+    setExamId(comboBoxExamId);
+    if (comboBoxExamId === "") {
       navigate(`.`);
       return;
     }
-    navigate(`.?baiKiemTraId=${comboBoxBaiKiemTraId}`);
+    navigate(`.?examId=${comboBoxExamId}`);
   };
   const component = components[0] || {};
   const formatDate = (date) => {
@@ -131,23 +132,33 @@ export default function BangDiemGiangVienPage() {
       year: 'numeric'
     }) : '';
   }
-  const ngayMoNhapDiem = formatDate(component.ngayMoNhapDiem);
-  const hanNhapDiem = formatDate(component.hanNhapDiem);
-  const hanDinhChinh = formatDate(component.hanDinhChinh);
+  const scoreEntryStartDate = formatDate(component.scoreEntryStartDate);
+  const scoreEntryDeadline = formatDate(component.scoreEntryDeadline);
+  const scoreCorrectionDeadline = formatDate(component.scoreCorrectionDeadline);
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Nhập điểm cho từng thành phần</h1>
       <div className="flex">
-        <ComboBox items={baiKiemTraItems} setItemId={setComboBoxBaiKiemTraId} initialItemId={comboBoxBaiKiemTraId}/>
+        <ComboBox items={baiKiemTraItems} setItemId={setComboBoxExamId} initialItemId={comboBoxExamId} placeholder="Chọn thành phần đánh giá"/>
         <Button onClick={handleGoClick}>Go</Button>
       </div>
-      <p>Mở nhập điểm bắt đầu từ ngày: {ngayMoNhapDiem}</p>
-      <p>Hạn nhập điểm đến hết ngày: {hanNhapDiem}</p>
-      <p>Hạn đính chính đến hết ngày: {hanDinhChinh}</p>
+      <p>Mở nhập điểm bắt đầu từ ngày: {scoreEntryStartDate}</p>
+      <p>Hạn nhập điểm đến hết ngày: {scoreEntryDeadline}</p>
+      <p>Hạn đính chính đến hết ngày: {scoreCorrectionDeadline}</p>
       {console.log("tableData, components, questions", tableData, components, questions)}
       {tableData.length > 0 && (
         <GradeTable
+          data={tableData}
+          fetchData={fetchData}
+          components={components}
+          questions={questions}
+          isGiangVienMode={true}
+          isConfirmed={isConfirmed}
+        />
+      )}
+      {tableData.length > 0 && (
+        <NewGradeTable
           data={tableData}
           fetchData={fetchData}
           components={components}

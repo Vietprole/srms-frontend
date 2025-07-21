@@ -37,7 +37,7 @@ import StudentInCoursePage from "../pages/StudentInCoursePage";
 import CTDTPage from "../pages/Admin/CTDTPage";
 const role = getRole();
 const RoleBasedRoute = ({ giangVienElement, defaultElement }) => {
-  return role === "GiangVien" ? giangVienElement : defaultElement;
+  return role === "Teacher" ? giangVienElement : defaultElement;
 };
 
 const routes = [
