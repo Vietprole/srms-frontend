@@ -147,7 +147,7 @@ export default function BangDiemGiangVienPage() {
       <p>Hạn nhập điểm đến hết ngày: {scoreEntryDeadline}</p>
       <p>Hạn đính chính đến hết ngày: {scoreCorrectionDeadline}</p>
       {console.log("tableData, components, questions", tableData, components, questions)}
-      {tableData.length > 0 && (
+      {/* {tableData.length > 0 && (
         <GradeTable
           data={tableData}
           fetchData={fetchData}
@@ -156,9 +156,9 @@ export default function BangDiemGiangVienPage() {
           isGiangVienMode={true}
           isConfirmed={isConfirmed}
         />
-      )}
+      )} */}
 
-      {/* tableData.length > 0 && (
+      {tableData.length > 0 && (
         <NewGradeTable
           data={tableData}
           fetchData={fetchData}
@@ -167,7 +167,7 @@ export default function BangDiemGiangVienPage() {
           isGiangVienMode={true}
           isConfirmed={isConfirmed}
         />
-      )*/}
+      )}
     </div>
   );
 }
