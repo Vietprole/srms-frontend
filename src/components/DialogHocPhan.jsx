@@ -388,10 +388,10 @@ function DialogHocPhan({ nganhId, open, onClose }) {
             Mã ngành:
             <Typography component="span" color="info.main" fontWeight="500"> {nganh ? nganh.code : "Đang tải..."} </Typography>
           </DialogContentText>
-          <DialogContentText component="span">
+          {/* <DialogContentText component="span">
             Tổng số tín chỉ: 
             <Typography component="span" color="info.main" fontWeight="500"> {tongSoTinChi ? tongSoTinChi : "0"} </Typography>
-          </DialogContentText>
+          </DialogContentText> */}
         </Box>
       </DialogTitle>
       <DialogContent>

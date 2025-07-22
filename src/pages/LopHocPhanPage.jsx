@@ -1,43 +1,52 @@
-import { styled } from '@mui/material/styles';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell, { tableCellClasses } from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import TextField from '@mui/material/TextField';
-import SearchIcon from '@mui/icons-material/Search';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import Box from '@mui/material/Box';
-import { useState, useEffect,useRef } from "react";
-import Autocomplete from '@mui/material/Autocomplete';
-import Snackbar from '@mui/material/Snackbar';
-import MuiAlert from '@mui/material/Alert';
-import EditIcon from '@mui/icons-material/Edit';
-import Layout from './Layout';
-import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
-import ArrowRightIcon from '@mui/icons-material/ArrowRight';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import MenuItem from '@mui/material/MenuItem';
-import Popover from '@mui/material/Popover';
+import { styled } from "@mui/material/styles";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell, { tableCellClasses } from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
+import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+import TextField from "@mui/material/TextField";
+import SearchIcon from "@mui/icons-material/Search";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import Box from "@mui/material/Box";
+import { useState, useEffect, useRef } from "react";
+import Autocomplete from "@mui/material/Autocomplete";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
+import EditIcon from "@mui/icons-material/Edit";
+import Layout from "./Layout";
+import ArrowLeftIcon from "@mui/icons-material/ArrowLeft";
+import ArrowRightIcon from "@mui/icons-material/ArrowRight";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import MenuItem from "@mui/material/MenuItem";
+import Popover from "@mui/material/Popover";
 import { getCourses } from "@/api/api-courses";
-import { getAllClasses , createClass, getClassById,updateClass,copyClassStructure} from '../api/api-classes';
-import {getAllTeachers } from '../api/api-teachers';
-import ListIcon from '@mui/icons-material/List';
-import VirtualizedAutocomplete from '../components/VirtualizedAutocomplete';
-import {getAllSemesters} from '../api/api-semester';
-import  Stack  from '@mui/material/Stack';
-import { useNavigate } from 'react-router-dom';
-function HocPhanPage() 
-{
+import {
+  getAllClasses,
+  createClass,
+  getClassById,
+  updateClass,
+  copyClassStructure,
+} from "../api/api-classes";
+import { getAllTeachers } from "../api/api-teachers";
+import ListIcon from "@mui/icons-material/List";
+import EditNoteIcon from "@mui/icons-material/EditNote";
+import VirtualizedAutocomplete from "../components/VirtualizedAutocomplete";
+import { getAllSemesters } from "../api/api-semester";
+import Stack from "@mui/material/Stack";
+import { useNavigate } from "react-router-dom";
+import { getRole, getTeacherId } from "../utils/storage";
+import { useCallback } from "react";
+
+function HocPhanPage() {
   const styles = {
     main: {
       display: "flex",
@@ -149,7 +158,7 @@ function HocPhanPage()
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [tenHocPhan, setTenHocPhan] = useState("");
   const [errorTenHocPhan, setErrorTenHocPhan] = useState(false);
-  const [errorMaHocPhan , setErrorMaHocPhan] = useState(false);
+  const [errorMaHocPhan, setErrorMaHocPhan] = useState(false);
   const tenHocPhanRef = useRef("");
   const [maHocPhan, setMaHocPhan] = useState("");
   const [hocPhanId, setHocPhanId] = useState("");
@@ -166,7 +175,8 @@ function HocPhanPage()
   const [selectedHocky, setSelectedHocky] = useState(null); // Học kỳ đã chọn
   const [classes, setClasses] = useState([]); // Danh sách lớp học phần
   const [sourceClass, setSourceClasse] = useState([]); // Danh sách lớp học phần gốc
-  
+  const role = getRole(); // Lấy role từ token
+  const teacherId = getTeacherId(); // Lấy ID giảng viên từ token
 
   const totalItems = filteredData.length;
   const totalPages = Math.ceil(totalItems / pageSize);
@@ -178,7 +188,6 @@ function HocPhanPage()
 
   const [anchorPosition, setAnchorPosition] = useState(null);
   const [selectedRowId, setSelectedRowId] = useState(null);
-
 
   const navigate = useNavigate();
 
@@ -330,13 +339,9 @@ function HocPhanPage()
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
-      const hocphans = await getAllClasses();
+      const hocphans = await getAllClasses({ teacherId });
       console.log(hocphans);
       // Đảm bảo response từ API trả về thêm thông tin tenNganh
       const hocki = await getAllSemesters();
@@ -351,7 +356,11 @@ function HocPhanPage()
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     }
-  };
+  }, [teacherId]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const filterData = (query) => {
     if (!query.trim()) {
@@ -424,7 +433,7 @@ function HocPhanPage()
       setOpenSnackbar(true);
       return;
     }
-  
+
     if (maHocPhan.trim() === "") {
       setErrorMaHocPhan(true);
       setSnackbarMessage("Vui lòng nhập mã học phần");
@@ -432,28 +441,28 @@ function HocPhanPage()
       setOpenSnackbar(true);
       return;
     }
-  
+
     if (!selectedHocPhan) {
       setSnackbarMessage("Vui lòng chọn học phần");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       return;
     }
-  
+
     if (!selectedSemester) {
       setSnackbarMessage("Vui lòng chọn học kỳ");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       return;
     }
-  
+
     if (!selectedTeacher) {
       setSnackbarMessage("Vui lòng chọn giảng viên dạy");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       return;
     }
-  
+
     const classData = {
       name: tenHocPhan,
       code: maHocPhan,
@@ -461,31 +470,32 @@ function HocPhanPage()
       semesterId: selectedSemester.id,
       teacherId: selectedTeacher.id,
     };
-  
+
     try {
       const response = await createClass(classData);
-    
+
       if (response.status === 201) {
         const newClassId = response.data?.id;
-    
+
         if (sourceClass?.id) {
           try {
             const rp = await copyClassStructure(sourceClass.id, newClassId);
-            if(rp.status === 200) {
-            setSnackbarMessage("Sao chép cấu trúc lớp thành công");
-            setSnackbarSeverity("success");
-            setOpenSnackbar(true);
-            return;
+            if (rp.status === 200) {
+              setSnackbarMessage("Sao chép cấu trúc lớp thành công");
+              setSnackbarSeverity("success");
+              setOpenSnackbar(true);
+              return;
             }
-            
           } catch (err) {
             console.error("Lỗi sao chép cấu trúc lớp:", err);
-            setSnackbarMessage("Tạo lớp thành công nhưng lỗi khi sao chép cấu trúc");
+            setSnackbarMessage(
+              "Tạo lớp thành công nhưng lỗi khi sao chép cấu trúc"
+            );
             setSnackbarSeverity("warning");
             setOpenSnackbar(true);
           }
         }
-    
+
         setSnackbarMessage("Thêm lớp học phần thành công");
         setSnackbarSeverity("success");
         setOpenSnackbar(true);
@@ -501,9 +511,7 @@ function HocPhanPage()
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     }
-    
   };
-  
 
   const handleSubmitEdit = async () => {
     const nameValue = tenHocPhanRef.current?.trim() || "";
@@ -610,26 +618,28 @@ function HocPhanPage()
             />
           </div>
           <div style={styles.cbKhoa}>
-          <VirtualizedAutocomplete
-            options={hocky}
-            value={selectedHocky}
-            onChange={(event, newValue) => handleHocKyCHange(event, newValue)}
-            getOptionLabel={(option) => `${option.name} - ${option.year}`}
-            label="Chọn học kỳ"
-            variant="outlined"
-          />
-
+            <VirtualizedAutocomplete
+              options={hocky}
+              value={selectedHocky}
+              onChange={(event, newValue) => handleHocKyCHange(event, newValue)}
+              // getOptionLabel={(option) => `${option.name} - ${option.year}`}
+              getOptionLabel={(option) => option.displayName || ""}
+              label="Chọn học kỳ"
+              variant="outlined"
+            />
           </div>
           <div style={styles.btnCreate}>
-            <Button
-              sx={{ width: "100%" }}
-              variant="contained"
-              onClick={() => {
-                handleOpenAddDialog();
-              }}
-            >
-              Tạo lớp học phần
-            </Button>
+            {(role === "Admin" || role === "AcademicAffairs") && (
+              <Button
+                sx={{ width: "100%" }}
+                variant="contained"
+                onClick={() => {
+                  handleOpenAddDialog();
+                }}
+              >
+                Tạo lớp học phần
+              </Button>
+            )}
             <Dialog
               id="themLopHocPhan"
               fullWidth
@@ -647,14 +657,15 @@ function HocPhanPage()
                   onChange={async (event, newValue) => {
                     setSelectedHocPhan(newValue);
 
-      
                     if (!newValue) {
                       setSourceClasse(null);
-                      setClasses([]);      
+                      setClasses([]);
                       return;
                     }
                     try {
-                      const classData = await getAllClasses({ courseId: newValue.id });
+                      const classData = await getAllClasses({
+                        courseId: newValue.id,
+                      });
                       setClasses(classData || []);
                     } catch (error) {
                       console.error("Lỗi khi lấy lớp học phần kế thừa:", error);
@@ -666,10 +677,9 @@ function HocPhanPage()
                   variant="standard"
                 />
 
-
                 <TextField
                   autoFocus
-                  required 
+                  required
                   id="tenLopHocPhan"
                   margin="dense"
                   label="Tên lớp học phần"
@@ -712,7 +722,8 @@ function HocPhanPage()
                   options={semesters}
                   value={selectedSemester}
                   onChange={(e, newValue) => setSelectedSemester(newValue)}
-                  getOptionLabel={(option) => `${option.name} - ${option.year}`}
+                  // getOptionLabel={(option) => `${option.name} - ${option.year}`}
+                  getOptionLabel={(option) => option.displayName || ""}
                   label="Chọn học kỳ"
                   variant="standard"
                 />
@@ -725,7 +736,6 @@ function HocPhanPage()
                     variant="standard"
                   />
                 )}
-
               </DialogContent>
               <DialogActions>
                 <Button onClick={handleCloseDialogAddHocPhans}>Hủy</Button>
@@ -784,45 +794,59 @@ function HocPhanPage()
                         <MoreHorizIcon fontSize="small" />
                       </IconButton>
 
-        {/* Chỉ hiển thị popover nếu đúng hàng */}
-        {selectedRowId === row.id && (
-          <Popover
-            open={Boolean(anchorPosition)}
-            anchorReference="anchorPosition"
-            anchorPosition={anchorPosition}
-            onClose={handleClosePopover}
-            anchorOrigin={{ vertical: "top", horizontal: "left" }}
-            transformOrigin={{ vertical: "top", horizontal: "left" }}
-            PaperProps={{ sx: { p: 1.5, minWidth: 120 } }}
-          >
-            <MenuItem
-              onClick={() => {
-                handleOpenEditDialog(row.id);
-                handleClosePopover();
-              }}
-            >
-              <EditIcon fontSize="small" sx={{ mr: 1 }} />
-              Sửa
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                navigate(`/lophocphan/${row.id}/sinhvien`);
-                handleClosePopover();
-              }}
-            >
-              <ListIcon fontSize="small" sx={{ mr: 1 }} />
-              Quản lý sinh viên
-            </MenuItem>
-
-          </Popover>
-        )}
-      </StyledTableCell>
-    </StyledTableRow>
-  ))}
-</TableBody>
-
-  </Table>
-</TableContainer>
+                      {/* Chỉ hiển thị popover nếu đúng hàng */}
+                      {selectedRowId === row.id && (
+                        <Popover
+                          open={Boolean(anchorPosition)}
+                          anchorReference="anchorPosition"
+                          anchorPosition={anchorPosition}
+                          onClose={handleClosePopover}
+                          anchorOrigin={{ vertical: "top", horizontal: "left" }}
+                          transformOrigin={{
+                            vertical: "top",
+                            horizontal: "left",
+                          }}
+                          PaperProps={{ sx: { p: 1.5, minWidth: 120 } }}
+                        >
+                          {(role === "Admin" || role === "AcademicAffairs") && (
+                            <>
+                              <MenuItem
+                                onClick={() => {
+                                  handleOpenEditDialog(row.id);
+                                  handleClosePopover();
+                                }}
+                              >
+                                <EditIcon fontSize="small" sx={{ mr: 1 }} />
+                                Sửa
+                              </MenuItem>
+                              <MenuItem
+                                onClick={() => {
+                                  navigate(`/lophocphan/${row.id}/sinhvien`);
+                                  handleClosePopover();
+                                }}
+                              >
+                                <ListIcon fontSize="small" sx={{ mr: 1 }} />
+                                Quản lý sinh viên
+                              </MenuItem>
+                            </>
+                          )}
+                          <MenuItem
+                            onClick={() => {
+                              navigate(`/nhapdiem/${row.id}/quan-ly-cau-hoi`);
+                              handleClosePopover();
+                            }}
+                          >
+                            <EditNoteIcon fontSize="small" sx={{ mr: 1 }} />
+                            Nhập điểm
+                          </MenuItem>
+                        </Popover>
+                      )}
+                    </StyledTableCell>
+                  </StyledTableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
 
           <Dialog
             id="suaLopHocPhan"
@@ -830,9 +854,9 @@ function HocPhanPage()
             open={openEditDialog}
             onClose={handleCloseDialogEditHocPhans}
           >
-            <DialogTitle>Sửa học phần:</DialogTitle>
+            <DialogTitle>Sửa lớp học phần:</DialogTitle>
             <DialogContent>
-              <DialogContentText>Sửa thông tin học phần</DialogContentText>
+              <DialogContentText>Sửa thông tin lớp học phần</DialogContentText>
               <Stack spacing={2} mt={1}>
                 <TextField
                   autoFocus
@@ -883,7 +907,8 @@ function HocPhanPage()
                   options={semesters}
                   value={selectedSemester}
                   onChange={(e, newValue) => setSelectedSemester(newValue)}
-                  getOptionLabel={(option) => option.name}
+                  // getOptionLabel={(option) => option.name}
+                  getOptionLabel={(option) => option.displayName || ""}
                   isOptionEqualToValue={(option, value) =>
                     option.id === value.id
                   }
