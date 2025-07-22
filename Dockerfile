@@ -1,17 +1,31 @@
-FROM node:18-alpine
+# Build stage
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-COPY package.json .
+# Copy package files
+COPY package*.json ./
 
-RUN npm install
+# Install dependencies
+RUN npm ci
 
-RUN npm i -g serve
-
+# Copy source code
 COPY . .
 
+# Build the app
 RUN npm run build
+
+# Production stage
+FROM node:18-alpine AS production
+
+# Install serve globally
+RUN npm install -g serve
+
+# Only copy the built dist folder
+COPY --from=builder /app/dist /app/dist
+
+WORKDIR /app
 
 EXPOSE 3000
 
-CMD [ "serve", "-s", "dist" ]
+CMD ["serve", "-s", "dist"]
