@@ -95,24 +95,25 @@ export function NewGradeTable({
       let newIndex = currentIndex;
 
       switch (e.key) {
-        case "ArrowUp":
+        case "ArrowUp": {
           e.preventDefault();
-          newIndex = editableCells.findIndex(
-            (cell) => cell.columnId === columnId && cell.rowIndex < rowIndex
-          );
-          if (newIndex === -1) {
-            // Find last row with same column
-            for (let i = editableCells.length - 1; i >= 0; i--) {
-              if (
-                editableCells[i].columnId === columnId &&
-                editableCells[i].rowIndex < rowIndex
-              ) {
-                newIndex = i;
-                break;
+          let targetRowIndex = -1;
+          for (const cell of editableCells) {
+            if (cell.columnId === columnId && cell.rowIndex < rowIndex) {
+              if (cell.rowIndex > targetRowIndex) {
+                targetRowIndex = cell.rowIndex;
               }
             }
           }
+
+          if (targetRowIndex !== -1) {
+            newIndex = editableCells.findIndex(
+              (cell) =>
+                cell.columnId === columnId && cell.rowIndex === targetRowIndex
+            );
+          }
           break;
+        }
         case "ArrowDown":
           e.preventDefault();
           newIndex = editableCells.findIndex(
@@ -572,7 +573,12 @@ export function NewGradeTable({
                     </TableHead>
                   )
                 ),
-                <TableHead key={`${component.loai}_total`} className="text-center px-1 border">Tổng</TableHead>
+                <TableHead
+                  key={`${component.loai}_total`}
+                  className="text-center px-1 border"
+                >
+                  Tổng
+                </TableHead>,
               ])}
             </TableRow>
           </TableHeader>
@@ -636,19 +642,19 @@ function EditableCell({
       data-cell={`${rowIndex}-${columnId}`}
       onChange={(e) => {
         const newValue = e.target.value;
-        
+
         // Allow empty string
         if (newValue === "") {
           setEditValue(newValue);
           onChange(null);
           return;
         }
-        
+
         // Improved regex to allow decimal input
         // Allows: digits, one decimal point, up to 2 decimal places
         if (/^\d*\.?\d{0,2}$/.test(newValue)) {
           // Only validate max value if it's a complete number (not ending with decimal point)
-          if (newValue.endsWith('.')) {
+          if (newValue.endsWith(".")) {
             // Allow typing decimal point
             setEditValue(newValue);
           } else {
