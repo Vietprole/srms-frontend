@@ -32,6 +32,7 @@ import { getAllSemesters } from "@/api-new/api-semester";
 // import ManageStudentsOfClassModal from "@/components/ManageStudentsOfClassModal";
 import { getRole, getTeacherId } from "@/utils/storage";
 import { BatchUpdateGradeCompositionForm } from "./BatchUpdateGradeCompositionForm";
+import { getDistinctExamTypesByClassIds } from "@/api/api-exams";
 
 export default function BatchUpdateGradeCompositionModal() {
   const navigate = useNavigate();
@@ -46,6 +47,7 @@ export default function BatchUpdateGradeCompositionModal() {
   const [hockyId, setHocKyId] = useState(hockyIdParam);
   const [comboBoxHocPhanId, setComboBoxHocPhanId] = useState(hocphanIdParam);
   const [comboBoxHocKyId, setComboBoxHocKyId] = useState(hockyIdParam);
+  const [selectedClassIds, setSelectedClassIds] = useState([]);
   const baseUrl = "/lophocphan";
 
   const role = getRole();
@@ -266,7 +268,7 @@ export default function BatchUpdateGradeCompositionModal() {
     },
   ];
   return (
-    <div className="flex gap-1">
+    <div className="flex gap-1 max-h-full">
       <div className="">
         <div className="flex">
           <ComboBox
@@ -292,10 +294,13 @@ export default function BatchUpdateGradeCompositionModal() {
           deleteItem={deleteClass}
           columnToBeFiltered={"name"}
           ItemForm={LopHocPhanForm}
+          setSelectedItemIds={setSelectedClassIds}
         />
       </div>
-      <div className="w-[500px]">
-        <BatchUpdateGradeCompositionForm/>
+      <div className="w-[600px]">
+        <BatchUpdateGradeCompositionForm
+          classIds={selectedClassIds}
+        />
       </div>
     </div>
   );

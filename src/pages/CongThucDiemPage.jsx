@@ -484,13 +484,13 @@ export default function BaiKiemTraPage() {
                 <DialogTrigger asChild>
                   <Button className="mr-2">Chỉnh sửa hàng loạt</Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-fit">
+                <DialogContent className="max-w-fit max-h-full">
                   <DialogHeader>
                     <DialogTitle>
-                      Chỉnh sửa công thức điểm hàng loạt
+                      Chỉnh sửa hạn nhập điểm hàng loạt
                     </DialogTitle>
                     <DialogDescription>
-                      Chỉnh sửa công thức điểm cho nhiều lớp học phần
+                      Chỉnh sửa hạn nhập điểm cho nhiều lớp học phần
                     </DialogDescription>
                   </DialogHeader>
                   <BatchUpdateGradeCompositionModal />
