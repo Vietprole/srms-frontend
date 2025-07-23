@@ -32,6 +32,8 @@ import {
 } from "@/components/ui/dialog";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { getRole } from "@/utils/storage";
+import { useParams, useSearchParams } from "react-router-dom";
+import { importGradeFromExcel ,exportScoreComponent} from "../api/api-export-excel";
 
 export function NewGradeTable({
   data,
@@ -55,6 +57,48 @@ export function NewGradeTable({
     React.useState(isConfirmed);
   const [focusedCell, setFocusedCell] = React.useState(null); // Add this state
   const hasHigherPermission = role === "Admin" || role === "AcademicAffairs";
+
+  const { lopHocPhanId } = useParams();
+  const [searchParams] = useSearchParams();
+  const examId = searchParams.get("examId");
+
+  const fileInputRef = React.useRef(null);
+
+  const handleExcelUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+  
+    console.log("Class ID:", lopHocPhanId);
+    console.log("Exam ID:", examId);
+  
+    try {
+      const res = await importGradeFromExcel(parseInt(lopHocPhanId), parseInt(examId), file);
+      toast.success(res.message || "Nhập điểm thành công");
+      fetchData(); // làm mới dữ liệu
+    } catch (error) {
+      console.error("Lỗi khi nhập điểm từ Excel:", error);
+      if (error.response?.data?.message) {
+        toast.error(`Lỗi: ${error.response.data.message}`);
+      } else {
+        toast.error("Lỗi khi nhập điểm từ Excel");
+      }
+    }
+    
+  };
+  const handleDownloadExcelTemplate = () => {
+    if (!lopHocPhanId || !examId) {
+      toast.error("Không tìm thấy classId hoặc examId");
+      return;
+    }
+  
+    exportScoreComponent(parseInt(lopHocPhanId), parseInt(examId), useTemporaryScore);
+  };
+  
+  
+  
+
+  
+
 
   React.useEffect(() => {
     setTableData(data);
@@ -466,6 +510,32 @@ export function NewGradeTable({
   return (
     <div className="space-y-4">
       <div className="flex justify-end gap-1">
+      <Button
+        variant="outline"
+        onClick={handleDownloadExcelTemplate}
+        
+      >
+        Tải Mẫu Excel
+      </Button>
+
+      <Button
+        variant="outline"
+        onClick={() => fileInputRef.current?.click()}
+        
+      >
+        Nhập từ Excel
+      </Button>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".xlsx, .xls"
+        className="hidden"
+        onChange={handleExcelUpload}
+      />
+
+
+        
         <Button
           disabled={confirmationStatus || !canEditDiem}
           onClick={() => (isEditing ? handleSaveChanges() : setIsEditing(true))}

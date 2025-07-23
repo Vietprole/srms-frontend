@@ -33,7 +33,7 @@ export const getGiangVienId = () => {
   const result = sessionStorage.getItem('accessToken')
   try {
     const decodedToken = jwtDecode(result);
-    const giangVienId = decodedToken.giangVienId;
+    const giangVienId = decodedToken.teacherId;
     return parseInt(giangVienId);
   } catch (error) {
     return null;
@@ -44,7 +44,7 @@ export const getSinhVienId = () => {
   const result = sessionStorage.getItem('accessToken')
   try {
     const decodedToken = jwtDecode(result);
-    const sinhVienId = decodedToken.sinhVienId;
+    const sinhVienId = decodedToken.studentId;
     return parseInt(sinhVienId);
   } catch (error) {
     return null;
@@ -55,7 +55,7 @@ export const getNguoiQuanLyCTDTId = () => {
   const result = sessionStorage.getItem('accessToken')
   try {
     const decodedToken = jwtDecode(result);
-    const nguoiQuanLyCTDTId = decodedToken.nguoiQuanLyCTDTId;
+    const nguoiQuanLyCTDTId = decodedToken.managerId;
     return parseInt(nguoiQuanLyCTDTId);
   } catch (error) {
     return null;

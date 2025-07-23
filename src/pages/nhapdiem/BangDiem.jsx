@@ -105,15 +105,6 @@ export default function GradesPage() {
     fetchData();
   }, [fetchData]);
 
-  const formatDate = (date) => {
-    return date ? new Date(date).toLocaleDateString('vi-VN', {
-      timeZone: 'Asia/Ho_Chi_Minh',
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    }) : '';
-  }
-
   console.log("tableData", tableData);
   const latestScoreCorrectionDeadline = new Date(Math.max(
     ...components.map(component => new Date(component.scoreCorrectionDeadline))
