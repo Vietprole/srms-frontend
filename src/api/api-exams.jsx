@@ -6,13 +6,13 @@ const API_EXAMS = `${API_BASE_URL}/api/exams`;
 
 const getAuthHeader = () => ({
   headers: {
-    Authorization: getAccessToken()
-  }
+    Authorization: getAccessToken(),
+  },
 });
 
 /**
  * Lấy danh sách thành phần đánh giá, có thể lọc theo classId
- * @param {number} classId 
+ * @param {number} classId
  */
 export const getExams = async (classId) => {
   try {
@@ -21,13 +21,36 @@ export const getExams = async (classId) => {
     return response.data;
   } catch (error) {
     console.error("getExams error:", error);
-    throw new Error(error.response?.data || "Lỗi khi lấy danh sách thành phần đánh giá");
+    throw new Error(
+      error.response?.data || "Lỗi khi lấy danh sách thành phần đánh giá"
+    );
+  }
+};
+
+/**
+ *
+ * @param {number[]} classIds
+ * @returns
+ */
+export const getDistinctExamTypesByClassIds = async (classIds) => {
+  try {
+    const response = await axios.post(
+      `${API_EXAMS}/types/distinct-by-classes`,
+      classIds,
+      getAuthHeader()
+    );
+    return response.data;
+  } catch (error) {
+    console.error("getDistinctExamTypesByClassIds error:", error);
+    throw new Error(
+      error.response?.data || "Lỗi khi lấy loại thành phần đánh giá"
+    );
   }
 };
 
 /**
  * Lấy thông tin chi tiết thành phần đánh giá theo id
- * @param {number} id 
+ * @param {number} id
  */
 export const getExamById = async (id) => {
   try {
@@ -35,13 +58,15 @@ export const getExamById = async (id) => {
     return response.data;
   } catch (error) {
     console.error("getExamById error:", error);
-    throw new Error(error.response?.data || "Không tìm thấy thành phần đánh giá");
+    throw new Error(
+      error.response?.data || "Không tìm thấy thành phần đánh giá"
+    );
   }
 };
 
 /**
  * Tạo mới thành phần đánh giá
- * @param {CreateExamDTO} examData 
+ * @param {CreateExamDTO} examData
  */
 export const createExam = async (examData) => {
   try {
@@ -55,22 +80,28 @@ export const createExam = async (examData) => {
 
 /**
  * Cập nhật thành phần đánh giá
- * @param {number} id 
- * @param {UpdateExamDTO} examData 
+ * @param {number} id
+ * @param {UpdateExamDTO} examData
  */
 export const updateExam = async (id, examData) => {
   try {
-    const response = await axios.put(`${API_EXAMS}/${id}`, examData, getAuthHeader());
+    const response = await axios.put(
+      `${API_EXAMS}/${id}`,
+      examData,
+      getAuthHeader()
+    );
     return response.data;
   } catch (error) {
     console.error("updateExam error:", error);
-    throw new Error(error.response?.data || "Lỗi khi cập nhật thành phần đánh giá");
+    throw new Error(
+      error.response?.data || "Lỗi khi cập nhật thành phần đánh giá"
+    );
   }
 };
 
 /**
  * Xoá thành phần đánh giá
- * @param {number} id 
+ * @param {number} id
  */
 export const deleteExam = async (id) => {
   try {
@@ -83,15 +114,37 @@ export const deleteExam = async (id) => {
 
 /**
  * Cập nhật danh sách bài/câu hỏi đánh giá cho thành phần đánh giá
- * @param {number} id 
- * @param {CreateQuestionDTO[]} questions 
+ * @param {number} id
+ * @param {CreateQuestionDTO[]} questions
  */
 export const updateExamQuestions = async (id, questions) => {
   try {
-    const response = await axios.put(`${API_EXAMS}/${id}/questions`, questions, getAuthHeader());
+    const response = await axios.put(
+      `${API_EXAMS}/${id}/questions`,
+      questions,
+      getAuthHeader()
+    );
     return response.data;
   } catch (error) {
     console.error("updateExamQuestions error:", error);
-    throw new Error(error.response?.data || "Lỗi khi cập nhật bài/câu hỏi đánh giá");
+    throw new Error(
+      error.response?.data || "Lỗi khi cập nhật bài/câu hỏi đánh giá"
+    );
   }
 };
+
+export const BatchUpdateExamDeadlines = async (batchUpdateExamDeadlinesRequest) => {
+  try {
+    const response = await axios.put(
+      `${API_EXAMS}/deadlines/batch`,
+      batchUpdateExamDeadlinesRequest,
+      getAuthHeader()
+    );
+    return response.data;
+  } catch (error) {
+    console.error("BatchUpdateExamDeadlines error:", error);
+    throw new Error(
+      error.response?.data || "Lỗi khi cập nhật hạn nhập điểm hàng loạt"
+    );
+  }
+}

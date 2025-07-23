@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -50,6 +50,7 @@ export default function CRUDDataTable({
   hasAddButton,
   hasCreateButton = true,
   parentItemId,
+  setSelectedItemIds,
 }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [globalFilter, setGlobalFilter] = useState("");
@@ -96,6 +97,14 @@ export default function CRUDDataTable({
     autoResetPageIndex: false,
   });
 
+  useEffect(() => {
+    const selectedItemIds = table
+      .getFilteredSelectedRowModel()
+      .rows.map((row) => parseInt(row.original.id));
+
+    setSelectedItemIds(selectedItemIds);
+  }, [rowSelection, setSelectedItemIds, table]);
+
   return (
     <>
       <div className="w-full">
@@ -103,7 +112,7 @@ export default function CRUDDataTable({
           <Input
             placeholder={`Tìm kiếm ...`}
             value={globalFilter ?? ""}
-            onChange={e => table.setGlobalFilter(String(e.target.value))}
+            onChange={(e) => table.setGlobalFilter(String(e.target.value))}
             className="max-w-sm"
           />
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

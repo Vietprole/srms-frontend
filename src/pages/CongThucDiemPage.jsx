@@ -61,6 +61,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import BatchUpdateGradeCompositionModal from "@/components/BatchUpdateGradeCompositionModal";
 
 export default function BaiKiemTraPage() {
   const navigate = useNavigate();
@@ -479,6 +480,23 @@ export default function BaiKiemTraPage() {
                 </DropdownMenuContent>
               </DropdownMenu> */}
             <div>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button className="mr-2">Chỉnh sửa hàng loạt</Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-fit max-h-full">
+                  <DialogHeader>
+                    <DialogTitle>
+                      Chỉnh sửa hạn nhập điểm hàng loạt
+                    </DialogTitle>
+                    <DialogDescription>
+                      Chỉnh sửa hạn nhập điểm cho nhiều lớp học phần
+                    </DialogDescription>
+                  </DialogHeader>
+                  <BatchUpdateGradeCompositionModal />
+                </DialogContent>
+              </Dialog>
+
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                   <Button className="mr-2" disabled={!lopHocPhanId}>

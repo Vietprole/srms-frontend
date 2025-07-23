@@ -99,6 +99,7 @@ export function BaiKiemTraForm({
   async function onSubmit(values) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
+    console.log("Form submitted with values:", values);
     if (baiKiemTra) {
       // const data = await updateBaiKiemTra(baiKiemTra.id, values);
       handleEdit(values);
