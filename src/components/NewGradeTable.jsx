@@ -766,7 +766,7 @@ function EditableCell({
         }
       }}
       onKeyDown={(e) => onKeyDown(e, rowIndex, columnId)}
-      onClick={() => onClick(rowIndex, columnId)}
+      onMouseDown={() => {console.log("clicked!"); onClick(rowIndex, columnId)}}
       onBlur={() => {
         // Handle final validation on blur
         const numValue = parseFloat(editValue);
