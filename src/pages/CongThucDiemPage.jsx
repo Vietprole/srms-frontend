@@ -74,6 +74,7 @@ export default function BaiKiemTraPage() {
   const [comboBoxLopHocPhanId, setComboBoxLopHocPhanId] =
     useState(lopHocPhanIdParam);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isBatchUpdateDialogOpen, setIsBatchUpdateDialogOpen] = useState(false);
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
@@ -480,20 +481,21 @@ export default function BaiKiemTraPage() {
                 </DropdownMenuContent>
               </DropdownMenu> */}
             <div>
-              <Dialog>
+              <Dialog
+                open={isBatchUpdateDialogOpen}
+                onOpenChange={setIsBatchUpdateDialogOpen}
+              >
                 <DialogTrigger asChild>
-                  <Button className="mr-2">Chỉnh sửa hàng loạt</Button>
+                  <Button className="mr-2">Chỉnh sửa hạn nhập điểm hàng loạt</Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-fit max-h-full">
                   <DialogHeader>
-                    <DialogTitle>
-                      Chỉnh sửa hạn nhập điểm hàng loạt
-                    </DialogTitle>
+                    <DialogTitle>Chỉnh sửa hạn nhập điểm hàng loạt</DialogTitle>
                     <DialogDescription>
                       Chỉnh sửa hạn nhập điểm cho nhiều lớp học phần
                     </DialogDescription>
                   </DialogHeader>
-                  <BatchUpdateGradeCompositionModal />
+                  <BatchUpdateGradeCompositionModal setIsDialogOpen={setIsBatchUpdateDialogOpen}/>
                 </DialogContent>
               </Dialog>
 
