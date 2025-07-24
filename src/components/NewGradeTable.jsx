@@ -206,12 +206,34 @@ export function NewGradeTable({
           );
           if (input) {
             input.focus();
-            // input.select(); // Select all text for immediate replacement
+            input.select(); // Select all text for immediate replacement
           }
         }, 0);
       }
     },
     [isEditing, tableData, components, questions]
+  );
+
+  const handleCellClick = React.useCallback(
+    (rowIndex, columnId) => {
+      if (!isEditing) return;
+      console.log("handleCellClick", rowIndex, columnId);
+
+      // Set the focused cell state first
+      setFocusedCell({ rowIndex, columnId });
+
+      // Use setTimeout to wait for the state update and DOM rendering
+      setTimeout(() => {
+        const input = document.querySelector(
+          `input[data-cell="${rowIndex}-${columnId}"]`
+        );
+        if (input) {
+          input.focus();
+          input.select(); // Select all text for immediate replacement
+        }
+      }, 0);
+    },
+    [isEditing]
   );
 
   const columns = React.useMemo(() => {
@@ -264,6 +286,7 @@ export function NewGradeTable({
                   focusedCell?.columnId === column.id
                 }
                 onKeyDown={handleKeyDown}
+                onClick={handleCellClick}
                 onChange={(value) => {
                   const newData = [...tableData];
                   const rowIndex = row.index;
@@ -343,12 +366,14 @@ export function NewGradeTable({
     components,
     questions,
     isEditing,
+    focusedCell?.rowIndex,
+    focusedCell?.columnId,
+    handleKeyDown,
+    handleCellClick,
     tableData,
     modifiedRecords,
     modifiedDiemDinhChinhRecords,
     modifiedOfficialScoreRecords,
-    focusedCell,
-    handleKeyDown,
   ]);
 
   const table = useReactTable({
@@ -622,7 +647,8 @@ export function NewGradeTable({
               {components.map((component) => (
                 <TableHead
                   key={component.id}
-                  colSpan={questions[component.id.toString()]?.length}
+                  // colSpan + 1 to account for the total column
+                  colSpan={questions[component.id.toString()]?.length + 1}
                   className="text-center border"
                 >
                   {component.type} ({component.weight * 100}%)
@@ -684,6 +710,7 @@ function EditableCell({
   isEditing,
   isFocused,
   onKeyDown,
+  onClick,
   onChange,
 }) {
   const [editValue, setEditValue] = React.useState(value.toString());
@@ -696,7 +723,6 @@ function EditableCell({
   React.useEffect(() => {
     if (isFocused && inputRef.current) {
       inputRef.current.focus();
-      // inputRef.current.select();
     }
   }, [isFocused]);
 
@@ -740,6 +766,7 @@ function EditableCell({
         }
       }}
       onKeyDown={(e) => onKeyDown(e, rowIndex, columnId)}
+      onClick={() => onClick(rowIndex, columnId)}
       onBlur={() => {
         // Handle final validation on blur
         const numValue = parseFloat(editValue);
