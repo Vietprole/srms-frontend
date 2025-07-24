@@ -34,7 +34,7 @@ import { getRole, getTeacherId } from "@/utils/storage";
 import { BatchUpdateGradeCompositionForm } from "./BatchUpdateGradeCompositionForm";
 import { getDistinctExamTypesByClassIds } from "@/api/api-exams";
 
-export default function BatchUpdateGradeCompositionModal() {
+export default function BatchUpdateGradeCompositionModal({ setIsDialogOpen }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const hocphanIdParam = searchParams.get("courseId");
@@ -79,11 +79,11 @@ export default function BatchUpdateGradeCompositionModal() {
   const handleGoClick = () => {
     setHocPhanId(comboBoxHocPhanId);
     setHocKyId(comboBoxHocKyId);
-    const url = createSearchURL(baseUrl, {
-      courseId: comboBoxHocPhanId,
-      semesterId: comboBoxHocKyId,
-    });
-    navigate(url);
+    // const url = createSearchURL(baseUrl, {
+    //   courseId: comboBoxHocPhanId,
+    //   semesterId: comboBoxHocKyId,
+    // });
+    // navigate(url);
   };
 
   const createLopHocPhanColumns = (handleEdit, handleDelete) => [
@@ -268,7 +268,7 @@ export default function BatchUpdateGradeCompositionModal() {
     },
   ];
   return (
-    <div className="flex gap-1 max-h-full">
+    <div className="flex gap-4 max-h-full">
       <div className="">
         <div className="flex">
           <ComboBox
@@ -295,11 +295,13 @@ export default function BatchUpdateGradeCompositionModal() {
           columnToBeFiltered={"name"}
           ItemForm={LopHocPhanForm}
           setSelectedItemIds={setSelectedClassIds}
+          hasCreateButton={false}
         />
       </div>
       <div className="w-[600px]">
         <BatchUpdateGradeCompositionForm
           classIds={selectedClassIds}
+          setIsDialogOpen={setIsDialogOpen}
         />
       </div>
     </div>

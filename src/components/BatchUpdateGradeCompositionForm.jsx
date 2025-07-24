@@ -23,7 +23,10 @@ import {
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BatchUpdateExamDeadlines, getDistinctExamTypesByClassIds } from "@/api/api-exams";
+import {
+  BatchUpdateExamDeadlines,
+  getDistinctExamTypesByClassIds,
+} from "@/api/api-exams";
 import { toast } from "sonner";
 
 // Define schema for each exam type's dates
@@ -198,8 +201,7 @@ export function BatchUpdateGradeCompositionForm({
     try {
       await BatchUpdateExamDeadlines(batchUpdateExamDeadlinesRequest);
       toast.success("Cập nhật hạn nhập điểm thành công!");
-    }
-    catch (error) {
+    } catch (error) {
       console.error("Error updating exam deadlines:", error);
       toast.error("Lỗi khi cập nhật hạn nhập điểm");
     }
@@ -236,141 +238,163 @@ export function BatchUpdateGradeCompositionForm({
       >
         <h2 className="text-lg font-semibold mb-4">Cập Nhật Hạn Nhập Điểm</h2>
         <div className="flex-1 overflow-y-auto space-y-6 mb-6">
-          {form.watch("examConfigs")?.map((config, index) => (
-            <Card key={index} className="mb-4">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">
-                  Loại bài kiểm tra: {config.type}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <FormField
-                    control={form.control}
-                    name={`examConfigs.${index}.scoreEntryStartDate`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Ngày Mở Nhập Điểm</FormLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant={"outline"}
-                                className={cn(
-                                  "w-full pl-3 text-left font-normal",
-                                  !field.value && "text-muted-foreground"
-                                )}
-                              >
-                                {field.value ? (
-                                  format(field.value, "dd/MM/yyyy")
-                                ) : (
-                                  <span>Chọn ngày</span>
-                                )}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              initialFocus
-                              locale={vi}
-                            />
-                          </PopoverContent>
-                        </Popover>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+          {!form.watch("examConfigs") ||
+          form.watch("examConfigs").length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-[60vh] border border-dashed rounded-lg p-6">
+              <div className="text-muted-foreground text-center">
+                <p className="mb-2">
+                  Không có thành phần đánh giá nào được tìm thấy
+                </p>
+                <p className="text-sm">
+                  Vui lòng chọn lớp học phần để hiển thị các thành phần đánh giá
+                </p>
+              </div>
+            </div>
+          ) : (
+            form.watch("examConfigs")?.map((config, index) => (
+              <Card key={index} className="mb-4">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">
+                    Loại bài kiểm tra: {config.type}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <FormField
+                      control={form.control}
+                      name={`examConfigs.${index}.scoreEntryStartDate`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Ngày Mở Nhập Điểm</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-full pl-3 text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(field.value, "dd/MM/yyyy")
+                                  ) : (
+                                    <span>Chọn ngày</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-auto p-0"
+                              align="start"
+                            >
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                initialFocus
+                                locale={vi}
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <FormField
-                    control={form.control}
-                    name={`examConfigs.${index}.scoreEntryDeadline`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Hạn Nhập Điểm</FormLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant={"outline"}
-                                className={cn(
-                                  "w-full pl-3 text-left font-normal",
-                                  !field.value && "text-muted-foreground"
-                                )}
-                              >
-                                {field.value ? (
-                                  format(field.value, "dd/MM/yyyy")
-                                ) : (
-                                  <span>Chọn ngày</span>
-                                )}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={(date) =>
-                                field.onChange(setEndOfDay(date))
-                              }
-                              initialFocus
-                              locale={vi}
-                            />
-                          </PopoverContent>
-                        </Popover>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                    <FormField
+                      control={form.control}
+                      name={`examConfigs.${index}.scoreEntryDeadline`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Hạn Nhập Điểm</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-full pl-3 text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(field.value, "dd/MM/yyyy")
+                                  ) : (
+                                    <span>Chọn ngày</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-auto p-0"
+                              align="start"
+                            >
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={(date) =>
+                                  field.onChange(setEndOfDay(date))
+                                }
+                                initialFocus
+                                locale={vi}
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <FormField
-                    control={form.control}
-                    name={`examConfigs.${index}.scoreCorrectionDeadline`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Hạn Đính Chính</FormLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant={"outline"}
-                                className={cn(
-                                  "w-full pl-3 text-left font-normal",
-                                  !field.value && "text-muted-foreground"
-                                )}
-                              >
-                                {field.value ? (
-                                  format(field.value, "dd/MM/yyyy")
-                                ) : (
-                                  <span>Chọn ngày</span>
-                                )}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={(date) =>
-                                field.onChange(setEndOfDay(date))
-                              }
-                              initialFocus
-                              locale={vi}
-                            />
-                          </PopoverContent>
-                        </Popover>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                    <FormField
+                      control={form.control}
+                      name={`examConfigs.${index}.scoreCorrectionDeadline`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Hạn Đính Chính</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-full pl-3 text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(field.value, "dd/MM/yyyy")
+                                  ) : (
+                                    <span>Chọn ngày</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-auto p-0"
+                              align="start"
+                            >
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={(date) =>
+                                  field.onChange(setEndOfDay(date))
+                                }
+                                initialFocus
+                                locale={vi}
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-                {/* Show any validation errors for this config group
+                  {/* Show any validation errors for this config group
                 {(form.formState.errors.examConfigs?.[index]
                   ?.scoreEntryStartDate ||
                   form.formState.errors.examConfigs?.[index]
@@ -386,19 +410,13 @@ export function BatchUpdateGradeCompositionForm({
                         ?.scoreCorrectionDeadline?.message}
                   </div>
                 )} */}
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
 
         <div className="flex justify-end gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setIsDialogOpen(false)}
-          >
-            Hủy
-          </Button>
           <Button type="submit">Cập Nhật</Button>
         </div>
       </form>
