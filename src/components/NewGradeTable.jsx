@@ -323,10 +323,15 @@ export function NewGradeTable({
             size: 80,
             accessorFn: (row) => {
               const grades = row.grades[component.type] || {};
-              return Object.values(grades).reduce(
-                (sum, score) => parseFloat((sum + score).toFixed(2)),
-                0
-              );
+              const componentQuestions =
+                questions[component.id.toString()] || [];
+
+              return componentQuestions.reduce((sum, question) => {
+                const score = grades[question.id] || 0;
+                const weightedScore =
+                  (score * question.weight) / question.scale;
+                return parseFloat((sum + weightedScore).toFixed(2));
+              }, 0);
             },
           },
         ],
