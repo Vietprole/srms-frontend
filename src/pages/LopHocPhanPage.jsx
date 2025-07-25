@@ -342,14 +342,15 @@ function HocPhanPage() {
   const fetchData = useCallback(async () => {
     try {
       const hocphans = await getAllClasses({ teacherId });
-      console.log(hocphans);
-      // Đảm bảo response từ API trả về thêm thông tin tenNganh
       const hocki = await getAllSemesters();
       setHocky(hocki);
       setData(hocphans);
       setFilteredData(hocphans);
-      const khoa = await getCourses();
-      setKhoas(khoa);
+      const allCourses = await getCourses();
+      const courseIdsInHocphans = new Set(hocphans.map(hp => hp.courseId));
+      const filteredCourses = allCourses.filter(course => courseIdsInHocphans.has(course.id));
+  
+      setKhoas(filteredCourses); 
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu:", error);
       setSnackbarMessage("Không thể tải dữ liệu: ");
@@ -357,6 +358,7 @@ function HocPhanPage() {
       setOpenSnackbar(true);
     }
   }, [teacherId]);
+  
 
   useEffect(() => {
     fetchData();
@@ -611,6 +613,7 @@ function HocPhanPage() {
             <VirtualizedAutocomplete
               options={khoas}
               value={selectedKhoaFilter}
+              
               onChange={handleKhoaChange}
               getOptionLabel={(option) => option.name || ""}
               label="Chọn học phần"
