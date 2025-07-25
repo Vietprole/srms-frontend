@@ -102,7 +102,9 @@ export default function CRUDDataTable({
       .getFilteredSelectedRowModel()
       .rows.map((row) => parseInt(row.original.id));
 
-    setSelectedItemIds(selectedItemIds);
+    if (setSelectedItemIds) {
+      setSelectedItemIds(selectedItemIds);
+    }
   }, [rowSelection, setSelectedItemIds, table]);
 
   return (

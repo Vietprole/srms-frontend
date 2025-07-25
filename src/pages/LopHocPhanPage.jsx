@@ -358,7 +358,6 @@ function HocPhanPage() {
       setOpenSnackbar(true);
     }
   }, [teacherId]);
-  
 
   useEffect(() => {
     fetchData();

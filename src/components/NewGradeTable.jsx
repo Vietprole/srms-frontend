@@ -353,7 +353,7 @@ export function NewGradeTable({
                 const score = grades[question.id] || 0;
                 const weightedScore =
                   (score * question.weight) / question.scale;
-                return parseFloat((sum + weightedScore).toFixed(2));
+                return parseFloat((sum + weightedScore).toFixed(1));
               }, 0);
             },
           },
